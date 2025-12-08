@@ -1,0 +1,198 @@
+/**
+ * Dynamics engine: resource and population updates
+ */
+
+import { ResourceState, PlanetEnv, SpeciesState, SpeciesDecision } from "./types";
+import { getRNG } from "./random";
+
+/**
+ * Update resources using logistic growth model
+ * R_{t+1} = max(0, R_t + g*R_t*(1-R_t/K) - harvest + noise)
+ */
+export function updateResources(
+  resources: ResourceState[],
+  harvests: Record<string, number>, // resourceId -> total harvested
+  planet: PlanetEnv,
+  config?: { harvestNoise?: number }
+): ResourceState[] {
+  const rng = getRNG();
+  const harvestNoise = config?.harvestNoise ?? 0.05;
+  
+  return resources.map((resource) => {
+    if (resource.collapsed) {
+      // Collapsed resources don't regenerate
+      return {
+        ...resource,
+        amount: Math.max(0, resource.amount - (harvests[resource.def.id] || 0)),
+      };
+    }
+    
+    const currentAmount = resource.amount;
+    const capacity = resource.def.capacityK;
+    const regenRate = resource.def.regenRate;
+    
+    // Logistic growth: g * R * (1 - R/K)
+    const growth = regenRate * currentAmount * (1 - currentAmount / capacity);
+    
+    // Harvest with noise
+    const harvest = harvests[resource.def.id] || 0;
+    const harvestWithNoise = harvest * (1 + rng.normal(0, harvestNoise));
+    
+    // Environmental shock (volatility)
+    const shock = rng.normal(0, planet.volatility * capacity * 0.1);
+    
+    // Update amount
+    const newAmount = Math.max(0, currentAmount + growth - harvestWithNoise + shock);
+    
+    // Check for collapse
+    const collapsed = newAmount < resource.def.collapseThreshold;
+    
+    return {
+      ...resource,
+      amount: newAmount,
+      collapsed: collapsed || resource.collapsed,
+    };
+  });
+}
+
+/**
+ * Compute per-capita resource for a species
+ */
+export function computePerCapitaResource(
+  species: SpeciesState,
+  resources: ResourceState[],
+  harvests: Record<string, number> // speciesId -> resourceId -> harvest
+): number {
+  let totalValue = 0;
+  
+  for (const resource of resources) {
+    const harvest = harvests[resource.def.id] || 0;
+    if (harvest > 0 && species.population > 0) {
+      const perCapita = (harvest * resource.def.valuePerUnit) / species.population;
+      totalValue += perCapita;
+    }
+  }
+  
+  return totalValue;
+}
+
+/**
+ * Compute stress factor for a species
+ */
+export function computeStress(
+  species: SpeciesState,
+  resources: ResourceState[],
+  planet: PlanetEnv
+): number {
+  // Base stress from metabolic cost
+  let stress = planet.metabolicCost * 0.3;
+  
+  // Stress from resource scarcity
+  const totalResourceCapacity = resources.reduce((sum, r) => sum + r.def.capacityK, 0);
+  const totalResourceAmount = resources.reduce((sum, r) => sum + r.amount, 0);
+  const resourceScarcity = 1 - (totalResourceAmount / totalResourceCapacity);
+  stress += resourceScarcity * 0.4;
+  
+  // Stress from high population density (if applicable)
+  const populationDensity = species.population / 10000000; // Normalize
+  stress += Math.min(0.3, populationDensity * 0.1);
+  
+  return Math.min(1.0, stress);
+}
+
+/**
+ * Update species population using exponential growth/decline
+ * N_{t+1} = N_t * exp(a*resource - b*stress)
+ */
+export function updateSpeciesPopulation(
+  species: SpeciesState,
+  perCapitaResource: number,
+  stress: number,
+  planet: PlanetEnv
+): SpeciesState {
+  if (!species.alive || species.population <= 0) {
+    return { ...species, alive: false, population: 0 };
+  }
+  
+  // Growth parameters
+  const a = species.traits.reproductionRate * 0.1; // Resource-to-growth multiplier
+  const b = 0.5; // Stress-to-decline multiplier
+  
+  // Normalize per-capita resource (0-1 scale)
+  const normalizedResource = Math.min(1.0, perCapitaResource / 10.0);
+  
+  // Exponential growth/decline
+  const growthFactor = Math.exp(a * normalizedResource - b * stress);
+  let newPopulation = species.population * growthFactor;
+  
+  // Apply planet productivity modifier
+  newPopulation *= (0.8 + planet.productivity * 0.4);
+  
+  // Cap population growth (can't exceed reasonable limits)
+  const maxPopulation = 100000000; // 100 million
+  newPopulation = Math.min(maxPopulation, newPopulation);
+  
+  // Extinction threshold
+  const extinctionThreshold = 1000;
+  const alive = newPopulation >= extinctionThreshold;
+  
+  if (!alive) {
+    newPopulation = 0;
+  }
+  
+  return {
+    ...species,
+    population: Math.max(0, newPopulation),
+    alive,
+  };
+}
+
+/**
+ * Apply governance effects (internal punishment reduces effective harvest)
+ */
+export function applyGovernanceEffects(
+  decisions: SpeciesDecision[],
+  species: SpeciesState[]
+): Record<string, number> {
+  // Map speciesId -> resourceId -> effective harvest
+  const effectiveHarvests: Record<string, Record<string, number>> = {};
+  
+  for (const decision of decisions) {
+    const speciesState = species.find((s) => s.traits.id === decision.speciesId);
+    if (!speciesState || !speciesState.alive) continue;
+    
+    effectiveHarvests[decision.speciesId] = {};
+    
+    for (const [resourceId, harvest] of Object.entries(decision.harvest)) {
+      let effectiveHarvest = harvest;
+      
+      // If governance is strong and harvest is high, reduce it (internal punishment)
+      const punishmentStrength = decision.governance.punishmentStrength;
+      const monitoringInvestment = decision.governance.monitoringInvestment;
+      
+      // Estimate "sustainable" harvest (simplified: assume 50% of capacity is sustainable)
+      // If harvest exceeds this and governance is active, reduce it
+      const governanceEffectiveness = punishmentStrength * monitoringInvestment;
+      
+      if (governanceEffectiveness > 0.3 && harvest > 50) {
+        // Reduce harvest proportionally to governance strength
+        const reduction = (harvest - 50) * governanceEffectiveness * 0.5;
+        effectiveHarvest = harvest - reduction;
+      }
+      
+      effectiveHarvests[decision.speciesId][resourceId] = Math.max(0, effectiveHarvest);
+    }
+  }
+  
+  // Aggregate by resource
+  const aggregated: Record<string, number> = {};
+  
+  for (const [speciesId, harvests] of Object.entries(effectiveHarvests)) {
+    for (const [resourceId, amount] of Object.entries(harvests)) {
+      aggregated[resourceId] = (aggregated[resourceId] || 0) + amount;
+    }
+  }
+  
+  return aggregated;
+}
+
