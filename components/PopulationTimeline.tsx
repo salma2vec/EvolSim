@@ -18,8 +18,13 @@ export default function PopulationTimeline() {
     );
   }
   
-  const data = history.map((state) => {
-    const point: any = { timeStep: state.timeStep };
+  interface DataPoint {
+    timeStep: number;
+    [speciesName: string]: number | string;
+  }
+
+  const data: DataPoint[] = history.map((state) => {
+    const point: DataPoint = { timeStep: state.timeStep };
     state.species.forEach((species) => {
       point[species.traits.name] = species.population / 1000000; // Convert to millions
     });

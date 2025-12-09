@@ -11,6 +11,7 @@ import { parseLLMResponse } from "@/lib/llm/parseActions";
 import { computeCollapseStats, computeCooperationIndex, computeSpeciesOutcomes } from "@/lib/sim/metrics";
 import { WorldState, SpeciesObservation, SpeciesDecision } from "@/lib/sim/types";
 import { validateSimulationRequest, validateSpeciesDecision } from "@/lib/utils/validation";
+import { SimulationRequest } from "@/lib/types/api";
 
 async function getDecisions(
   observations: SpeciesObservation[],
@@ -74,7 +75,7 @@ async function getDecisions(
 
 export async function POST(request: NextRequest) {
   try {
-    let body: any;
+    let body: unknown;
     try {
       body = await request.json();
     } catch (error) {

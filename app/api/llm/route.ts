@@ -4,10 +4,11 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { callLLM } from "@/lib/llm/client";
+import { LLMRequest } from "@/lib/types/api";
 
 export async function POST(request: NextRequest) {
   try {
-    let body: any;
+    let body: unknown;
     try {
       body = await request.json();
     } catch (error) {
@@ -17,7 +18,15 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const { modelId, prompt, temperature } = body;
+    if (!body || typeof body !== "object") {
+      return NextResponse.json(
+        { error: "Request body must be an object" },
+        { status: 400 }
+      );
+    }
+    
+    const req = body as LLMRequest;
+    const { modelId, prompt, temperature } = req;
     
     if (!modelId || typeof modelId !== "string") {
       return NextResponse.json(

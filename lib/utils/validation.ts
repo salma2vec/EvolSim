@@ -172,33 +172,40 @@ export function validateSpeciesState(species: Partial<SpeciesState>): { valid: b
 /**
  * Validate API request body for simulation endpoint
  */
-export function validateSimulationRequest(body: any): { valid: boolean; errors: string[] } {
+export function validateSimulationRequest(body: unknown): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
 
-  if (!body.presetId || typeof body.presetId !== "string") {
+  if (!body || typeof body !== "object") {
+    errors.push("Request body must be an object");
+    return { valid: false, errors };
+  }
+
+  const req = body as Record<string, unknown>;
+
+  if (!req.presetId || typeof req.presetId !== "string") {
     errors.push("presetId is required and must be a string");
   }
 
-  if (body.numSteps !== undefined) {
-    if (typeof body.numSteps !== "number" || body.numSteps < 1 || body.numSteps > 1000) {
+  if (req.numSteps !== undefined) {
+    if (typeof req.numSteps !== "number" || req.numSteps < 1 || req.numSteps > 1000) {
       errors.push("numSteps must be a number between 1 and 1000");
     }
   } else {
     errors.push("numSteps is required");
   }
 
-  if (body.speciesModelMap !== undefined) {
-    if (typeof body.speciesModelMap !== "object" || Array.isArray(body.speciesModelMap)) {
+  if (req.speciesModelMap !== undefined) {
+    if (typeof req.speciesModelMap !== "object" || Array.isArray(req.speciesModelMap) || req.speciesModelMap === null) {
       errors.push("speciesModelMap must be an object");
     }
   }
 
-  if (body.seed !== undefined && typeof body.seed !== "number") {
+  if (req.seed !== undefined && typeof req.seed !== "number") {
     errors.push("seed must be a number");
   }
 
-  if (body.config !== undefined) {
-    const configValidation = validateSimConfig(body.config);
+  if (req.config !== undefined) {
+    const configValidation = validateSimConfig(req.config);
     errors.push(...configValidation.errors);
   }
 

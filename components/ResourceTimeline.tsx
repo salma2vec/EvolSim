@@ -18,8 +18,13 @@ export default function ResourceTimeline() {
     );
   }
   
-  const data = history.map((state) => {
-    const point: any = { timeStep: state.timeStep };
+  interface DataPoint {
+    timeStep: number;
+    [resourceName: string]: number | string;
+  }
+
+  const data: DataPoint[] = history.map((state) => {
+    const point: DataPoint = { timeStep: state.timeStep };
     state.resources.forEach((resource) => {
       point[resource.def.name] = resource.amount;
     });

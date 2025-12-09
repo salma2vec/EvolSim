@@ -127,18 +127,22 @@ export interface SpeciesDecision {
 /**
  * Simulation event
  */
+export interface SimEventData {
+  speciesId?: string;
+  resourceId?: string;
+  otherSpeciesId?: string;
+  harvestAmount?: number;
+  treatyId?: string;
+  epoch?: number;
+  amount?: number;
+  stance?: DiplomaticStance;
+}
+
 export interface SimEvent {
   timeStep: number;
   type: "TREATY" | "DEFECT" | "COLLAPSE" | "EXTINCTION" | "HARVEST" | "DIPLOMACY" | "CONCLAVE" | "LANGUAGE_SHIFT";
   message: string;
-  data?: {
-    speciesId?: string;
-    resourceId?: string;
-    otherSpeciesId?: string;
-    harvestAmount?: number;
-    treatyId?: string;
-    [key: string]: any;
-  };
+  data?: SimEventData;
 }
 
 /**

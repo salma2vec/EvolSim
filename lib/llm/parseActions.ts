@@ -4,7 +4,7 @@
 
 import { SpeciesDecision, DiplomaticStance } from "../sim/types";
 
-function extractJSON(text: string): any {
+function extractJSON(text: string): Record<string, unknown> | null {
   try {
     return JSON.parse(text.trim());
   } catch (e) {
@@ -24,14 +24,14 @@ function extractJSON(text: string): any {
   }
 }
 
-function clampNumber(value: any, min: number, max: number, defaultValue: number): number {
+function clampNumber(value: unknown, min: number, max: number, defaultValue: number): number {
   if (typeof value !== "number" || isNaN(value)) {
     return defaultValue;
   }
   return Math.max(min, Math.min(max, value));
 }
 
-function validateStance(value: any): DiplomaticStance {
+function validateStance(value: unknown): DiplomaticStance {
   const validStances: DiplomaticStance[] = ["ally", "neutral", "sanction", "war"];
   if (typeof value === "string" && validStances.includes(value as DiplomaticStance)) {
     return value as DiplomaticStance;
