@@ -1,5 +1,15 @@
 /**
  * API route for LLM calls
+ * 
+ * POST /api/llm
+ * 
+ * Request body:
+ * - modelId: string (required) - LLM model identifier
+ * - prompt: string (required) - Prompt text (max 50000 chars)
+ * - temperature?: number (0-2) - Sampling temperature
+ * 
+ * Response:
+ * - output: string - LLM response text
  */
 
 import { NextRequest, NextResponse } from "next/server";
