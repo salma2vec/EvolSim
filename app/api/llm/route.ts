@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { callLLM } from "@/lib/llm/client";
 import { LLMRequest } from "@/lib/types/api";
+import { logger } from "@/lib/utils/logger";
 
 export async function POST(request: NextRequest) {
   try {
@@ -67,7 +68,7 @@ export async function POST(request: NextRequest) {
       
       return NextResponse.json({ output });
     } catch (error) {
-      console.error("LLM call error:", error);
+      logger.error("LLM call error", error);
       return NextResponse.json(
         { 
           error: "Failed to call LLM", 
@@ -77,7 +78,7 @@ export async function POST(request: NextRequest) {
       );
     }
   } catch (error) {
-    console.error("LLM API route error:", error);
+    logger.error("LLM API route error", error);
     return NextResponse.json(
       { 
         error: "Internal server error", 

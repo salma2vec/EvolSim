@@ -12,6 +12,7 @@ import { computeCollapseStats, computeCooperationIndex, computeSpeciesOutcomes }
 import { WorldState, SpeciesObservation, SpeciesDecision } from "@/lib/sim/types";
 import { validateSimulationRequest, validateSpeciesDecision } from "@/lib/utils/validation";
 import { SimulationRequest } from "@/lib/types/api";
+import { logger } from "@/lib/utils/logger";
 
 async function getDecisions(
   observations: SpeciesObservation[],
@@ -23,7 +24,7 @@ async function getDecisions(
   for (const obs of observations) {
     const species = world.species.find((s) => s.traits.id === obs.speciesId);
     if (!species || !species.alive) {
-      console.warn(`Species ${obs.speciesId} not found or not alive, skipping decision`);
+      logger.warn(`Species ${obs.speciesId} not found or not alive, skipping decision`);
       continue;
     }
     
@@ -52,13 +53,13 @@ async function getDecisions(
       // Validate the parsed decision
       const validation = validateSpeciesDecision(decision, obs.speciesId);
       if (!validation.valid) {
-        console.warn(`Invalid decision for ${obs.speciesId}:`, validation.errors);
+        logger.warn(`Invalid decision for ${obs.speciesId}`, { errors: validation.errors });
         // Use fallback decision but log the issue
       }
       
       decisions.push(decision);
     } catch (error) {
-      console.error(`Error getting decision for ${obs.speciesId}:`, error);
+      logger.error(`Error getting decision for ${obs.speciesId}`, error);
       // Fallback to minimal decision
       const fallbackDecision: SpeciesDecision = {
         speciesId: obs.speciesId,
@@ -112,7 +113,7 @@ export async function POST(request: NextRequest) {
         const aliveSpecies = currentState.species.filter((s) => s.alive);
         
         if (aliveSpecies.length === 0) {
-          console.log("All species extinct, stopping simulation early");
+          logger.info("All species extinct, stopping simulation early");
           break;
         }
         
@@ -124,7 +125,7 @@ export async function POST(request: NextRequest) {
         const decisions = await getDecisions(observations, currentState, speciesModelMap || {});
         
         if (decisions.length === 0) {
-          console.warn("No decisions received, stopping simulation");
+          logger.warn("No decisions received, stopping simulation");
           break;
         }
         
@@ -153,14 +154,14 @@ export async function POST(request: NextRequest) {
       
       return NextResponse.json({ history, metrics });
     } catch (error) {
-      console.error("Error during simulation:", error);
+      logger.error("Error during simulation", error);
       return NextResponse.json(
         { error: "Simulation failed", details: error instanceof Error ? error.message : String(error) },
         { status: 500 }
       );
     }
   } catch (error) {
-    console.error("Simulation API error:", error);
+    logger.error("Simulation API error", error);
     return NextResponse.json(
       { error: "Internal server error", details: error instanceof Error ? error.message : String(error) },
       { status: 500 }

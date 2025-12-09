@@ -16,6 +16,7 @@ import ExperimentPanel from "@/components/ExperimentPanel";
 import { useEffect } from "react";
 import { useSimStore } from "@/lib/store";
 import { createWorldFromPreset } from "@/lib/sim/presets";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export default function Home() {
   const { setState, setHistory, currentState } = useSimStore();
@@ -30,7 +31,8 @@ export default function Home() {
   }, [currentState, setState, setHistory]);
 
   return (
-    <div className="min-h-screen bg-grid p-4 md:p-8 font-mono text-sm">
+    <ErrorBoundary>
+      <div className="min-h-screen bg-grid p-4 md:p-8 font-mono text-sm">
       <div className="max-w-[1600px] mx-auto space-y-8">
         {/* Header Section */}
         <header className="border-b border-border pb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
@@ -118,6 +120,7 @@ export default function Home() {
         </div>
       </div>
     </div>
+    </ErrorBoundary>
   );
 }
 
