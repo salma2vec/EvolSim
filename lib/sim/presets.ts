@@ -38,6 +38,18 @@ export function createWorldFromPreset(
       result = createAnathemScenario(speciesModelMap);
       break;
     
+    case "harsh_twilight":
+      result = createHarshTwilightScenario(speciesModelMap);
+      break;
+    
+    case "lush_gaia":
+      result = createLushGaiaScenario(speciesModelMap);
+      break;
+    
+    case "volatile_storm":
+      result = createVolatileStormScenario(speciesModelMap);
+      break;
+    
     default:
       result = createTwoSpeciesSimpleLake(speciesModelMap);
       break;
@@ -343,6 +355,85 @@ export function getAvailablePresets(): string[] {
     "two_species_simple_lake", 
     "four_species_mixed",
     "embassytown_scenario",
-    "anathem_scenario"
+    "anathem_scenario",
+    "harsh_twilight",
+    "lush_gaia",
+    "volatile_storm",
   ];
+}
+
+/**
+ * Create a harsh environment scenario
+ */
+function createHarshTwilightScenario(
+  speciesModelMap?: Record<string, string>
+): { world: WorldState; config: SimConfig } {
+  const planet = finalizePlanetEnv(generatePlanetEnv("harsh_twilight"));
+  const resources: ResourceState[] = [{
+    def: { id: "scarce_water", name: "Scarce Water", capacityK: 50, regenRate: 0.05, collapseThreshold: 10, valuePerUnit: 2.0 },
+    amount: 30, collapsed: false
+  }];
+  const species = generateSpeciesForPlanet(planet, 2, "small");
+  if (species.length > 0) species[0].traits.name = "Survivors";
+  if (species.length > 1) species[1].traits.name = "Adaptors";
+  if (speciesModelMap) {
+    for (const s of species) {
+      if (speciesModelMap[s.traits.id]) s.policyBrainId = speciesModelMap[s.traits.id];
+    }
+  }
+  return {
+    world: { timeStep: 0, planet, resources, species, events: [], activeTreaties: [] },
+    config: { maxTimeSteps: 80, harvestNoise: 0.1 }
+  };
+}
+
+/**
+ * Create a lush environment scenario
+ */
+function createLushGaiaScenario(
+  speciesModelMap?: Record<string, string>
+): { world: WorldState; config: SimConfig } {
+  const planet = finalizePlanetEnv(generatePlanetEnv("lush_gaia"));
+  const resources: ResourceState[] = [
+    { def: { id: "abundant_food", name: "Abundant Food", capacityK: 200, regenRate: 0.3, collapseThreshold: 50, valuePerUnit: 0.8 }, amount: 180, collapsed: false },
+    { def: { id: "clean_water", name: "Clean Water", capacityK: 150, regenRate: 0.25, collapseThreshold: 30, valuePerUnit: 1.0 }, amount: 140, collapsed: false }
+  ];
+  const species = generateSpeciesForPlanet(planet, 3, "small");
+  if (species.length > 0) species[0].traits.name = "Prosperity Seekers";
+  if (species.length > 1) species[1].traits.name = "Harmony Keepers";
+  if (species.length > 2) species[2].traits.name = "Growth Enthusiasts";
+  if (speciesModelMap) {
+    for (const s of species) {
+      if (speciesModelMap[s.traits.id]) s.policyBrainId = speciesModelMap[s.traits.id];
+    }
+  }
+  return {
+    world: { timeStep: 0, planet, resources, species, events: [], activeTreaties: [] },
+    config: { maxTimeSteps: 120, harvestNoise: 0.03 }
+  };
+}
+
+/**
+ * Create a volatile storm scenario
+ */
+function createVolatileStormScenario(
+  speciesModelMap?: Record<string, string>
+): { world: WorldState; config: SimConfig } {
+  const planet = finalizePlanetEnv(generatePlanetEnv("volatile_storm"));
+  const resources: ResourceState[] = [{
+    def: { id: "unstable_energy", name: "Unstable Energy", capacityK: 100, regenRate: 0.15, collapseThreshold: 20, valuePerUnit: 1.5 },
+    amount: 70, collapsed: false
+  }];
+  const species = generateSpeciesForPlanet(planet, 2, "small");
+  if (species.length > 0) species[0].traits.name = "Risk Takers";
+  if (species.length > 1) species[1].traits.name = "Cautious Ones";
+  if (speciesModelMap) {
+    for (const s of species) {
+      if (speciesModelMap[s.traits.id]) s.policyBrainId = speciesModelMap[s.traits.id];
+    }
+  }
+  return {
+    world: { timeStep: 0, planet, resources, species, events: [], activeTreaties: [] },
+    config: { maxTimeSteps: 100, harvestNoise: 0.12 }
+  };
 }
