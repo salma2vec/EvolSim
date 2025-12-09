@@ -20,11 +20,21 @@ export function updateResources(
   const harvestNoise = config?.harvestNoise ?? 0.05;
   
   return resources.map((resource) => {
+    // Validate resource state
+    if (resource.amount < 0) {
+      resource.amount = 0;
+    }
+    if (resource.amount > resource.def.capacityK * 1.1) {
+      // Cap at slightly above capacity (allows for temporary overshoot)
+      resource.amount = resource.def.capacityK * 1.1;
+    }
+    
     if (resource.collapsed) {
       // Collapsed resources don't regenerate
+      const harvest = harvests[resource.def.id] || 0;
       return {
         ...resource,
-        amount: Math.max(0, resource.amount - (harvests[resource.def.id] || 0)),
+        amount: Math.max(0, resource.amount - harvest),
       };
     }
     
@@ -32,17 +42,23 @@ export function updateResources(
     const capacity = resource.def.capacityK;
     const regenRate = resource.def.regenRate;
     
+    // Validate capacity and regen rate
+    if (capacity <= 0 || regenRate < 0 || regenRate > 1) {
+      // Invalid resource definition, return unchanged
+      return resource;
+    }
+    
     // Logistic growth: g * R * (1 - R/K)
     const growth = regenRate * currentAmount * (1 - currentAmount / capacity);
     
-    // Harvest with noise
-    const harvest = harvests[resource.def.id] || 0;
-    const harvestWithNoise = harvest * (1 + rng.normal(0, harvestNoise));
+    // Harvest with noise (ensure non-negative)
+    const harvest = Math.max(0, harvests[resource.def.id] || 0);
+    const harvestWithNoise = Math.max(0, harvest * (1 + rng.normal(0, harvestNoise)));
     
     // Environmental shock (volatility)
     const shock = rng.normal(0, planet.volatility * capacity * 0.1);
     
-    // Update amount
+    // Update amount (ensure non-negative)
     const newAmount = Math.max(0, currentAmount + growth - harvestWithNoise + shock);
     
     // Check for collapse
@@ -111,8 +127,22 @@ export function updateSpeciesPopulation(
   stress: number,
   planet: PlanetEnv
 ): SpeciesState {
+  // Validate species state
   if (!species.alive || species.population <= 0) {
     return { ...species, alive: false, population: 0 };
+  }
+  
+  // Validate inputs
+  if (perCapitaResource < 0) perCapitaResource = 0;
+  if (stress < 0) stress = 0;
+  if (stress > 1) stress = 1;
+  
+  // Validate population bounds
+  if (species.population < 0) {
+    species.population = 0;
+  }
+  if (species.population > SPECIES_CONSTANTS.MAX_POPULATION * 1.1) {
+    species.population = SPECIES_CONSTANTS.MAX_POPULATION * 1.1;
   }
   
   // Growth parameters
@@ -132,6 +162,9 @@ export function updateSpeciesPopulation(
   // Cap population growth (can't exceed reasonable limits)
   newPopulation = Math.min(SPECIES_CONSTANTS.MAX_POPULATION, newPopulation);
   
+  // Ensure non-negative
+  newPopulation = Math.max(0, newPopulation);
+  
   // Extinction threshold
   const alive = newPopulation >= SPECIES_CONSTANTS.EXTINCTION_THRESHOLD;
   
@@ -139,10 +172,16 @@ export function updateSpeciesPopulation(
     newPopulation = 0;
   }
   
+  // Validate tech level
+  let techLevel = species.techLevel;
+  if (techLevel < 0) techLevel = 0;
+  if (techLevel > SPECIES_CONSTANTS.MAX_TECH_LEVEL) techLevel = SPECIES_CONSTANTS.MAX_TECH_LEVEL;
+  
   return {
     ...species,
-    population: Math.max(0, newPopulation),
+    population: newPopulation,
     alive,
+    techLevel,
   };
 }
 
