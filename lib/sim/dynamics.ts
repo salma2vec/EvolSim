@@ -1,5 +1,12 @@
 /**
  * Dynamics engine: resource and population updates
+ * 
+ * This module handles the core simulation dynamics including:
+ * - Resource regeneration using logistic growth models
+ * - Species population updates based on resources and stress
+ * - Governance effects on harvest efficiency
+ * 
+ * @module lib/sim/dynamics
  */
 
 import { ResourceState, PlanetEnv, SpeciesState, SpeciesDecision } from "./types";
@@ -8,7 +15,14 @@ import { GOVERNANCE_CONSTANTS, HARVEST_CONSTANTS, SPECIES_CONSTANTS } from "../c
 
 /**
  * Update resources using logistic growth model
- * R_{t+1} = max(0, R_t + g*R_t*(1-R_t/K) - harvest + noise)
+ * 
+ * Formula: R_{t+1} = max(0, R_t + g*R_t*(1-R_t/K) - harvest + noise)
+ * 
+ * @param resources - Current resource states
+ * @param harvests - Total harvest amounts by resource ID
+ * @param planet - Planet environment parameters
+ * @param config - Optional configuration (harvestNoise)
+ * @returns Updated resource states
  */
 export function updateResources(
   resources: ResourceState[],
@@ -74,6 +88,13 @@ export function updateResources(
 
 /**
  * Compute per-capita resource for a species
+ * 
+ * Calculates the total resource value per individual in the species population.
+ * 
+ * @param species - Species state
+ * @param resources - Available resources
+ * @param harvests - Harvest amounts by resource ID
+ * @returns Per-capita resource value
  */
 export function computePerCapitaResource(
   species: SpeciesState,
@@ -95,6 +116,16 @@ export function computePerCapitaResource(
 
 /**
  * Compute stress factor for a species
+ * 
+ * Stress is calculated from:
+ * - Metabolic cost (gravity, temperature)
+ * - Resource scarcity
+ * - Population density
+ * 
+ * @param species - Species state
+ * @param resources - Available resources
+ * @param planet - Planet environment
+ * @returns Stress factor (0-1, higher = more stress)
  */
 export function computeStress(
   species: SpeciesState,
@@ -119,7 +150,14 @@ export function computeStress(
 
 /**
  * Update species population using exponential growth/decline
- * N_{t+1} = N_t * exp(a*resource - b*stress)
+ * 
+ * Formula: N_{t+1} = N_t * exp(a*resource - b*stress)
+ * 
+ * @param species - Current species state
+ * @param perCapitaResource - Resource value per individual
+ * @param stress - Stress factor (0-1)
+ * @param planet - Planet environment
+ * @returns Updated species state
  */
 export function updateSpeciesPopulation(
   species: SpeciesState,
@@ -187,6 +225,12 @@ export function updateSpeciesPopulation(
 
 /**
  * Apply governance effects (internal punishment reduces effective harvest)
+ * 
+ * Strong governance can reduce over-harvesting through internal enforcement.
+ * 
+ * @param decisions - Species decisions with harvest amounts
+ * @param species - Species states
+ * @returns Effective harvest amounts aggregated by resource ID
  */
 export function applyGovernanceEffects(
   decisions: SpeciesDecision[],
