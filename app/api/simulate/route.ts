@@ -53,7 +53,7 @@ async function getDecisions(
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { presetId, numSteps, speciesModelMap, seed } = body;
+    const { presetId, numSteps, speciesModelMap, seed, config: configOverrides } = body;
     
     if (!presetId || !numSteps) {
       return NextResponse.json(
@@ -65,7 +65,8 @@ export async function POST(request: NextRequest) {
     const { world: initialState, config } = createWorldFromPreset(
       presetId,
       speciesModelMap || {},
-      seed
+      seed,
+      configOverrides
     );
     
     const history: WorldState[] = [initialState];

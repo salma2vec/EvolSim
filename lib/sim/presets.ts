@@ -12,28 +12,48 @@ import { setRNGSeed } from "./random";
 export function createWorldFromPreset(
   presetId: string,
   speciesModelMap?: Record<string, string>,
-  seed?: number
+  seed?: number,
+  overrides?: { useLinguisticRegimes?: boolean; useEpistemicOrders?: boolean }
 ): { world: WorldState; config: SimConfig } {
   if (seed !== undefined) {
     setRNGSeed(seed);
   }
   
+  let result: { world: WorldState; config: SimConfig };
+
   switch (presetId) {
     case "two_species_simple_lake":
-      return createTwoSpeciesSimpleLake(speciesModelMap);
+      result = createTwoSpeciesSimpleLake(speciesModelMap);
+      break;
     
     case "four_species_mixed":
-      return createFourSpeciesMixed(speciesModelMap);
+      result = createFourSpeciesMixed(speciesModelMap);
+      break;
 
     case "embassytown_scenario":
-      return createEmbassytownScenario(speciesModelMap);
+      result = createEmbassytownScenario(speciesModelMap);
+      break;
 
     case "anathem_scenario":
-      return createAnathemScenario(speciesModelMap);
+      result = createAnathemScenario(speciesModelMap);
+      break;
     
     default:
-      return createTwoSpeciesSimpleLake(speciesModelMap);
+      result = createTwoSpeciesSimpleLake(speciesModelMap);
+      break;
   }
+
+  // Apply overrides
+  if (overrides) {
+    if (overrides.useLinguisticRegimes !== undefined) {
+      result.config.useLinguisticRegimes = overrides.useLinguisticRegimes;
+    }
+    if (overrides.useEpistemicOrders !== undefined) {
+      result.config.useEpistemicOrders = overrides.useEpistemicOrders;
+    }
+  }
+
+  return result;
 }
 
 /**

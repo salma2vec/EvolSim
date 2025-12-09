@@ -1,5 +1,5 @@
 /**
- * Experiment panel: Right drawer for configuring presets, model assignments
+ * Experiment panel: Right drawer for configuring presets, model assignments, batch run parameters
  */
 
 "use client";
@@ -14,6 +14,10 @@ export default function ExperimentPanel() {
   const [numSteps, setNumSteps] = useState(10);
   const [isRunning, setIsRunning] = useState(false);
   
+  // Advanced options
+  const [useLinguisticRegimes, setUseLinguisticRegimes] = useState(false);
+  const [useEpistemicOrders, setUseEpistemicOrders] = useState(false);
+  
   const presets = getAvailablePresets();
   
   const handleRun = async () => {
@@ -26,6 +30,10 @@ export default function ExperimentPanel() {
           presetId,
           numSteps,
           seed: Date.now(),
+          config: {
+            useLinguisticRegimes,
+            useEpistemicOrders,
+          }
         }),
       });
       
@@ -41,16 +49,16 @@ export default function ExperimentPanel() {
   };
   
   return (
-    <div className="border border-border p-4 bg-background">
-      <h2 className="text-xs font-bold tracking-widest uppercase mb-4 opacity-50 border-b border-border pb-2">Configuration</h2>
+    <div className="bg-surface p-4 rounded border border-muted">
+      <h2 className="text-xl font-bold mb-4 text-white">Experiment Setup</h2>
       
-      <div className="space-y-4 font-mono text-xs">
+      <div className="space-y-4">
         <div>
-          <label className="block opacity-70 mb-2 uppercase">Scenario Preset</label>
+          <label className="block text-sm text-gray-400 mb-2">Preset</label>
           <select
             value={presetId}
             onChange={(e) => setPresetId(e.target.value)}
-            className="w-full bg-background text-foreground px-3 py-2 border border-border focus:outline-none focus:border-accent"
+            className="w-full bg-background text-white px-3 py-2 rounded border border-muted"
           >
             {presets.map((p) => (
               <option key={p} value={p}>
@@ -61,26 +69,60 @@ export default function ExperimentPanel() {
         </div>
         
         <div>
-          <label className="block opacity-70 mb-2 uppercase">Epoch Limit</label>
+          <label className="block text-sm text-gray-400 mb-2">Number of Steps</label>
           <input
             type="number"
             value={numSteps}
             onChange={(e) => setNumSteps(Number(e.target.value))}
             min={1}
             max={100}
-            className="w-full bg-background text-foreground px-3 py-2 border border-border focus:outline-none focus:border-accent"
+            className="w-full bg-background text-white px-3 py-2 rounded border border-muted"
           />
+        </div>
+
+        {/* Advanced Toggles */}
+        <div className="pt-2 border-t border-muted/50">
+          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">
+            Advanced Mechanics
+          </label>
+          
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-300">Linguistic Regimes</span>
+              <button
+                onClick={() => setUseLinguisticRegimes(!useLinguisticRegimes)}
+                className={`w-10 h-5 rounded-full relative transition-colors ${useLinguisticRegimes ? "bg-accent" : "bg-muted"}`}
+              >
+                <div className={`w-3 h-3 bg-white rounded-full absolute top-1 transition-all ${useLinguisticRegimes ? "left-6" : "left-1"}`} />
+              </button>
+            </div>
+            <p className="text-xs text-gray-500">
+              Enforce constraints on how species communicate (Embassytown).
+            </p>
+
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-300">Epistemic Orders</span>
+              <button
+                onClick={() => setUseEpistemicOrders(!useEpistemicOrders)}
+                className={`w-10 h-5 rounded-full relative transition-colors ${useEpistemicOrders ? "bg-accent" : "bg-muted"}`}
+              >
+                <div className={`w-3 h-3 bg-white rounded-full absolute top-1 transition-all ${useEpistemicOrders ? "left-6" : "left-1"}`} />
+              </button>
+            </div>
+            <p className="text-xs text-gray-500">
+              Restrict decision frequency and contact windows (Anathem).
+            </p>
+          </div>
         </div>
         
         <button
           onClick={handleRun}
           disabled={isRunning}
-          className="w-full bg-foreground text-background px-4 py-3 hover:bg-accent hover:text-foreground disabled:opacity-50 transition-colors uppercase font-bold tracking-wider"
+          className="w-full bg-primary text-white px-4 py-2 rounded hover:bg-primary/80 disabled:opacity-50 mt-4"
         >
-          {isRunning ? "Running Simulation..." : "Initialize Sequence"}
+          {isRunning ? "Running..." : "Run Simulation"}
         </button>
       </div>
     </div>
   );
 }
-
