@@ -35,39 +35,141 @@ export function computeCollapseStats(history: WorldState[]): {
 
 /**
  * Compute cooperation index (deviation from max sustainable yield)
+ * Enhanced version that tracks actual harvest behavior and treaty adherence
  */
 export function computeCooperationIndex(history: WorldState[]): Record<string, number> {
-  const speciesIndices: Record<string, { totalDeviation: number; count: number }> = {};
+  const speciesIndices: Record<string, { 
+    totalDeviation: number; 
+    count: number;
+    treatyViolations: number;
+    treatyAdherence: number;
+  }> = {};
   
-  for (const state of history) {
-    // Estimate harvests from events (simplified - in real implementation, track actual harvests)
-    // For now, we'll compute based on resource changes and defection events
+  // Track treaty violations and adherence
+  const treatyViolationsBySpecies: Record<string, number> = {};
+  const treatyAdherenceBySpecies: Record<string, { total: number; kept: number }> = {};
+  
+  for (let i = 0; i < history.length; i++) {
+    const state = history[i];
     
+    // Track defections from events
     for (const event of state.events) {
       if (event.type === "DEFECT" && event.data?.speciesId) {
         const speciesId = event.data.speciesId as string;
         if (!speciesIndices[speciesId]) {
-          speciesIndices[speciesId] = { totalDeviation: 0, count: 0 };
+          speciesIndices[speciesId] = { 
+            totalDeviation: 0, 
+            count: 0,
+            treatyViolations: 0,
+            treatyAdherence: 0,
+          };
         }
+        
+        // Check if this is a treaty violation
+        if (event.data.treatyId) {
+          speciesIndices[speciesId].treatyViolations += 1;
+          treatyViolationsBySpecies[speciesId] = (treatyViolationsBySpecies[speciesId] || 0) + 1;
+        }
+        
         // Defection indicates low cooperation
         speciesIndices[speciesId].totalDeviation += 1;
         speciesIndices[speciesId].count += 1;
       }
+      
+      // Track treaty signings
+      if (event.type === "TREATY" && event.data?.speciesId) {
+        const speciesId = event.data.speciesId as string;
+        if (!treatyAdherenceBySpecies[speciesId]) {
+          treatyAdherenceBySpecies[speciesId] = { total: 0, kept: 0 };
+        }
+        treatyAdherenceBySpecies[speciesId].total += 1;
+      }
     }
+    
+    // Track resource sustainability by comparing resource levels
+    // If resources are declining faster than expected, species may be over-harvesting
+    if (i > 0) {
+      const prevState = history[i - 1];
+      for (const resource of state.resources) {
+        const prevResource = prevState.resources.find(r => r.def.id === resource.def.id);
+        if (!prevResource) continue;
+        
+        // Calculate expected regeneration
+        const expectedRegen = prevResource.def.regenRate * prevResource.amount * 
+          (1 - prevResource.amount / prevResource.def.capacityK);
+        const actualChange = resource.amount - prevResource.amount;
+        const harvestEstimate = expectedRegen - actualChange;
+        
+        // If harvest is significantly above sustainable yield, it's a defection
+        const msy = resource.def.capacityK * 0.5;
+        const sustainableHarvest = msy * 0.1;
+        
+        if (harvestEstimate > sustainableHarvest * 1.5) {
+          // Distribute blame to all species (simplified - in reality would track per-species)
+          for (const species of state.species) {
+            if (!speciesIndices[species.traits.id]) {
+              speciesIndices[species.traits.id] = { 
+                totalDeviation: 0, 
+                count: 0,
+                treatyViolations: 0,
+                treatyAdherence: 0,
+              };
+            }
+            // Small penalty for being in a system with over-harvesting
+            speciesIndices[species.traits.id].totalDeviation += 0.1;
+            speciesIndices[species.traits.id].count += 1;
+          }
+        }
+      }
+    }
+  }
+  
+  // Calculate treaty adherence scores
+  for (const [speciesId, adherence] of Object.entries(treatyAdherenceBySpecies)) {
+    if (!speciesIndices[speciesId]) {
+      speciesIndices[speciesId] = { 
+        totalDeviation: 0, 
+        count: 0,
+        treatyViolations: 0,
+        treatyAdherence: 0,
+      };
+    }
+    const violations = treatyViolationsBySpecies[speciesId] || 0;
+    const adherenceRate = adherence.total > 0 
+      ? (adherence.total - violations) / adherence.total 
+      : 1.0;
+    speciesIndices[speciesId].treatyAdherence = adherenceRate;
   }
   
   // Convert to cooperation index (1 = fully cooperative, 0 = fully defective)
   const result: Record<string, number> = {};
   for (const [speciesId, data] of Object.entries(speciesIndices)) {
-    // More defections = lower cooperation index
-    result[speciesId] = Math.max(0, 1 - (data.totalDeviation / Math.max(1, data.count * 0.5)));
+    // Base score from defection frequency
+    const defectionPenalty = data.count > 0 
+      ? Math.min(1.0, data.totalDeviation / Math.max(1, data.count * 0.5))
+      : 0;
+    
+    // Treaty violation penalty
+    const violationPenalty = data.treatyViolations * 0.2;
+    
+    // Treaty adherence bonus
+    const adherenceBonus = data.treatyAdherence * 0.2;
+    
+    // Combine: start at 1.0, subtract penalties, add bonuses
+    const cooperationScore = Math.max(0, Math.min(1.0, 
+      1.0 - defectionPenalty - violationPenalty + adherenceBonus
+    ));
+    
+    result[speciesId] = cooperationScore;
   }
   
   // Initialize all species with default cooperation index
   if (history.length > 0) {
     for (const species of history[history.length - 1].species) {
       if (!result[species.traits.id]) {
-        result[species.traits.id] = 0.7; // Default moderate cooperation
+        // Default based on species traits
+        const baseCooperation = species.traits.stabilityPreference * 0.5 + 0.5;
+        result[species.traits.id] = baseCooperation;
       }
     }
   }

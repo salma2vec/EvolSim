@@ -77,15 +77,37 @@ export class SeededRNG {
 
 // Global RNG instance (can be seeded via SimConfig)
 let globalRNG: SeededRNG | null = null;
+let currentSeed: number | null = null;
 
 export function getRNG(seed?: number): SeededRNG {
-  if (globalRNG === null || seed !== undefined) {
-    globalRNG = new SeededRNG(seed ?? Date.now());
+  // If seed is provided, always create a new RNG
+  if (seed !== undefined) {
+    globalRNG = new SeededRNG(seed);
+    currentSeed = seed;
+    return globalRNG;
   }
+  
+  // If no global RNG exists, create one with current time
+  if (globalRNG === null) {
+    const defaultSeed = Date.now();
+    globalRNG = new SeededRNG(defaultSeed);
+    currentSeed = defaultSeed;
+  }
+  
   return globalRNG;
 }
 
 export function setRNGSeed(seed: number): void {
   globalRNG = new SeededRNG(seed);
+  currentSeed = seed;
+}
+
+export function getCurrentSeed(): number | null {
+  return currentSeed;
+}
+
+export function resetRNG(): void {
+  globalRNG = null;
+  currentSeed = null;
 }
 

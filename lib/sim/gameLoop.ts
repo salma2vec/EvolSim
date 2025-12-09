@@ -16,6 +16,7 @@ import { updateResources, updateSpeciesPopulation, computePerCapitaResource, com
 import { getRNG } from "./random";
 import { isContactWindow, getDecisionInterval } from "./orders";
 import { validateTreatyText, interpretTreatyText } from "./language";
+import { HARVEST_CONSTANTS } from "../config";
 
 /**
  * Build observations for a species (noisy estimates of world state)
@@ -149,11 +150,11 @@ export function detectEvents(
       const resource = newState.resources.find((r) => r.def.id === resourceId);
       if (!resource) continue;
       
-      // Estimate max sustainable yield (simplified: 50% of capacity)
-      const msy = resource.def.capacityK * 0.5;
-      const sustainableHarvest = msy * 0.1; // 10% of MSY per epoch is sustainable
+      // Estimate max sustainable yield
+      const msy = resource.def.capacityK * HARVEST_CONSTANTS.MSY_RATIO;
+      const sustainableHarvest = msy * HARVEST_CONSTANTS.SUSTAINABLE_YIELD_RATIO;
       
-      if (harvest > sustainableHarvest * 1.5) {
+      if (harvest > sustainableHarvest * HARVEST_CONSTANTS.DEFECTION_THRESHOLD_MULTIPLIER) {
         events.push({
           timeStep: newState.timeStep,
           type: "DEFECT",
@@ -295,7 +296,12 @@ export async function stepWorld(
           
           if (isValidLanguage) {
             // Create Treaty
-            const constraints = interpretTreatyText(decision.treatyProposal.text, proposer.traits.linguisticRegime);
+            const availableResources = state.resources.map(r => ({ id: r.def.id, name: r.def.name }));
+            const constraints = interpretTreatyText(
+              decision.treatyProposal.text, 
+              proposer.traits.linguisticRegime,
+              availableResources
+            );
             const treaty: Treaty = {
               id: `treaty-${state.timeStep}-${rng.randomInt(1000, 9999)}`,
               signatories: [proposer.traits.id, target.traits.id],

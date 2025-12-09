@@ -91,39 +91,99 @@ export function validateTreatyText(text: string, regime: LinguisticRegime | unde
 
 /**
  * Interpret treaty text into machine-readable constraints
- * (Simplified NLP - mostly heuristic extraction)
+ * Enhanced NLP parsing for all resource types
  */
-export function interpretTreatyText(text: string, regime: LinguisticRegime | undefined): { 
+export function interpretTreatyText(
+  text: string, 
+  regime: LinguisticRegime | undefined,
+  availableResources?: Array<{ id: string; name: string }>
+): { 
   maxHarvestByResource?: Record<string, number>;
   minCooperationIndex?: number;
 } {
   const result: { maxHarvestByResource?: Record<string, number>; minCooperationIndex?: number } = {};
+  const lowerText = text.toLowerCase();
   
   // Extract numbers
   const numbers = text.match(/\d+(\.\d+)?/g)?.map(Number) || [];
   
-  // Simple heuristic: if we see "fish" and a number, assume it's a limit
-  if (text.toLowerCase().includes("fish") && numbers.length > 0) {
-    result.maxHarvestByResource = { "fish_oceans": numbers[0] };
-  } else if (numbers.length > 0) {
-    // If no specific resource named, maybe it's a general cap? 
-    // For v1, let's just guess it applies to the first/main resource or cooperation index
-    // If the number is small (0-1), maybe it's cooperation index
-    if (numbers[0] <= 1.0) {
-      result.minCooperationIndex = numbers[0];
-    } else {
-      // If large, assume generic harvest cap (will need mapping to actual resource IDs in game loop context)
-      // We'll leave it empty here and let the game loop logic try to attach it if context allows
-      // or just treat it as "uninterpreted" which means it's purely reputation-based.
+  // Resource name mappings (common aliases)
+  const resourceKeywords: Record<string, string[]> = {
+    fish_oceans: ["fish", "ocean", "marine", "sea", "aquatic"],
+    atmospheric_carbon: ["carbon", "atmosphere", "atmospheric", "co2", "air"],
+    mineral_deposits: ["mineral", "ore", "deposit", "mine", "rock"],
+    energy_flux: ["energy", "flux", "solar", "power", "radiation"],
+    exotic_matter: ["exotic", "matter", "substance", "material"],
+    knowledge_substrate: ["knowledge", "substrate", "data", "information"],
+  };
+  
+  // Try to match resources by keywords
+  if (availableResources) {
+    for (const resource of availableResources) {
+      const keywords = resourceKeywords[resource.id] || [resource.name.toLowerCase()];
+      const hasKeyword = keywords.some(keyword => lowerText.includes(keyword));
+      
+      if (hasKeyword && numbers.length > 0) {
+        // Find number near the keyword (within 50 chars)
+        const keywordIndex = lowerText.indexOf(keywords.find(k => lowerText.includes(k)) || "");
+        const nearbyNumbers = numbers.filter(num => {
+          const numIndex = lowerText.indexOf(num.toString());
+          return Math.abs(numIndex - keywordIndex) < 50;
+        });
+        
+        if (nearbyNumbers.length > 0) {
+          if (!result.maxHarvestByResource) {
+            result.maxHarvestByResource = {};
+          }
+          result.maxHarvestByResource[resource.id] = nearbyNumbers[0];
+        }
+      }
+    }
+  } else {
+    // Fallback: try common resource names
+    for (const [resourceId, keywords] of Object.entries(resourceKeywords)) {
+      const hasKeyword = keywords.some(keyword => lowerText.includes(keyword));
+      if (hasKeyword && numbers.length > 0) {
+        if (!result.maxHarvestByResource) {
+          result.maxHarvestByResource = {};
+        }
+        result.maxHarvestByResource[resourceId] = numbers[0];
+        break; // Use first match
+      }
+    }
+  }
+  
+  // If no resource-specific limits found, check for general limits
+  if (!result.maxHarvestByResource && numbers.length > 0) {
+    // Look for comparison operators or limit keywords
+    const hasLimitKeyword = /limit|max|maximum|cap|bound|threshold/i.test(text);
+    const hasComparison = /[<>=≤≥]/.test(text);
+    
+    if (hasLimitKeyword || hasComparison) {
+      // If number is between 0-100, might be harvest limit
+      // If number is 0-1, might be cooperation index
+      const firstNumber = numbers[0];
+      if (firstNumber <= 1.0 && !hasLimitKeyword) {
+        result.minCooperationIndex = firstNumber;
+      } else if (firstNumber <= 100) {
+        // Generic harvest limit - apply to first resource if available
+        if (availableResources && availableResources.length > 0) {
+          if (!result.maxHarvestByResource) {
+            result.maxHarvestByResource = {};
+          }
+          result.maxHarvestByResource[availableResources[0].id] = firstNumber;
+        }
+      }
     }
   }
 
-  // MetaphorRich noise: sometimes misinterpret
+  // MetaphorRich noise: sometimes misinterpret (30% chance)
   if (regime === "MetaphorRich" && Math.random() < 0.3) {
     if (result.maxHarvestByResource) {
       for (const key in result.maxHarvestByResource) {
         // 30% chance to interpret the limit as higher (looser) or lower (stricter)
-        result.maxHarvestByResource[key] *= (0.8 + Math.random() * 0.4);
+        const noiseFactor = 0.8 + Math.random() * 0.4; // 0.8 to 1.2
+        result.maxHarvestByResource[key] *= noiseFactor;
       }
     }
   }

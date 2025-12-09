@@ -4,6 +4,7 @@
 
 import { ResourceState, PlanetEnv, SpeciesState, SpeciesDecision } from "./types";
 import { getRNG } from "./random";
+import { GOVERNANCE_CONSTANTS, HARVEST_CONSTANTS, SPECIES_CONSTANTS } from "../config";
 
 /**
  * Update resources using logistic growth model
@@ -129,12 +130,10 @@ export function updateSpeciesPopulation(
   newPopulation *= (0.8 + planet.productivity * 0.4);
   
   // Cap population growth (can't exceed reasonable limits)
-  const maxPopulation = 100000000; // 100 million
-  newPopulation = Math.min(maxPopulation, newPopulation);
+  newPopulation = Math.min(SPECIES_CONSTANTS.MAX_POPULATION, newPopulation);
   
   // Extinction threshold
-  const extinctionThreshold = 1000;
-  const alive = newPopulation >= extinctionThreshold;
+  const alive = newPopulation >= SPECIES_CONSTANTS.EXTINCTION_THRESHOLD;
   
   if (!alive) {
     newPopulation = 0;
@@ -170,13 +169,17 @@ export function applyGovernanceEffects(
       const punishmentStrength = decision.governance.punishmentStrength;
       const monitoringInvestment = decision.governance.monitoringInvestment;
       
-      // Estimate "sustainable" harvest (simplified: assume 50% of capacity is sustainable)
-      // If harvest exceeds this and governance is active, reduce it
+      // Calculate governance effectiveness
       const governanceEffectiveness = punishmentStrength * monitoringInvestment;
       
-      if (governanceEffectiveness > 0.3 && harvest > 50) {
+      // If governance is effective and harvest exceeds threshold, apply reduction
+      if (
+        governanceEffectiveness > GOVERNANCE_CONSTANTS.EFFECTIVENESS_THRESHOLD &&
+        harvest > GOVERNANCE_CONSTANTS.HARVEST_THRESHOLD_FOR_GOVERNANCE
+      ) {
         // Reduce harvest proportionally to governance strength
-        const reduction = (harvest - 50) * governanceEffectiveness * 0.5;
+        const excessHarvest = harvest - GOVERNANCE_CONSTANTS.HARVEST_THRESHOLD_FOR_GOVERNANCE;
+        const reduction = excessHarvest * governanceEffectiveness * GOVERNANCE_CONSTANTS.HARVEST_REDUCTION_FACTOR;
         effectiveHarvest = harvest - reduction;
       }
       
