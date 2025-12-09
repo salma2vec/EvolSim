@@ -7,6 +7,8 @@
 import { useState } from "react";
 import { useSimStore } from "@/lib/store";
 import { getAvailablePresets } from "@/lib/sim/presets";
+import { useKeyboardShortcuts } from "@/lib/hooks/useKeyboardShortcuts";
+import ExportButton from "./ExportButton";
 
 export default function WorldControls() {
   const { isPlaying, setIsPlaying, setHistory, reset, currentTimeStep, setCurrentTimeStep, history } = useSimStore();
@@ -14,6 +16,27 @@ export default function WorldControls() {
   const [isRunning, setIsRunning] = useState(false);
   
   const presets = getAvailablePresets();
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts([
+    {
+      key: " ",
+      action: () => !isRunning && handlePlay(),
+      description: "Play/Pause",
+    },
+    {
+      key: "s",
+      ctrl: true,
+      action: () => !isRunning && handleStep(),
+      description: "Step",
+    },
+    {
+      key: "r",
+      ctrl: true,
+      action: handleReset,
+      description: "Reset",
+    },
+  ]);
   
   const handleReset = async () => {
     reset();
@@ -116,6 +139,8 @@ export default function WorldControls() {
         >
           Reset
         </button>
+        
+        <ExportButton />
       </div>
       
       {history.length > 0 && (
