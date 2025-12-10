@@ -61,6 +61,46 @@ npm run dev
 - Or do they use extra reasoning to find more sophisticated ways to strip-mine the commons?
 - How does model capability affect collapse probability and average welfare?
 
+## Development
+
+### Running Tests
+
+```bash
+npm test
+npm run test:watch
+npm run test:coverage
+```
+
+### Code Quality
+
+```bash
+npm run lint
+```
+
+### Building for Production
+
+```bash
+npm run build
+npm start
+```
+
+## Recent Improvements
+
+- ✅ Comprehensive error handling and validation
+- ✅ TypeScript type safety improvements
+- ✅ Structured logging system
+- ✅ Error boundaries for React components
+- ✅ Export/import functionality
+- ✅ Batch experiment runner
+- ✅ Enhanced metrics computation
+- ✅ Improved treaty interpretation
+- ✅ Performance optimizations
+- ✅ Accessibility improvements
+- ✅ Keyboard shortcuts
+- ✅ Theme toggle
+- ✅ Comprehensive test suite
+- ✅ API documentation
+
 ## License
 
 ISC
