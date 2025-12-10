@@ -1,5 +1,18 @@
 /**
  * API route for running simulations
+ * 
+ * POST /api/simulate
+ * 
+ * Request body:
+ * - presetId: string (required) - Preset scenario ID
+ * - numSteps: number (required) - Number of simulation steps
+ * - speciesModelMap?: Record<string, string> - Model assignments per species
+ * - seed?: number - Random seed for reproducibility
+ * - config?: Partial<SimConfig> - Configuration overrides
+ * 
+ * Response:
+ * - history: WorldState[] - Simulation history
+ * - metrics: { collapseStats, cooperationIndex, speciesOutcomes }
  */
 
 import { NextRequest, NextResponse } from "next/server";
