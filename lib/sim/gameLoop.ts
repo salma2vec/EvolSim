@@ -14,12 +14,17 @@ import {
 } from "./types";
 import { updateResources, updateSpeciesPopulation, computePerCapitaResource, computeStress, applyGovernanceEffects } from "./dynamics";
 import { getRNG } from "./random";
-import { isContactWindow, getDecisionInterval } from "./orders";
-import { validateTreatyText, interpretTreatyText } from "./language";
+import { isContactWindow, buildInformationState, getMemoryLength, getObservationBandwidth } from "./orders";
+import { validateTreatyText } from "./language";
 import { HARVEST_CONSTANTS } from "../config";
+import { shouldUseBaselineAgent, generateBaselineDecision, getBaselinePolicy } from "./baselineAgents";
+import type { BaselinePolicy } from "./baselineAgents";
+import { assertWorldState, sanitizeDecision, assertDecisionValid } from "./guards";
 
 /**
  * Build observations for a species (noisy estimates of world state)
+ * 
+ * Filtered by InformationState based on epistemic order.
  */
 export function buildObservation(
   species: SpeciesState,
@@ -28,11 +33,28 @@ export function buildObservation(
   config: SimConfig
 ): SpeciesObservation {
   const rng = getRNG();
-  const historyLength = config.historyLength ?? 5;
   
-  // Noisy resource estimates
+  // Build information state based on epistemic order
+  const memoryLength = getMemoryLength(species.traits.epistemicOrder);
+  const informationState = buildInformationState(
+    species.traits.epistemicOrder,
+    world.timeStep,
+    history,
+    memoryLength
+  );
+  
+  const observationBandwidth = informationState.observationBandwidth;
+  const historyLength = config.historyLength ?? memoryLength;
+  
+  // Noisy resource estimates (filtered by observation bandwidth)
   const resourceEstimates = world.resources.map((resource) => {
-    const noise = rng.normal(0, species.traits.perceptionNoise * resource.def.capacityK);
+    let noise = rng.normal(0, species.traits.perceptionNoise * resource.def.capacityK);
+    
+    // If summarized_global, add more noise
+    if (observationBandwidth === "summarized_global") {
+      noise += rng.normal(0, resource.def.capacityK * 0.2);
+    }
+    
     const estimatedAmount = Math.max(0, resource.amount + noise);
     const uncertainty = species.traits.perceptionNoise * resource.def.capacityK;
     
@@ -43,11 +65,17 @@ export function buildObservation(
     };
   });
   
-  // Other species (noisy summaries)
+  // Other species (noisy summaries, filtered by observation bandwidth)
   const otherSpecies = world.species
     .filter((s) => s.traits.id !== species.traits.id && s.alive)
     .map((s) => {
-      const popNoise = rng.normal(0, s.population * 0.1);
+      let popNoise = rng.normal(0, s.population * 0.1);
+      
+      // If summarized_global, more noise
+      if (observationBandwidth === "summarized_global") {
+        popNoise += rng.normal(0, s.population * 0.2);
+      }
+      
       const estimatedPopulation = Math.max(0, s.population + popNoise);
       
       // Aggression proxy: infer from recent behavior (simplified)
@@ -60,30 +88,35 @@ export function buildObservation(
       };
     });
   
-  // Recent events involving this species
-  const recentEvents = world.events.filter((e) => {
+  // Recent events (filtered by memory length and summarization)
+  const recentEvents: SimEvent[] = [];
+  const startStep = Math.max(0, world.timeStep - historyLength);
+  
+  for (let i = Math.max(0, history.length - historyLength); i < history.length; i++) {
+    const pastState = history[i];
+    if (pastState.timeStep >= startStep) {
+      const relevantEvents = pastState.events.filter((e) => {
+        return (
+          e.data?.speciesId === species.traits.id ||
+          e.data?.otherSpeciesId === species.traits.id ||
+          e.type === "COLLAPSE" ||
+          e.type === "CONCLAVE"
+        );
+      });
+      recentEvents.push(...relevantEvents);
+    }
+  }
+  
+  // Add current events
+  const currentEvents = world.events.filter((e) => {
     return (
       e.data?.speciesId === species.traits.id ||
       e.data?.otherSpeciesId === species.traits.id ||
-      e.type === "COLLAPSE" || // Global events
+      e.type === "COLLAPSE" ||
       e.type === "CONCLAVE"
     );
   });
-  
-  // Also include events from recent history
-  const recentHistoryEvents: SimEvent[] = [];
-  for (let i = Math.max(0, history.length - historyLength); i < history.length; i++) {
-    const pastState = history[i];
-    const relevantEvents = pastState.events.filter((e) => {
-      return (
-        e.data?.speciesId === species.traits.id ||
-        e.data?.otherSpeciesId === species.traits.id ||
-        e.type === "COLLAPSE" ||
-        e.type === "CONCLAVE"
-      );
-    });
-    recentHistoryEvents.push(...relevantEvents);
-  }
+  recentEvents.push(...currentEvents);
 
   // Active treaties
   const activeTreaties = world.activeTreaties.filter(t => t.signatories.includes(species.traits.id));
@@ -95,9 +128,10 @@ export function buildObservation(
     ownPopulation: species.population,
     ownTechLevel: species.techLevel,
     otherSpecies,
-    recentEvents: [...recentHistoryEvents, ...recentEvents].slice(-historyLength * 2),
+    recentEvents: recentEvents.slice(-historyLength * 2),
     activeTreaties,
-    isConclave: isContactWindow(species.traits.epistemicOrder, world.timeStep),
+    informationState,
+    memorySummary: informationState.memorySummary,
   };
 }
 
@@ -224,11 +258,11 @@ export async function stepWorld(
       observations.push(obs);
 
       // Emit CONCLAVE event if it's a rare window
-      if (config.useEpistemicOrders && species.traits.epistemicOrder && species.traits.epistemicOrder !== "FastSecular") {
+      if (config.useEpistemicOrders && species.traits.epistemicOrder && species.traits.epistemicOrder === "CloisteredOrder") {
         events.push({
           timeStep: state.timeStep,
           type: "CONCLAVE",
-          message: `Order "${species.traits.name}" enters conclave.`,
+          message: `Species "${species.traits.name}" enters conclave.`,
           data: { speciesId: species.traits.id }
         });
       }
@@ -237,126 +271,163 @@ export async function stepWorld(
   
   // 2. Get decisions only for acting species
   const newDecisions = await getDecisions(observations);
+  
+  // Sanitize and validate all decisions
+  const sanitizedDecisions = newDecisions.map(d => sanitizeDecision(d));
+  for (const decision of sanitizedDecisions) {
+    const species = state.species.find(s => s.traits.id === decision.speciesId);
+    if (species) {
+      assertDecisionValid(decision, species);
+    }
+  }
 
   // Merge new decisions with previous decisions for non-acting species (persistence)
-  // Or assume non-acting species continue previous behavior?
-  // For simplicity, let's assume non-acting species harvest 0 or continue previous harvest?
-  // Let's implement persistence: look up last decision from history if available.
-  // Actually, easiest is to assume "maintenance mode" (same harvest as last time) or 0.
-  // We'll construct a full list of decisions for this step.
-  
+  // Non-acting species maintain their previous harvest pattern (idle for simplicity)
   const allDecisions: SpeciesDecision[] = [];
 
   for (const species of state.species) {
     if (!species.alive) continue;
 
-    const newDecision = newDecisions.find(d => d.speciesId === species.traits.id);
+    const newDecision = sanitizedDecisions.find(d => d.speciesId === species.traits.id);
     if (newDecision) {
       allDecisions.push(newDecision);
-    } else {
-      // Find last decision from history
-      // Simplified: if not acting, idle (harvest 0) to avoid "zombie overharvest"
-      // Alternatively, persist last harvest. Let's persist last harvest for continuity.
-      let lastHarvest = {};
-      let lastRelations = {};
-      let lastGovernance = { punishmentStrength: 0.1, monitoringInvestment: 0.1 };
-
-      if (history.length > 0) {
-        // This is tricky without storing decisions directly in state.
-        // We'll rely on species state having some persistence if we added it, but we didn't.
-        // Fallback: idle behavior for cloistered phases.
-        lastHarvest = {}; // Idle
-      }
       
+      // Emit HARVEST events for transparency
+      for (const [resId, amount] of Object.entries(newDecision.harvest)) {
+        if (amount > 0) {
+          events.push({
+            timeStep: state.timeStep,
+            type: "HARVEST",
+            message: `${species.traits.name} harvested ${amount.toFixed(1)} units of ${resId}`,
+            data: {
+              speciesId: species.traits.id,
+              resourceId: resId,
+              harvestAmount: amount
+            }
+          });
+        }
+      }
+    } else {
+      // Non-acting species: idle (harvest 0) to avoid "zombie overharvest"
+      // This is deterministic and explicit
       allDecisions.push({
         speciesId: species.traits.id,
-        harvest: lastHarvest,
+        harvest: {}, // Explicitly idle
         relations: species.relations, // Keep current relations
         governance: species.governance, // Keep current governance
       });
     }
   }
 
-  // 3. Process Treaty Proposals
+  // 3. Process Treaty Proposals (if treaties enabled)
   const newTreaties: Treaty[] = [];
   
-  for (const decision of newDecisions) {
-    if (decision.treatyProposal) {
-      const proposer = state.species.find(s => s.traits.id === decision.speciesId);
-      const target = state.species.find(s => s.traits.id === decision.treatyProposal?.targetSpeciesId);
-      
-      if (proposer && target && target.alive) {
-        // Check if target is in contact window (can receive?)
-        // If not, proposal fails/is ignored
-        const targetOpen = !config.useEpistemicOrders || isContactWindow(target.traits.epistemicOrder, state.timeStep);
+  if (config.useTreaties !== false) {
+    for (const decision of newDecisions) {
+      if (decision.treatyProposal) {
+        const proposer = state.species.find(s => s.traits.id === decision.speciesId);
+        const target = state.species.find(s => s.traits.id === decision.treatyProposal?.targetSpeciesId);
         
-        if (targetOpen) {
-          // Validate Linguistic Regime
-          const isValidLanguage = !config.useLinguisticRegimes || validateTreatyText(decision.treatyProposal.text, proposer.traits.linguisticRegime);
+        if (proposer && target && target.alive) {
+          // Check if target is in contact window (can receive?)
+          const targetOpen = !config.useEpistemicOrders || isContactWindow(target.traits.epistemicOrder, state.timeStep);
           
-          if (isValidLanguage) {
-            // Create Treaty
+          if (targetOpen) {
+            // Validate Linguistic Regime (parse-time rejection)
             const availableResources = state.resources.map(r => ({ id: r.def.id, name: r.def.name }));
-            const constraints = interpretTreatyText(
-              decision.treatyProposal.text, 
-              proposer.traits.linguisticRegime,
-              availableResources
-            );
-            const treaty: Treaty = {
-              id: `treaty-${state.timeStep}-${rng.randomInt(1000, 9999)}`,
-              signatories: [proposer.traits.id, target.traits.id],
-              epochSigned: state.timeStep,
-              text: decision.treatyProposal.text,
-              interpretedConstraints: constraints,
-              expiresAt: state.timeStep + 20, // Default duration
-              violated: false,
-            };
-            newTreaties.push(treaty);
+            const validation = config.useLinguisticRegimes 
+              ? validateTreatyText(decision.treatyProposal.text, proposer.traits.linguisticRegime, availableResources)
+              : { valid: true, parsedConstraints: {} };
             
-            events.push({
-              timeStep: state.timeStep,
-              type: "TREATY",
-              message: `Treaty signed: "${treaty.text.substring(0, 50)}..."`,
-              data: {
-                speciesId: proposer.traits.id,
-                otherSpeciesId: target.traits.id,
-                treatyId: treaty.id
+            if (validation.valid && validation.parsedConstraints) {
+              // Create Treaty
+              const treaty: Treaty = {
+                id: `treaty-${state.timeStep}-${rng.randomInt(1000, 9999)}`,
+                signatories: [proposer.traits.id, target.traits.id],
+                epochSigned: state.timeStep,
+                text: decision.treatyProposal.text,
+                interpretedConstraints: validation.parsedConstraints,
+                expiresAt: state.timeStep + 20, // Default duration
+                violated: false,
+              };
+              newTreaties.push(treaty);
+              
+              events.push({
+                timeStep: state.timeStep,
+                type: "TREATY",
+                message: `Treaty signed: "${treaty.text.substring(0, 50)}..."`,
+                data: {
+                  speciesId: proposer.traits.id,
+                  otherSpeciesId: target.traits.id,
+                  treatyId: treaty.id
+                }
+              });
+              
+              // Track stated intent for deception gap
+              if (decision.treatyProposal.statedConstraints) {
+                // Store in decision for later comparison
+                decision.treatyProposal.statedConstraints = validation.parsedConstraints.maxHarvestByResource 
+                  ? { maxHarvestByResource: validation.parsedConstraints.maxHarvestByResource }
+                  : undefined;
               }
-            });
-          } else {
-            events.push({
-              timeStep: state.timeStep,
-              type: "LANGUAGE_SHIFT", // Reusing event type for failure
-              message: `Treaty proposal from ${proposer.traits.name} failed linguistic validation.`,
-              data: { speciesId: proposer.traits.id }
-            });
+            } else {
+              events.push({
+                timeStep: state.timeStep,
+                type: "LANGUAGE_REJECTED",
+                message: `Treaty proposal from ${proposer.traits.name} failed linguistic validation: ${validation.reason || "Invalid format"}`,
+                data: { speciesId: proposer.traits.id }
+              });
+            }
           }
         }
       }
     }
   }
 
-  // 4. Enforce Active Treaties (Check for violations)
+  // 4. Enforce Active Treaties (Check for violations and deception gaps)
   const activeTreaties = [...state.activeTreaties, ...newTreaties].filter(t => !t.expiresAt || t.expiresAt > state.timeStep);
   
-  for (const treaty of activeTreaties) {
-    if (treaty.violated) continue; // Already broken
+  if (config.useTreaties !== false) {
+    for (const treaty of activeTreaties) {
+      if (treaty.violated) continue; // Already broken
 
-    for (const signatoryId of treaty.signatories) {
-      const decision = allDecisions.find(d => d.speciesId === signatoryId);
-      if (!decision) continue;
+      for (const signatoryId of treaty.signatories) {
+        const decision = allDecisions.find(d => d.speciesId === signatoryId);
+        if (!decision) continue;
 
-      // Check max harvest constraints
-      if (treaty.interpretedConstraints.maxHarvestByResource) {
-        for (const [resId, maxAmt] of Object.entries(treaty.interpretedConstraints.maxHarvestByResource)) {
-          if ((decision.harvest[resId] || 0) > maxAmt * 1.1) { // 10% buffer
-             treaty.violated = true;
-             events.push({
-               timeStep: state.timeStep,
-               type: "DEFECT",
-               message: `Treaty ${treaty.id} violated by ${signatoryId} (Harvest ${resId} > ${maxAmt})`,
-               data: { speciesId: signatoryId, treatyId: treaty.id }
-             });
+        // Check max harvest constraints
+        if (treaty.interpretedConstraints.maxHarvestByResource) {
+          for (const [resId, maxAmt] of Object.entries(treaty.interpretedConstraints.maxHarvestByResource)) {
+            const actualHarvest = decision.harvest[resId] || 0;
+            
+            if (actualHarvest > maxAmt * 1.1) { // 10% buffer
+              treaty.violated = true;
+              events.push({
+                timeStep: state.timeStep,
+                type: "DEFECT",
+                message: `Treaty ${treaty.id} violated by ${signatoryId} (Harvest ${resId} > ${maxAmt})`,
+                data: { speciesId: signatoryId, treatyId: treaty.id }
+              });
+            }
+            
+            // Track deception gap (stated intent vs realized action)
+            const statedLimit = maxAmt;
+            const gap = Math.abs(actualHarvest - statedLimit);
+            if (gap > statedLimit * 0.1) { // More than 10% deviation
+              events.push({
+                timeStep: state.timeStep,
+                type: "DECEPTION_GAP",
+                message: `Deception gap detected for ${signatoryId}: stated ${statedLimit}, realized ${actualHarvest.toFixed(2)}`,
+                data: { speciesId: signatoryId, treatyId: treaty.id },
+                statedIntent: {
+                  treatyId: treaty.id,
+                  proposedConstraint: { [resId]: statedLimit },
+                },
+                realizedAction: {
+                  actualHarvest: { [resId]: actualHarvest },
+                },
+              });
+            }
           }
         }
       }
@@ -408,12 +479,17 @@ export async function stepWorld(
   
   const detectedEvents = detectEvents(state, { ...state, resources: newResources, species: newSpecies }, allDecisions);
   
-  return {
+  const newState: WorldState = {
     timeStep: state.timeStep + 1,
     planet: state.planet,
     resources: newResources,
     species: newSpecies,
-    events: [...state.events, ...events, ...detectedEvents],
-    activeTreaties: activeTreaties.filter(t => !t.violated), // Remove violated treaties? or keep them marked? Let's remove for now or keep to show history. Let's keep valid ones.
+    events: [...events, ...detectedEvents],
+    activeTreaties: activeTreaties.filter(t => !t.violated), // Keep only valid treaties
   };
+  
+  // CRITICAL: Assert state is valid before returning
+  assertWorldState(newState);
+  
+  return newState;
 }
