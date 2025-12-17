@@ -130,7 +130,7 @@ Decide your actions for this epoch. Consider:
 4. Internal governance.
 
 ${species.traits.linguisticRegime === "LiteralOnly" ? "REMINDER: You cannot make abstract promises. Stick to facts." : ""}
-${species.traits.linguisticRegime === "SimileBound" ? "REMINDER: You must reference specific past events (Epoch X) to make any commitment." : ""}
+${species.traits.linguisticRegime === "AnchoredReference" ? "REMINDER: You must reference specific past events (Epoch X) to make any commitment." : ""}
 
 Return a STRICT JSON object with the following schema:
 {
