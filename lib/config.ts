@@ -4,13 +4,19 @@
 
 /**
  * Default simulation configuration values
+ * 
+ * Ablation switches default to false (features enabled by default).
+ * Set to true to disable features for ablation studies.
  */
 export const DEFAULT_SIM_CONFIG = {
   maxTimeSteps: 100,
   harvestNoise: 0.05,
   historyLength: 5,
-  useLinguisticRegimes: false,
-  useEpistemicOrders: false,
+  // Ablation switches
+  useLinguisticRegimes: false,  // If false, all agents can express freely
+  useEpistemicOrders: false,     // If false, all agents act every step with full information
+  useTreaties: true,              // If false, agents cannot form agreements
+  useBaselineAgents: false,       // If true, use fixed-policy heuristics instead of LLMs
 } as const;
 
 /**
