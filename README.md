@@ -1,107 +1,63 @@
-# Alien Cooperation Lab
+# THE THIRD PILLAR
 
-An evolution-first simulator where alien environment and biology mathematically generate social dilemmas, and LLMs govern species to test whether intelligence stabilizes or destroys those derived ecologies.
+**An evolution-first social dilemma benchmark for measuring cooperation, defection, and collapse as a function of LLM capability.**
 
-## Overview
+## Core Definition
 
-This simulator tests whether increased LLM capability leads to cooperation or collapse in shared ecologies. It generates social dilemmas from first principles (environment → biology → cognition → culture → payoffs) and inserts LLMs only at the decision layer.
+A stochastic dynamical system with:
+- **State S_t**: Resource stocks, species populations, active treaties, information access states
+- **Agents π_i**: Species-level policies controlled by LLMs
+- **Environment E**: Dynamics that derive social dilemmas from resource coupling
+- **Information I**: Constraints on observation and action (epistemic orders, linguistic regimes)
+- **Metrics M**: Falsifiable outcome measures (collapse probability, cooperation index, welfare)
 
-## Features
+## Research Question
 
-- **Evolution-first world model**: Environment parameters (gravity, volatility, richness) generate species traits
-- **LLM-driven decisions**: Each species is controlled by an LLM that makes harvest, diplomatic, and governance decisions
-- **Comprehensive metrics**: Tracks collapse probability, cooperation indices, species outcomes, and treaty metrics
-- **Interactive UI**: Real-time visualization of resources, populations, and events
-- **Multiple presets**: Pre-configured scenarios for testing different configurations
+**Does increasing LLM capability expand the space of stable cooperative equilibria, or does it expand the space of exploitative, collapse-inducing strategies?**
 
-## Setup
+## Key Features
 
-1. Install dependencies:
+- **Derived dilemmas**: Social dilemmas emerge from resource dynamics, not scripted payoffs
+- **Language constraints**: Linguistic regimes mechanically restrict treaty formation
+- **Epistemic asymmetry**: Agents operate on different time scales and observation bandwidths
+- **Institutional formation**: Treaties impose machine-readable constraints
+- **Baseline comparison**: Fixed-policy agents for ablation studies
+
+## Quick Start
+
 ```bash
 npm install
-```
-
-2. Set up environment variables:
-```bash
-cp .env.local.example .env.local
-# Add your OPENAI_API_KEY to .env.local
-```
-
-3. Run the development server:
-```bash
 npm run dev
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://localhost:3000](http://localhost:3000)
 
-## Usage
+## Documentation
 
-1. Select a preset from the dropdown (e.g., "two species simple lake")
-2. Click "Run Simulation" to start a simulation
-3. Use "Step" to advance one epoch at a time, or "Play" for continuous simulation
-4. View metrics, events, and species details in the UI panels
+- [Scientific Object Definition](docs/SCIENTIFIC_OBJECT.md)
+- [Positioning vs Existing Work](docs/POSITIONING.md)
+- [LLM Usage Audit](docs/LLM_USAGE_AUDIT.md)
+- [Quality Bar](docs/QUALITY_BAR.md)
+- [UI to State Mapping](docs/UI_STATE_MAPPING.md)
+- [Hardening Summary](docs/HARDENING_SUMMARY.md)
 
-## Architecture
+## Minimal Experiment
 
-- **Simulation Core** (`lib/sim/`): World generation, dynamics, game loop, metrics
-- **LLM Integration** (`lib/llm/`): Prompt building, action parsing, OpenAI client
-- **API Routes** (`app/api/`): Simulation and LLM proxy endpoints
-- **UI Components** (`components/`): React components for visualization and controls
+**Hypothesis**: Increasing LLM capability expands cooperative equilibria.
 
-## Model Profiles
+**Test**:
+1. Run with GPT-3.5 agents
+2. Run with GPT-4 agents
+3. Compare: collapse time, cooperation index, welfare
 
-- `small`: GPT-3.5-turbo (baseline)
-- `medium`: GPT-4
-- `frontier`: GPT-4-turbo
-- `frontier_reasoning`: GPT-4-turbo with chain-of-thought
+**Falsification**: If GPT-4 produces earlier collapse or lower cooperation → hypothesis falsified.
 
-## Research Questions
+## System Requirements
 
-- Do more capable LLMs learn cooperative long-run policies?
-- Or do they use extra reasoning to find more sophisticated ways to strip-mine the commons?
-- How does model capability affect collapse probability and average welfare?
-
-## Development
-
-### Running Tests
-
-```bash
-npm test
-npm run test:watch
-npm run test:coverage
-```
-
-### Code Quality
-
-```bash
-npm run lint
-```
-
-### Building for Production
-
-```bash
-npm run build
-npm start
-```
-
-## Recent Improvements
-
-- ✅ Comprehensive error handling and validation
-- ✅ TypeScript type safety improvements
-- ✅ Structured logging system
-- ✅ Error boundaries for React components
-- ✅ Export/import functionality
-- ✅ Batch experiment runner
-- ✅ Enhanced metrics computation
-- ✅ Improved treaty interpretation
-- ✅ Performance optimizations
-- ✅ Accessibility improvements
-- ✅ Keyboard shortcuts
-- ✅ Theme toggle
-- ✅ Comprehensive test suite
-- ✅ API documentation
+- Node.js 18+
+- OpenAI API key (for LLM agents)
+- Baseline agents work without API key
 
 ## License
 
 ISC
-
