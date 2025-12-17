@@ -1,16 +1,36 @@
 /**
- * Core type definitions for the Alien Cooperation Lab simulator
+ * THE THIRD PILLAR: Core type definitions
+ * 
+ * Formal definition of the scientific object:
+ * - State S_t = (R_t, P_t, T_t, I_t)
+ * - Agents π_i: species-level policies controlled by LLMs
+ * - Environment E: dynamics that derive social dilemmas
+ * - Information I: constraints on observation and action
+ * - Metrics M: falsifiable outcome measures
  */
 
 /**
  * Linguistic Regimes (Embassytown-inspired)
+ * 
+ * Language as a restricted action space, not text flavor.
+ * Each regime constrains what can be expressed in treaties.
  */
-export type LinguisticRegime = "LiteralOnly" | "SimileBound" | "MetaphorRich" | "Mathematical";
+export type LinguisticRegime = 
+  | "LiteralOnly"      // Only factual constraints based on current state
+  | "AnchoredReference" // Only commitments referencing past events
+  | "Expressive";        // Free expression, but with ambiguity penalties
 
 /**
  * Epistemic Orders (Anathem-inspired)
+ * 
+ * Defines temporal and informational structure:
+ * - decision_interval: how often agent may act
+ * - observation_bandwidth: how much global vs local state is visible
+ * - contact_window: when treaties may be proposed/accepted
  */
-export type EpistemicOrder = "FastSecular" | "SlowCloistered" | "OrderOfTheSky" | "OrderOfTheDeep";
+export type EpistemicOrder = 
+  | "FastOrder"        // Acts every timestep, short memory, full local observability
+  | "CloisteredOrder"; // Acts every N timesteps, long memory summary, negotiation only during conclave
 
 /**
  * Treaty definition
@@ -51,6 +71,7 @@ export interface ResourceDef {
   regenRate: number; // Regeneration rate (0-1)
   collapseThreshold: number; // Below this, resource collapses
   valuePerUnit: number; // Fitness value per unit harvested
+  location?: { x: number; y: number }; // 0-1 normalized coordinates for spatial visualization
 }
 
 /**
@@ -99,6 +120,7 @@ export interface SpeciesState {
   relations: Record<string, DiplomaticStance>;
   // Epistemic mechanics
   lastDecisionStep?: number;
+  position?: { x: number; y: number }; // 0-1 normalized coordinates for spatial visualization
 }
 
 /**
@@ -121,6 +143,11 @@ export interface SpeciesDecision {
   treatyProposal?: {
     text: string;
     targetSpeciesId: string;
+    // Stated intent (for deception gap tracking)
+    statedConstraints?: {
+      maxHarvestByResource?: Record<string, number>;
+      minCooperationIndex?: number;
+    };
   };
 }
 
@@ -140,9 +167,29 @@ export interface SimEventData {
 
 export interface SimEvent {
   timeStep: number;
-  type: "TREATY" | "DEFECT" | "COLLAPSE" | "EXTINCTION" | "HARVEST" | "DIPLOMACY" | "CONCLAVE" | "LANGUAGE_SHIFT";
+  type: "TREATY" | "DEFECT" | "COLLAPSE" | "EXTINCTION" | "HARVEST" | "DIPLOMACY" | "CONCLAVE" | "LANGUAGE_REJECTED" | "DECEPTION_GAP";
   message: string;
   data?: SimEventData;
+  // For DECEPTION_GAP events: track stated intent vs realized action
+  statedIntent?: {
+    treatyId?: string;
+    proposedConstraint?: Record<string, number>;
+  };
+  realizedAction?: {
+    actualHarvest?: Record<string, number>;
+  };
+}
+
+/**
+ * Scenario metadata for interpretive summary
+ */
+export interface ScenarioMetadata {
+  id: string;
+  name: string;
+  scarce: string;
+  collapseMechanics: string;
+  nonTrivialReason: string;
+  naiveStrategyFail: string;
 }
 
 /**
@@ -155,27 +202,48 @@ export interface WorldState {
   species: SpeciesState[];
   events: SimEvent[];
   activeTreaties: Treaty[];
+  metadata?: ScenarioMetadata;
 }
 
 /**
  * Simulation configuration
+ * 
+ * Includes ablation switches for testing whether mechanisms matter.
  */
 export interface SimConfig {
   maxTimeSteps: number;
   harvestNoise?: number; // Variance in harvest execution
   rngSeed?: number; // Random seed for reproducibility
   historyLength?: number; // How many past epochs to include in observations
-  useLinguisticRegimes?: boolean;
-  useEpistemicOrders?: boolean;
+  
+  // Ablation switches
+  useLinguisticRegimes?: boolean; // If false, all agents can express freely
+  useEpistemicOrders?: boolean;  // If false, all agents act every step with full information
+  useTreaties?: boolean;          // If false, agents cannot form agreements
+  useBaselineAgents?: boolean;    // If true, use fixed-policy heuristics instead of LLMs
+}
+
+/**
+ * Information access state I_t for a species
+ * 
+ * Determines observation bandwidth and memory based on epistemic order.
+ */
+export interface InformationState {
+  observationBandwidth: "local" | "summarized_global" | "full_global";
+  memoryLength: number; // How many past steps are retained
+  memorySummary?: string; // Summarized history for long-interval orders
+  contactWindow: boolean; // Whether treaties can be proposed/accepted now
 }
 
 /**
  * Observation for a species (what they see)
+ * 
+ * Filtered by InformationState based on epistemic order.
  */
 export interface SpeciesObservation {
   speciesId: string;
   timeStep: number;
-  // Noisy resource estimates
+  // Noisy resource estimates (filtered by observation bandwidth)
   resourceEstimates: Array<{
     resourceId: string;
     estimatedAmount: number;
@@ -184,16 +252,17 @@ export interface SpeciesObservation {
   // Own state
   ownPopulation: number;
   ownTechLevel: number;
-  // Other species (noisy summaries)
+  // Other species (noisy summaries, filtered by observation bandwidth)
   otherSpecies: Array<{
     speciesId: string;
     estimatedPopulation: number;
     aggressionProxy: number; // 0-1, inferred from behavior
   }>;
-  // Recent history (last K epochs)
+  // History (filtered by memory length and summarization)
   recentEvents: SimEvent[];
+  memorySummary?: string; // For long-interval orders
   // Active treaties involving this species
   activeTreaties: Treaty[];
-  // Epistemic state
-  isConclave?: boolean;
+  // Information state
+  informationState: InformationState;
 }
