@@ -18,74 +18,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createWorldFromPreset } from "@/lib/sim/presets";
 import { stepWorld } from "@/lib/sim/gameLoop";
-import { buildObservation } from "@/lib/sim/gameLoop";
-import { buildSpeciesPrompt } from "@/lib/llm/promptBuilder";
-import { parseLLMResponse } from "@/lib/llm/parseActions";
 import { computeCollapseStats, computeCooperationIndex, computeSpeciesOutcomes } from "@/lib/sim/metrics";
-import { WorldState, SpeciesObservation, SpeciesDecision } from "@/lib/sim/types";
-import { validateSimulationRequest, validateSpeciesDecision } from "@/lib/utils/validation";
-import { SimulationRequest } from "@/lib/types/api";
+import { WorldState, SpeciesDecision, SimConfig } from "@/lib/sim/types";
+import { validateSimulationRequest } from "@/lib/utils/validation";
 import { logger } from "@/lib/utils/logger";
+import { assertWorldState } from "@/lib/sim/guards";
+import { shouldUseBaselineAgent, generateBaselineDecision, getBaselinePolicy } from "@/lib/sim/baselineAgents";
+import type { BaselinePolicy } from "@/lib/sim/baselineAgents";
+import { getLLMDecision } from "@/lib/llm/decisionHandler";
 
-async function getDecisions(
-  observations: SpeciesObservation[],
-  world: WorldState,
-  speciesModelMap: Record<string, string>
-): Promise<SpeciesDecision[]> {
-  const decisions: SpeciesDecision[] = [];
-  
-  for (const obs of observations) {
-    const species = world.species.find((s) => s.traits.id === obs.speciesId);
-    if (!species || !species.alive) {
-      logger.warn(`Species ${obs.speciesId} not found or not alive, skipping decision`);
-      continue;
-    }
-    
-    const modelId = speciesModelMap[obs.speciesId] || species.policyBrainId || "small";
-    const prompt = buildSpeciesPrompt(species, world, obs);
-    
-    try {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-      const response = await fetch(`${baseUrl}/api/llm`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ modelId, prompt }),
-      });
-      
-      if (!response.ok) {
-        throw new Error(`LLM API returned status ${response.status}`);
-      }
-      
-      const data = await response.json();
-      if (!data.output) {
-        throw new Error("LLM API response missing output field");
-      }
-      
-      const decision = parseLLMResponse(data.output, obs.speciesId);
-      
-      // Validate the parsed decision
-      const validation = validateSpeciesDecision(decision, obs.speciesId);
-      if (!validation.valid) {
-        logger.warn(`Invalid decision for ${obs.speciesId}`, { errors: validation.errors });
-        // Use fallback decision but log the issue
-      }
-      
-      decisions.push(decision);
-    } catch (error) {
-      logger.error(`Error getting decision for ${obs.speciesId}`, error);
-      // Fallback to minimal decision
-      const fallbackDecision: SpeciesDecision = {
-        speciesId: obs.speciesId,
-        harvest: {},
-        relations: {},
-        governance: { punishmentStrength: 0.3, monitoringInvestment: 0.2 },
-      };
-      decisions.push(fallbackDecision);
-    }
-  }
-  
-  return decisions;
-}
+// Decision handling moved to lib/llm/decisionHandler.ts
 
 export async function POST(request: NextRequest) {
   try {
@@ -118,38 +60,56 @@ export async function POST(request: NextRequest) {
         configOverrides
       );
       
+      // Validate initial state
+      assertWorldState(initialState);
+      
       const history: WorldState[] = [initialState];
       let currentState = initialState;
       
+      // Extract baseline policy map if provided
+      const baselinePolicyMap = (configOverrides as any)?.baselinePolicyMap as Record<string, BaselinePolicy> | undefined;
+      
       for (let step = 0; step < numSteps && step < config.maxTimeSteps; step++) {
-        const observations: SpeciesObservation[] = [];
+        // Check termination conditions
         const aliveSpecies = currentState.species.filter((s) => s.alive);
-        
         if (aliveSpecies.length === 0) {
           logger.info("All species extinct, stopping simulation early");
           break;
         }
         
-        for (const species of aliveSpecies) {
-          const obs = buildObservation(species, currentState, history, config);
-          observations.push(obs);
-        }
-        
-        const decisions = await getDecisions(observations, currentState, speciesModelMap || {});
-        
-        if (decisions.length === 0) {
-          logger.warn("No decisions received, stopping simulation");
-          break;
-        }
-        
+        // stepWorld handles observation building and decision making internally
+        // This ensures consistency and proper epistemic order handling
+        const llmErrors: typeof currentState.events = [];
         currentState = await stepWorld(
           currentState,
           config,
-          async (obs: SpeciesObservation[]) => {
+          async (observations) => {
+            // Get decisions using robust handler
+            const { decisions, errors } = await getLLMDecision(
+              observations,
+              currentState,
+              speciesModelMap || {},
+              {
+                useBaselineAgents: config.useBaselineAgents || false,
+                baselinePolicyMap,
+              }
+            );
+            
+            // Collect errors to add to new state
+            llmErrors.push(...errors);
+            
             return decisions;
           },
           history
         );
+        
+        // Add LLM error events to new state
+        if (llmErrors.length > 0) {
+          currentState.events.push(...llmErrors);
+        }
+        
+        // Validate state after step
+        assertWorldState(currentState);
         
         history.push(currentState);
         
