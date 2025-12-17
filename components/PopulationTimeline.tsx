@@ -31,11 +31,12 @@ export default function PopulationTimeline() {
     return point;
   });
   
-  const colors = ["var(--accent)", "#FF4500", "#00FFFF", "#FF00FF", "#9B59B6", "#1ABC9C"];
+  // Monochrome colors - only use signal colors for extinction
+  const colors = ["var(--foreground)", "rgba(230, 227, 220, 0.6)", "rgba(230, 227, 220, 0.4)", "rgba(230, 227, 220, 0.3)"];
   
   return (
-    <div className="border border-border p-4 bg-background">
-      <h2 className="text-xs font-bold tracking-widest uppercase mb-4 opacity-50">Population Dynamics</h2>
+    <div className="panel">
+      <div className="panel-header">Population Trajectory</div>
       <div className="h-[250px] w-full font-mono text-[10px]">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data}>
