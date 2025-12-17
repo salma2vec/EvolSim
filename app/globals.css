@@ -1,59 +1,62 @@
+/**
+ * THE THIRD PILLAR: Visual Language
+ * 
+ * Aesthetic constraints:
+ * - Dark mode only
+ * - Off-white / near-monochrome foreground (#e6e3dc range)
+ * - Dithered textures for large surfaces
+ * - Flat, low-motion, no gradients
+ * - Typography: serif/quasi-editorial for headings, monospaced for data
+ * - No bright colors except sparse semantic signals (collapse, violation)
+ */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  /* Light Mode (Paper) - Default */
-  --background: #ECE7E1;
-  --foreground: #111214;
-  --border: rgba(17, 18, 20, 0.2);
-  --accent: #FFB000; /* Amber */
-  --grid-color: rgba(17, 18, 20, 0.05);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* Dark Mode (CRT) */
-    --background: #0B0C0E;
-    --foreground: #ECE7E1;
-    --border: rgba(236, 231, 225, 0.2);
-    --accent: #CCFF00; /* Acid Green */
-    --grid-color: rgba(236, 231, 225, 0.05);
-  }
+  /* Dark mode only - epistemic instrument palette */
+  --background: #0B0C0E;
+  --foreground: #E6E3DC; /* Off-white, near-monochrome */
+  --border: rgba(230, 227, 220, 0.15);
+  --surface: #111214;
+  
+  /* Sparse semantic signals only */
+  --signal-collapse: #FF4500; /* Red-orange for collapse */
+  --signal-violation: #FFB000; /* Amber for violations */
+  --signal-neutral: rgba(230, 227, 220, 0.5);
+  
+  /* Grid for architectural structure */
+  --grid-color: rgba(230, 227, 220, 0.03);
 }
 
 body {
   color: var(--foreground);
   background-color: var(--background);
-  font-family: var(--font-inter), sans-serif;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
   
-  /* Texture: Noise */
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E");
+  /* Dithered texture - ordered dithering for large surfaces */
+  background-image: 
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(230, 227, 220, 0.01) 2px,
+      rgba(230, 227, 220, 0.01) 4px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 2px,
+      rgba(230, 227, 220, 0.01) 2px,
+      rgba(230, 227, 220, 0.01) 4px
+    );
   
-  /* Scanlines Overlay (Pseudo-element) */
-  position: relative;
   min-height: 100vh;
   overflow-x: hidden;
 }
 
-body::after {
-  content: "";
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  background: repeating-linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.03) 0px,
-    rgba(0, 0, 0, 0.03) 1px,
-    transparent 2px
-  );
-  z-index: 9999;
-}
-
-/* Grid Overlay */
+/* Architectural grid - conveys institutional structure */
 .bg-grid {
   background-size: 24px 24px;
   background-image: 
@@ -61,80 +64,70 @@ body::after {
     linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
 }
 
-/* Typography Overrides */
-h1, h2, h3, h4, h5, h6 {
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  text-transform: uppercase;
+/* Typography: Serif/quasi-editorial for headings, narrative, and institutional labels */
+h1, h2, h3, h4, h5, h6, .font-serif {
+  font-family: 'Times New Roman', 'Georgia', serif;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  color: var(--foreground);
 }
 
-/* Scrollbar */
+/* Monospaced for all execution data, metrics, and logs */
+.data, .metric, .value, code, pre, .font-mono {
+  font-family: 'JetBrains Mono', 'Courier New', monospace !important;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Specific encoding: Narrative is Serif, Evidence is Mono */
+.narrative { font-family: 'Times New Roman', serif; }
+.evidence { font-family: 'JetBrains Mono', monospace; opacity: 0.7; }
+
+/* Scrollbar - minimal, functional */
 ::-webkit-scrollbar {
-  width: 12px;
+  width: 8px;
 }
 ::-webkit-scrollbar-track {
   background: var(--background);
-  border-left: 1px solid var(--border);
 }
 ::-webkit-scrollbar-thumb {
   background: var(--border);
-  border: 1px solid var(--background);
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--foreground);
+  opacity: 0.3;
 }
 
-/* Utilities */
-.text-mono-sm {
-  font-family: var(--font-mono);
+/* NO ANIMATIONS - static layouts only */
+/* Removed: transitions, animations, gradients, decorative effects */
+
+/* Utility: Static blink for critical signals only (collapse, violation) */
+.signal-blink {
+  /* Static - no animation, just high contrast */
+  color: var(--signal-collapse);
+  font-weight: 600;
+}
+
+/* Borders: Flat, architectural */
+.border-instrument {
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+/* Panels: Negative space emphasizes causality */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 1rem;
+}
+
+.panel-header {
+  font-family: 'Times New Roman', serif;
   font-size: 0.75rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.border-thin {
-  border-width: 1px;
-  border-style: solid;
-  border-color: var(--border);
-}
-
-/* Mechanical Transitions */
-* {
-  transition-property: color, background-color, border-color, opacity;
-  transition-duration: 0.1s;
-  transition-timing-function: steps(2);
-}
-
-/* Utility: Blink Animation */
-@keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
-}
-.animate-blink {
-  animation: blink 1s step-end infinite;
-}
-
-/* Utility: Scanline Text Mask */
-.bg-scanlines {
-  background: repeating-linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.1) 0px,
-    rgba(0, 0, 0, 0.1) 1px,
-    transparent 2px
-  );
-}
-
-/* Utility: CRT Flicker */
-@keyframes flicker {
-  0% { opacity: 0.97; }
-  5% { opacity: 0.95; }
-  10% { opacity: 0.9; }
-  15% { opacity: 0.95; }
-  20% { opacity: 0.99; }
-  100% { opacity: 0.98; }
-}
-
-.crt-flicker {
-  animation: flicker 0.15s infinite;
-  pointer-events: none;
+  color: var(--foreground);
+  opacity: 0.6;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.5rem;
+  margin-bottom: 1rem;
 }
