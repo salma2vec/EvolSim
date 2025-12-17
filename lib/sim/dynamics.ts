@@ -75,13 +75,21 @@ export function updateResources(
     // Update amount (ensure non-negative)
     const newAmount = Math.max(0, currentAmount + growth - harvestWithNoise + shock);
     
-    // Check for collapse
+    // Check for collapse (irreversible)
     const collapsed = newAmount < resource.def.collapseThreshold;
+    
+    // CRITICAL: Collapse is irreversible - once collapsed, stays collapsed
+    const finalCollapsed = resource.collapsed || collapsed;
+    
+    // If collapsing now, ensure amount is at or below threshold
+    const finalAmount = finalCollapsed && !resource.collapsed 
+      ? Math.min(newAmount, resource.def.collapseThreshold)
+      : newAmount;
     
     return {
       ...resource,
-      amount: newAmount,
-      collapsed: collapsed || resource.collapsed,
+      amount: Math.max(0, finalAmount),
+      collapsed: finalCollapsed,
     };
   });
 }
