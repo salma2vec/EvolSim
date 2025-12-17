@@ -85,22 +85,15 @@ export function finalizePlanetEnv(env: PlanetEnv): PlanetEnv {
 }
 
 /**
- * Species name generators
+ * Generate species name (simple numeric ID for scientific rigor)
  */
-const speciesNamePrefixes = [
-  "Xen", "Zeph", "Kor", "Vex", "Nyx", "Lyr", "Aur", "Sol", "Neb", "Ast",
-  "Cry", "Pyro", "Aqua", "Terra", "Aero", "Lumo", "Umbra", "Chrono", "Bio", "Tech"
-];
-
-const speciesNameSuffixes = [
-  "ians", "ites", "oids", "eans", "ians", "oids", "eans", "ites", "oids", "eans",
-  "folk", "kind", "beings", "entities", "forms", "creatures", "races", "peoples"
-];
-
-function generateSpeciesName(rng: ReturnType<typeof getRNG>): string {
-  const prefix = rng.choice(speciesNamePrefixes);
-  const suffix = rng.choice(speciesNameSuffixes);
-  return `${prefix}${suffix}`;
+function generateSpeciesName(id: string): string {
+  // Use ID directly: "species_0" -> "Species 0"
+  const match = id.match(/species_(\d+)/);
+  if (match) {
+    return `Species ${match[1]}`;
+  }
+  return id;
 }
 
 /**
@@ -161,17 +154,17 @@ export function generateSpeciesTraits(
 
   let linguisticRegime: LinguisticRegime | undefined;
   if (config?.useLinguisticRegimes) {
-    linguisticRegime = rng.choice(["LiteralOnly", "SimileBound", "MetaphorRich", "Mathematical"]);
+    linguisticRegime = rng.choice(["LiteralOnly", "AnchoredReference", "Expressive"]);
   }
 
   let epistemicOrder: EpistemicOrder | undefined;
   if (config?.useEpistemicOrders) {
-    epistemicOrder = rng.choice(["FastSecular", "SlowCloistered", "OrderOfTheSky", "OrderOfTheDeep"]);
+    epistemicOrder = rng.choice(["FastOrder", "CloisteredOrder"]);
   }
   
   return {
     id,
-    name: generateSpeciesName(rng),
+    name: generateSpeciesName(id),
     lifespan,
     reproductionRate,
     discountFactor,
