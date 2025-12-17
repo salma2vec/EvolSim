@@ -17,27 +17,7 @@ export default function WorldControls() {
   
   const presets = getAvailablePresets();
 
-  // Keyboard shortcuts
-  useKeyboardShortcuts([
-    {
-      key: " ",
-      action: () => !isRunning && handlePlay(),
-      description: "Play/Pause",
-    },
-    {
-      key: "s",
-      ctrl: true,
-      action: () => !isRunning && handleStep(),
-      description: "Step",
-    },
-    {
-      key: "r",
-      ctrl: true,
-      action: handleReset,
-      description: "Reset",
-    },
-  ]);
-  
+  // Define handlers first (before useKeyboardShortcuts)
   const handleReset = async () => {
     reset();
     setIsRunning(false);
@@ -48,22 +28,37 @@ export default function WorldControls() {
     setIsRunning(true);
     
     try {
+      // Use current state's seed or generate deterministic seed
+      // CRITICAL: For determinism, seed should be passed from initial config
+      // For now, use a fixed seed if history is empty, otherwise preserve
+      const seed = history.length === 0 ? 12345 : undefined; // TODO: Store seed in state
+      
       const response = await fetch("/api/simulate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           presetId,
           numSteps: 1,
-          seed: Date.now(),
+          seed, // Use deterministic seed
         }),
       });
       
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP ${response.status}`);
+      }
+      
       const data = await response.json();
-      if (data.history) {
-        setHistory([...history, ...data.history.slice(history.length)]);
+      if (data.history && data.history.length > 0) {
+        // Append only new states
+        const newStates = data.history.slice(history.length);
+        if (newStates.length > 0) {
+          setHistory([...history, ...newStates]);
+        }
       }
     } catch (error) {
       console.error("Step error:", error);
+      // TODO: Show error to user in UI
     } finally {
       setIsRunning(false);
     }
@@ -87,6 +82,27 @@ export default function WorldControls() {
     
     runSteps();
   };
+
+  // Keyboard shortcuts (after handlers are defined)
+  useKeyboardShortcuts([
+    {
+      key: " ",
+      action: () => !isRunning && handlePlay(),
+      description: "Play/Pause",
+    },
+    {
+      key: "s",
+      ctrl: true,
+      action: () => !isRunning && handleStep(),
+      description: "Step",
+    },
+    {
+      key: "r",
+      ctrl: true,
+      action: handleReset,
+      description: "Reset",
+    },
+  ]);
   
   return (
     <div className="flex flex-col md:flex-row items-center gap-4 justify-between font-mono text-xs uppercase">
@@ -96,7 +112,7 @@ export default function WorldControls() {
           <select
             value={presetId}
             onChange={(e) => setPresetId(e.target.value)}
-            className="appearance-none bg-background border border-border px-4 py-2 pr-8 w-full md:w-auto hover:bg-border/10 cursor-pointer focus:outline-none focus:border-accent transition-colors"
+            className="appearance-none bg-background border border-border px-4 py-2 pr-8 w-full md:w-auto hover:bg-border/10 cursor-pointer focus:outline-none focus:border-foreground"
           >
             {presets.map((p) => (
               <option key={p} value={p}>
@@ -115,9 +131,9 @@ export default function WorldControls() {
           onClick={handlePlay}
           disabled={isRunning}
           className={`
-            px-6 py-2 border border-border transition-all
+            px-6 py-2 border border-border
             ${isPlaying 
-              ? 'bg-accent text-background border-accent animate-pulse' 
+              ? 'bg-foreground text-background' 
               : 'hover:bg-foreground hover:text-background'}
             disabled:opacity-50 disabled:cursor-not-allowed
           `}
@@ -128,14 +144,14 @@ export default function WorldControls() {
         <button
           onClick={handleStep}
           disabled={isRunning}
-          className="px-4 py-2 border border-border hover:border-accent hover:text-accent disabled:opacity-50 transition-colors"
+          className="px-4 py-2 border border-border hover:bg-foreground hover:text-background disabled:opacity-50"
         >
           Step
         </button>
         
         <button
           onClick={handleReset}
-          className="px-4 py-2 border border-border hover:bg-red-500 hover:text-white hover:border-red-500 transition-colors"
+          className="px-4 py-2 border border-border hover:bg-[var(--signal-collapse)] hover:text-background"
         >
           Reset
         </button>
