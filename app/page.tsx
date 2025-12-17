@@ -1,30 +1,35 @@
 /**
- * Main page: Three-column layout
+ * THE THIRD PILLAR: Main Instrument Panel
+ * 
+ * 3-Layer Hierarchy:
+ * 1. Interpretive Summary (Derived Narrative)
+ * 2. Causal Panels (Extraction vs Regen Delta)
+ * 3. Debug Section (Raw state & Full logs)
  */
 
 "use client";
 
 import WorldControls from "@/components/WorldControls";
-import WorldSummary from "@/components/WorldSummary";
-import SpeciesList from "@/components/SpeciesList";
-import RetroTileMap from "@/components/RetroTileMap";
-import ResourceTimeline from "@/components/ResourceTimeline";
-import PopulationTimeline from "@/components/PopulationTimeline";
-import CooperationMetrics from "@/components/CooperationMetrics";
-import EventLog from "@/components/EventLog";
-import ExperimentPanel from "@/components/ExperimentPanel";
-import { useEffect } from "react";
+import TreatyPanel from "@/components/TreatyPanel";
+import WorldStatePanel from "@/components/WorldStatePanel";
+import AgentPanel from "@/components/AgentPanel";
+import TimelinePanel from "@/components/TimelinePanel";
+import SpatialMap from "@/components/SpatialMap";
+import InterpretiveSummary from "@/components/InterpretiveSummary";
+import { useEffect, useState } from "react";
 import { useSimStore } from "@/lib/store";
 import { createWorldFromPreset } from "@/lib/sim/presets";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export default function Home() {
   const { setState, setHistory, currentState } = useSimStore();
+  const [technicalMode, setTechnicalMode] = useState(false);
+  const [viewMode, setViewMode] = useState<"causal" | "spatial">("causal");
 
   useEffect(() => {
     // Initialize with a default scenario if empty
     if (!currentState) {
-      const { world } = createWorldFromPreset("two_species_simple_lake", undefined, Date.now());
+      const { world } = createWorldFromPreset("two_species_simple_lake", undefined, 12345);
       setState(world);
       setHistory([world]);
     }
@@ -32,95 +37,118 @@ export default function Home() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-grid p-4 md:p-8 font-mono text-sm">
-      <div className="max-w-[1600px] mx-auto space-y-8">
-        {/* Header Section */}
-        <header className="border-b border-border pb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-          <div className="space-y-2 relative">
-            <h1 className="text-6xl md:text-9xl font-black tracking-tighter leading-none select-none font-sans uppercase relative z-10 text-transparent bg-clip-text bg-gradient-to-b from-foreground to-foreground/80">
-              EvolSim
-            </h1>
-            {/* Scanline overlay specifically for text */}
-            <div className="absolute inset-0 z-20 pointer-events-none bg-scanlines opacity-50 mix-blend-overlay" aria-hidden="true" />
-            
-            <div className="flex items-center gap-2 text-accent">
-              <span className="animate-blink">●</span>
-              <span className="text-xs tracking-widest uppercase">System Online</span>
-            </div>
-          </div>
+      <div className="min-h-screen bg-background text-foreground font-mono">
+        <div className="max-w-[1800px] mx-auto p-6 space-y-12">
           
-          <div className="max-w-md text-right md:text-left">
-            <p className="opacity-70 leading-relaxed text-xs md:text-sm max-w-prose">
-              EVOLUTIONARY SIMULATION INTERFACE<br/>
-              Testing intelligence stability in alien ecologies.<br/>
-              Auth: ADMIN // Sector: 7G
-            </p>
-          </div>
-        </header>
-        
-        {/* Controls */}
-        <div className="border border-border p-1 bg-background/50 backdrop-blur-sm">
-          <WorldControls />
-        </div>
-        
-        {/* Main Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch min-h-[600px]">
-          {/* Left Column: Telemetry */}
-          <div className="lg:col-span-3 space-y-6 flex flex-col">
-            <div className="border border-border p-4 bg-background relative flex-1">
-               <div className="absolute top-0 left-0 bg-border text-background px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest">Status</div>
-               <div className="mt-4">
-                 <WorldSummary />
-               </div>
-            </div>
-            <div className="border border-border p-0 bg-background flex-1 overflow-hidden relative">
-               <div className="absolute top-0 left-0 bg-border text-background px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest z-10">Assets</div>
-               <div className="mt-6 h-full overflow-y-auto">
-                 <SpeciesList />
-               </div>
-            </div>
-          </div>
-          
-          {/* Center Column: Visualization */}
-          <div className="lg:col-span-6 space-y-6 flex flex-col">
-            <div className="border border-border bg-background p-1 flex-1 relative min-h-[400px]">
-              {/* Corner markers for "instrument" feel */}
-              <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-accent z-10" />
-              <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-accent z-10" />
-              <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-accent z-10" />
-              <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-accent z-10" />
-              
-              <RetroTileMap />
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-[300px]">
-              <ResourceTimeline />
-              <PopulationTimeline />
-            </div>
-          </div>
-          
-          {/* Right Column: Analysis */}
-          <div className="lg:col-span-3 space-y-6 flex flex-col">
-             <div className="border border-border p-4 bg-background relative">
-                <div className="absolute top-0 left-0 bg-border text-background px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest">Metrics</div>
-                <div className="mt-4">
-                  <CooperationMetrics />
+          {/* Layer 1: Interpretive Summary (The "So What?") */}
+          <section className="space-y-6">
+            <header className="flex justify-between items-start border-b border-border pb-4 mb-8">
+              <div className="space-y-1">
+                <h1 className="text-sm font-mono uppercase tracking-[0.3em] opacity-50">Scientific Instrument</h1>
+                <div className="text-4xl font-serif uppercase tracking-wider">The Third Pillar</div>
+              </div>
+              <div className="flex flex-col items-end gap-2">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2 border border-border px-2 py-1">
+                    <button
+                      onClick={() => setViewMode("causal")}
+                      className={`text-[10px] font-mono uppercase px-2 py-1 ${
+                        viewMode === "causal" 
+                          ? "bg-foreground text-background" 
+                          : "opacity-60 hover:opacity-100"
+                      }`}
+                    >
+                      Causal View
+                    </button>
+                    <button
+                      onClick={() => setViewMode("spatial")}
+                      className={`text-[10px] font-mono uppercase px-2 py-1 ${
+                        viewMode === "spatial" 
+                          ? "bg-foreground text-background" 
+                          : "opacity-60 hover:opacity-100"
+                      }`}
+                    >
+                      Spatial Map
+                    </button>
+                  </div>
+                  <label className="text-[10px] font-mono uppercase opacity-60 flex items-center gap-2 cursor-pointer border border-border px-3 py-2 hover:bg-surface/50">
+                    <input
+                      type="checkbox"
+                      checked={technicalMode}
+                      onChange={(e) => setTechnicalMode(e.target.checked)}
+                      className="cursor-pointer"
+                    />
+                    Technical Mode
+                  </label>
                 </div>
-             </div>
-            <div className="border border-border bg-background flex-1 relative flex flex-col">
-               <div className="absolute top-0 left-0 bg-border text-background px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest z-10">Logs</div>
-               <div className="mt-6 flex-1 overflow-hidden">
-                 <EventLog />
-               </div>
+                <WorldControls />
+              </div>
+            </header>
+
+            <InterpretiveSummary />
+          </section>
+
+          {/* Layer 2: Causal Panels (The "Why?") */}
+          {viewMode === "causal" ? (
+            <section className="grid grid-cols-12 gap-8 items-start">
+              {/* Left: Institutions */}
+              <div className="col-span-3 space-y-4">
+                <div className="font-serif text-xs uppercase tracking-widest opacity-40 mb-2">Institutional Overlays</div>
+                <TreatyPanel />
+              </div>
+
+              {/* Center: Load-bearing Variable (Delta & Resources) */}
+              <div className="col-span-6 space-y-4">
+                <div className="font-serif text-xs uppercase tracking-widest opacity-40 mb-2">Primary Causal Chain: Extraction vs Regen</div>
+                <WorldStatePanel />
+              </div>
+
+              {/* Right: Agent Policies */}
+              <div className="col-span-3 space-y-4">
+                <div className="font-serif text-xs uppercase tracking-widest opacity-40 mb-2">Agent-Policy Outcomes</div>
+                <AgentPanel />
+              </div>
+            </section>
+          ) : (
+            <section className="border border-border p-4 bg-surface/5">
+              <SpatialMap />
+            </section>
+          )}
+
+          {/* Layer 3: Debug Section (The "What Exactly?") */}
+          {technicalMode && (
+            <section className="pt-12 border-t border-border space-y-8 opacity-80">
+              <div className="flex items-baseline gap-4">
+                <h3 className="font-serif text-xl uppercase tracking-wider">Technical Forensics</h3>
+                <span className="font-mono text-[10px] opacity-40 uppercase">Low-level execution data</span>
+              </div>
+              
+              <div className="grid grid-cols-12 gap-8">
+                <div className="col-span-8">
+                  <TimelinePanel />
+                </div>
+                <div className="col-span-4 space-y-4">
+                  <div className="panel p-4 border border-border bg-surface/20">
+                    <div className="font-serif text-xs uppercase tracking-wide mb-3 opacity-60">Raw Snapshot</div>
+                    <pre className="text-[9px] font-mono opacity-70 overflow-auto max-h-[500px] leading-tight tabular-nums">
+                      {JSON.stringify(currentState, (key, value) => 
+                        typeof value === 'number' ? Number(value.toFixed(4)) : value, 
+                      2)}
+                    </pre>
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
+          
+          {/* Footer Timeline strip (Always visible) */}
+          <footer className="fixed bottom-0 left-0 right-0 bg-background/90 backdrop-blur-md border-t border-border p-2 z-50">
+            <div className="max-w-[1800px] mx-auto overflow-hidden h-12 flex items-center">
+              <TimelinePanel compact />
             </div>
-            <div className="border-t border-border pt-4">
-              <ExperimentPanel />
-            </div>
-          </div>
+          </footer>
         </div>
       </div>
-    </div>
     </ErrorBoundary>
   );
 }
-
