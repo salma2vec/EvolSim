@@ -5,6 +5,7 @@
 import { WorldState, SimConfig, ResourceDef, ResourceState } from "./types";
 import { generatePlanetEnv, finalizePlanetEnv, generateSpeciesForPlanet } from "./worldGen";
 import { setRNGSeed } from "./random";
+import { initializeSpatialLayout } from "./spatial";
 
 /**
  * Create initial world state from preset
@@ -104,7 +105,6 @@ function createTwoSpeciesSimpleLake(
     species[0].traits.discountFactor = 0.3; // Low patience
     species[0].traits.stabilityPreference = 0.2;
     species[0].traits.expansionPreference = 0.9;
-    species[0].traits.name = "Rapid Breeders";
   }
   
   // Modify second species to be long-lived and patient
@@ -114,7 +114,6 @@ function createTwoSpeciesSimpleLake(
     species[1].traits.discountFactor = 0.9; // High patience
     species[1].traits.stabilityPreference = 0.9;
     species[1].traits.expansionPreference = 0.2;
-    species[1].traits.name = "Ancient Guardians";
   }
   
   // Apply model assignments if provided
@@ -139,7 +138,18 @@ function createTwoSpeciesSimpleLake(
     species,
     events: [],
     activeTreaties: [],
+    metadata: {
+      id: "two_species_simple_lake",
+      name: "Two Species Simple Lake",
+      scarce: "Renewable resource stock (fish units).",
+      collapseMechanics: "Resource stock falls below regeneration threshold → regeneration halts → populations crash.",
+      nonTrivialReason: "Each species maximizes short-term payoff by extracting more than its fair share, but joint over-extraction reduces future availability for both.",
+      naiveStrategyFail: "Myopic greedy extraction proportional to current population size."
+    }
   };
+  
+  // Initialize spatial layout
+  initializeSpatialLayout(resources, species);
   
   return { world, config };
 }
@@ -197,28 +207,24 @@ function createFourSpeciesMixed(
   
   // Modify species to have distinct characteristics
   if (species.length > 0) {
-    species[0].traits.name = "Expansionists";
     species[0].traits.expansionPreference = 0.95;
     species[0].traits.stabilityPreference = 0.1;
     species[0].traits.discountFactor = 0.2;
   }
   
   if (species.length > 1) {
-    species[1].traits.name = "Conservators";
     species[1].traits.expansionPreference = 0.1;
     species[1].traits.stabilityPreference = 0.95;
     species[1].traits.discountFactor = 0.9;
   }
   
   if (species.length > 2) {
-    species[2].traits.name = "Diplomats";
     species[2].traits.normStrength = 0.9;
     species[2].traits.stabilityPreference = 0.7;
     species[2].traits.expansionPreference = 0.4;
   }
   
   if (species.length > 3) {
-    species[3].traits.name = "Opportunists";
     species[3].traits.normStrength = 0.2;
     species[3].traits.discountFactor = 0.3;
     species[3].traits.expansionPreference = 0.7;
@@ -246,7 +252,18 @@ function createFourSpeciesMixed(
     species,
     events: [],
     activeTreaties: [],
+    metadata: {
+      id: "four_species_mixed",
+      name: "Four Species Mixed",
+      scarce: "Balanced resource mix with varying regeneration rates.",
+      collapseMechanics: "Cascading failure if any single resource hit zero, affecting population health and extraction pressure on others.",
+      nonTrivialReason: "Complex interdependencies; species must balance multiple resource constraints simultaneously.",
+      naiveStrategyFail: "Optimizing for single-resource payoff without considering multi-resource sustainability."
+    }
   };
+  
+  // Initialize spatial layout
+  initializeSpatialLayout(resources, species);
   
   return { world, config };
 }
@@ -266,25 +283,22 @@ function createEmbassytownScenario(
 
   const species = generateSpeciesForPlanet(planet, 3, "small");
 
-  // Ariekei-like (LiteralOnly)
+  // LiteralOnly regime
   if (species.length > 0) {
-    species[0].traits.name = "Hosts (Literal)";
     species[0].traits.linguisticRegime = "LiteralOnly";
-    species[0].traits.epistemicOrder = "FastSecular"; // Normal time
+    species[0].traits.epistemicOrder = "FastOrder";
   }
 
-  // Terran-like (MetaphorRich)
+  // Expressive regime
   if (species.length > 1) {
-    species[1].traits.name = "Ambassadors (Metaphor)";
-    species[1].traits.linguisticRegime = "MetaphorRich";
-    species[1].traits.epistemicOrder = "FastSecular";
+    species[1].traits.linguisticRegime = "Expressive";
+    species[1].traits.epistemicOrder = "FastOrder";
   }
 
-  // Simile-bound intermediaries
+  // AnchoredReference regime
   if (species.length > 2) {
-    species[2].traits.name = "Similes (Bound)";
-    species[2].traits.linguisticRegime = "SimileBound";
-    species[2].traits.epistemicOrder = "FastSecular";
+    species[2].traits.linguisticRegime = "AnchoredReference";
+    species[2].traits.epistemicOrder = "FastOrder";
   }
 
   if (speciesModelMap) {
@@ -293,8 +307,28 @@ function createEmbassytownScenario(
     }
   }
 
+  const world: WorldState = {
+    timeStep: 0,
+    planet,
+    resources,
+    species,
+    events: [],
+    activeTreaties: [],
+    metadata: {
+      id: "embassytown_scenario",
+      name: "Embassytown Scenario",
+      scarce: "Shared resource and credible commitments (communication bandwidth constrained by linguistic regime).",
+      collapseMechanics: "Resource collapses due to delayed or unverifiable coordination; institutions fail to form in time.",
+      nonTrivialReason: "Agents cannot freely express future commitments or abstractions; coordination requires grounding agreements in observable state, slowing norm formation.",
+      naiveStrategyFail: "Relying on verbal promises or future-oriented agreements without enforceable anchors."
+    }
+  };
+  
+  // Initialize spatial layout
+  initializeSpatialLayout(resources, species);
+  
   return {
-    world: { timeStep: 0, planet, resources, species, events: [], activeTreaties: [] },
+    world,
     config: { maxTimeSteps: 100, useLinguisticRegimes: true, useEpistemicOrders: false }
   };
 }
@@ -314,25 +348,22 @@ function createAnathemScenario(
 
   const species = generateSpeciesForPlanet(planet, 3, "small");
 
-  // Fast seculars
+  // FastOrder
   if (species.length > 0) {
-    species[0].traits.name = "Extramuros (Fast)";
-    species[0].traits.epistemicOrder = "FastSecular";
-    species[0].traits.linguisticRegime = "LiteralOnly"; // Simple comms
+    species[0].traits.epistemicOrder = "FastOrder";
+    species[0].traits.linguisticRegime = "LiteralOnly";
   }
 
-  // Order of the Sky (3-step interval)
+  // CloisteredOrder
   if (species.length > 1) {
-    species[1].traits.name = "Unarians (Sky)";
-    species[1].traits.epistemicOrder = "OrderOfTheSky";
-    species[1].traits.linguisticRegime = "Mathematical";
+    species[1].traits.epistemicOrder = "CloisteredOrder";
+    species[1].traits.linguisticRegime = "AnchoredReference";
   }
 
-  // Order of the Deep (10-step interval)
+  // CloisteredOrder with different regime
   if (species.length > 2) {
-    species[2].traits.name = "Decenarians (Deep)";
-    species[2].traits.epistemicOrder = "OrderOfTheDeep";
-    species[2].traits.linguisticRegime = "SimileBound";
+    species[2].traits.epistemicOrder = "CloisteredOrder";
+    species[2].traits.linguisticRegime = "AnchoredReference";
   }
 
   if (speciesModelMap) {
@@ -341,8 +372,28 @@ function createAnathemScenario(
     }
   }
 
+  const world: WorldState = {
+    timeStep: 0,
+    planet,
+    resources,
+    species,
+    events: [],
+    activeTreaties: [],
+    metadata: {
+      id: "anathem_scenario",
+      name: "Anathem Scenario",
+      scarce: "Shared knowledge substrate and temporal alignment.",
+      collapseMechanics: "Knowledge loss if extraction occurs out of sync with epistemic windows; coordination failures due to clock misalignment.",
+      nonTrivialReason: "Agents exist on different time scales (epistemic orders); coordination requires predicting others' availability.",
+      naiveStrategyFail: "Synchronous cooperation strategies that assume all agents can respond every timestep."
+    }
+  };
+  
+  // Initialize spatial layout
+  initializeSpatialLayout(resources, species);
+  
   return {
-    world: { timeStep: 0, planet, resources, species, events: [], activeTreaties: [] },
+    world,
     config: { maxTimeSteps: 200, useLinguisticRegimes: true, useEpistemicOrders: true }
   };
 }
@@ -374,15 +425,33 @@ function createHarshTwilightScenario(
     amount: 30, collapsed: false
   }];
   const species = generateSpeciesForPlanet(planet, 2, "small");
-  if (species.length > 0) species[0].traits.name = "Survivors";
-  if (species.length > 1) species[1].traits.name = "Adaptors";
   if (speciesModelMap) {
     for (const s of species) {
       if (speciesModelMap[s.traits.id]) s.policyBrainId = speciesModelMap[s.traits.id];
     }
   }
+  const world: WorldState = {
+    timeStep: 0,
+    planet,
+    resources,
+    species,
+    events: [],
+    activeTreaties: [],
+    metadata: {
+      id: "harsh_twilight",
+      name: "Harsh Twilight",
+      scarce: "Resource regeneration capacity (low regen rate, high volatility).",
+      collapseMechanics: "Resource oscillates below threshold → regeneration becomes insufficient → populations decline irreversibly.",
+      nonTrivialReason: "Even cooperative extraction rates must adapt dynamically; static “fair share” policies overshoot under volatility.",
+      naiveStrategyFail: "Fixed extraction quotas or delayed response strategies based on long-term averages."
+    }
+  };
+  
+  // Initialize spatial layout
+  initializeSpatialLayout(resources, species);
+  
   return {
-    world: { timeStep: 0, planet, resources, species, events: [], activeTreaties: [] },
+    world,
     config: { maxTimeSteps: 80, harvestNoise: 0.1 }
   };
 }
@@ -399,16 +468,33 @@ function createLushGaiaScenario(
     { def: { id: "clean_water", name: "Clean Water", capacityK: 150, regenRate: 0.25, collapseThreshold: 30, valuePerUnit: 1.0 }, amount: 140, collapsed: false }
   ];
   const species = generateSpeciesForPlanet(planet, 3, "small");
-  if (species.length > 0) species[0].traits.name = "Prosperity Seekers";
-  if (species.length > 1) species[1].traits.name = "Harmony Keepers";
-  if (species.length > 2) species[2].traits.name = "Growth Enthusiasts";
   if (speciesModelMap) {
     for (const s of species) {
       if (speciesModelMap[s.traits.id]) s.policyBrainId = speciesModelMap[s.traits.id];
     }
   }
+  const world: WorldState = {
+    timeStep: 0,
+    planet,
+    resources,
+    species,
+    events: [],
+    activeTreaties: [],
+    metadata: {
+      id: "lush_gaia",
+      name: "Lush Gaia",
+      scarce: "Relatively abundant resources; scarcity is strategically induced by expansion.",
+      collapseMechanics: "Over-extraction due to population boom; high regen rate masks early signs of depletion.",
+      nonTrivialReason: "Cooperation requires resisting the urge to over-expand despite initial abundance.",
+      naiveStrategyFail: "Unbounded exponential growth that eventually outpaces even high regeneration rates."
+    }
+  };
+  
+  // Initialize spatial layout
+  initializeSpatialLayout(resources, species);
+  
   return {
-    world: { timeStep: 0, planet, resources, species, events: [], activeTreaties: [] },
+    world,
     config: { maxTimeSteps: 120, harvestNoise: 0.03 }
   };
 }
@@ -425,15 +511,33 @@ function createVolatileStormScenario(
     amount: 70, collapsed: false
   }];
   const species = generateSpeciesForPlanet(planet, 2, "small");
-  if (species.length > 0) species[0].traits.name = "Risk Takers";
-  if (species.length > 1) species[1].traits.name = "Cautious Ones";
   if (speciesModelMap) {
     for (const s of species) {
       if (speciesModelMap[s.traits.id]) s.policyBrainId = speciesModelMap[s.traits.id];
     }
   }
+  const world: WorldState = {
+    timeStep: 0,
+    planet,
+    resources,
+    species,
+    events: [],
+    activeTreaties: [],
+    metadata: {
+      id: "volatile_storm",
+      name: "Volatile Storm",
+      scarce: "Stable resource regeneration capacity.",
+      collapseMechanics: "Resource crashes when environmental shocks coincide with peak extraction; high variance makes prediction difficult.",
+      nonTrivialReason: "Cooperation requires maintaining high buffers; 'efficient' extraction is fatal under volatility.",
+      naiveStrategyFail: "Harvesting at mean regeneration rate without accounting for environmental variance."
+    }
+  };
+  
+  // Initialize spatial layout
+  initializeSpatialLayout(resources, species);
+  
   return {
-    world: { timeStep: 0, planet, resources, species, events: [], activeTreaties: [] },
+    world,
     config: { maxTimeSteps: 100, harvestNoise: 0.12 }
   };
 }
