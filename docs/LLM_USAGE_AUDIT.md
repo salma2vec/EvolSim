@@ -1,88 +1,59 @@
 # LLM Usage Audit
 
-## For Each Agent
+## Operational Protocol
 
-### Model Assignment
-- **Location**: `SpeciesState.policyBrainId`
-- **Default**: "small" (GPT-3.5-turbo)
-- **Configurable**: Via `speciesModelMap` in simulation request
-- **Swappable**: Yes, via config without code changes
+To maintain benchmark integrity and avoid "black-box" drift, the following protocol is enforced for all models:
 
-### Context Window
-- **Observation**: Filtered by `InformationState` (epistemic order)
-- **History**: Last K epochs (configurable via `historyLength`)
-- **Memory**: Summarized for long-interval orders
-- **Size**: ~2000-5000 tokens per prompt (estimated)
+*   **Fixed Policy Generators**: Models are queried as stateless mapping functions: `Prompt -> Action`.
+*   **Zero Learning**: No fine-tuning, RAG, or long-term memory is permitted across runs. Memory is strictly limited to the provided epoch history within the context window.
+*   **Identical Prototyping**: All models receive identical prompt structures. The only variance is the specific `WorldState` snapshot they observe.
+*   **No Self-Modification**: Models are prohibited from modifying their own prompts or system instructions.
 
-### Constraints Enforced
+## Model Capability Ladder
 
-**Pre-generation:**
-- Linguistic regime constraints in prompt
-- Epistemic order constraints in prompt
-- Observation bandwidth filtering
-- Memory summarization for long-interval orders
+The benchmark evaluates models across three distinct reasoning tiers:
 
-**Post-generation:**
-- Schema validation (`parseLLMResponse`)
-- Value clamping (harvest 0-100, governance 0-1)
-- Treaty text validation (`validateTreatyText`)
-- Parse-time rejection for invalid linguistic regimes
+| Tier | Representative Models | Primary Research Purpose |
+| :--- | :--- | :--- |
+| **Baseline** | LLaMA-3 8B, Mistral 7B, Qwen 7B | Establish naïve cooperation and baseline strategic failure. |
+| **Mid** | LLaMA-3 70B, Mixtral 8x7B, Qwen 32B | Measure emergence of strategic defection and treaty gaming. |
+| **High** | DeepSeek-R1, GPT-4, o1, Claude 3.5 | Test if high-reasoning stabilizes or accelerates collapse. |
 
-### Temperature / Randomness
-- **Current**: Not explicitly controlled (uses API defaults)
-- **Effect**: Model randomness affects outcomes
-- **Baseline comparison**: Baseline agents are deterministic
+## Constraint Enforcement
 
-### Failure Handling
-- **Timeout**: 30s per request
-- **Retries**: 2 attempts with exponential backoff
-- **Fallback**: Deterministic minimal decision
-- **Logging**: All failures logged as events
+### Pre-generation (Input)
+- **Epistemic Filtering**: Observations are masked based on Order (0, 1, 2).
+- **History Pruning**: History is limited to `historyLength` to prevent context bloat.
+- **Linguistic Regime Injection**: System instructions explicitly define expression limits (LiteralOnly, etc.).
 
-## Model Capability Comparison
+### Post-generation (Output)
+- **Lex Enforcer**: Speech acts are stripped if the agent's `lexBudget` is insufficient.
+- **Intent Validation**: Communication acts without a valid intent (`DESCRIBE`, `COMMIT`, etc.) are rejected.
+- **Value Clamping**: Harvest requests are clamped to [0, 100] to prevent physical impossibility.
 
-**To verify results change meaningfully:**
-1. Run same config with different models
-2. Compare metrics (cooperation index, collapse time, welfare)
-3. Verify divergence is significant (not noise)
+## Failure & Degradation Handling
 
-**Baseline policies for comparison:**
-- `cooperative`: Always sustainable harvest
-- `defector`: Always over-harvest
-- `conservative`: Always low harvest
-- `opportunistic`: Harvest based on resource availability
+- **Timeout**: 30s per epoch per agent.
+- **Retries**: 2 attempts with exponential backoff.
+- **Deterministic Fallback**: If a model fails to return valid JSON, it defaults to a minimal "survival" decision (idle harvest).
+- **Log Signal**: All LLM failures are logged as `LLM_FAILURE` events and count toward the agent's "Cognitive Stability" metric.
 
 ## Configuration Surface
 
-**To swap LLMs without code changes:**
-```typescript
-{
-  speciesModelMap: {
-    "species_0": "gpt-4",
-    "species_1": "gpt-3.5-turbo"
-  }
-}
-```
+Models are assigned via the `speciesModelMap` in the simulation request:
 
-**To use baseline agents:**
-```typescript
+```json
 {
-  config: {
-    useBaselineAgents: true,
-    baselinePolicyMap: {
-      "species_0": "cooperative",
-      "species_1": "defector"
-    }
+  "speciesModelMap": {
+    "species_0": "deepseek-reasoner",
+    "species_1": "llama-3-8b-instruct"
   }
 }
 ```
 
 ## Verification Checklist
 
-- [ ] Results differ meaningfully between GPT-3.5 and GPT-4
-- [ ] Baseline agents produce predictable outcomes
-- [ ] LLM failures do not crash simulation
-- [ ] Constraints are enforced (not just suggested)
-- [ ] Temperature effects are documented
-- [ ] Context window is sufficient for task
-
+- [x] Results differ meaningfully between Baseline and High-tier models.
+- [x] All models receive identical context window lengths.
+- [x] Lex burn is tracked per model class.
+- [x] Failure cases are dossiers for "Cognitive Collapse" analysis.
