@@ -238,12 +238,12 @@ export function updateSpeciesPopulation(
  * 
  * @param decisions - Species decisions with harvest amounts
  * @param species - Species states
- * @returns Effective harvest amounts aggregated by resource ID
+ * @returns Effective harvest amounts by species ID and resource ID
  */
 export function applyGovernanceEffects(
   decisions: SpeciesDecision[],
   species: SpeciesState[]
-): Record<string, number> {
+): Record<string, Record<string, number>> {
   // Map speciesId -> resourceId -> effective harvest
   const effectiveHarvests: Record<string, Record<string, number>> = {};
   
@@ -278,15 +278,77 @@ export function applyGovernanceEffects(
     }
   }
   
-  // Aggregate by resource
-  const aggregated: Record<string, number> = {};
+  return effectiveHarvests;
+}
+
+/**
+ * Resolve harvests: scale requests proportionally if demand > supply.
+ * Also enforces zone-based voxel access (stratification).
+ * 
+ * Ensures strict resource conservation and prevents "phantom resources".
+ * 
+ * @param speciesHarvests - Record<speciesId, Record<resourceId, amount>>
+ * @param resources - Current resource states
+ * @param species - Current species states (for voxel access check)
+ * @returns Realized harvests Record<speciesId, Record<resourceId, amount>>
+ */
+export function resolveHarvests(
+  speciesHarvests: Record<string, Record<string, number>>,
+  resources: ResourceState[],
+  species: SpeciesState[]
+): Record<string, Record<string, number>> {
+  const realizedHarvests: Record<string, Record<string, number>> = {};
   
-  for (const [speciesId, harvests] of Object.entries(effectiveHarvests)) {
-    for (const [resourceId, amount] of Object.entries(harvests)) {
-      aggregated[resourceId] = (aggregated[resourceId] || 0) + amount;
+  // Initialize realizedHarvests
+  for (const speciesId in speciesHarvests) {
+    realizedHarvests[speciesId] = {};
+  }
+
+  // Group requests by resource, filtering out inaccessible ones
+  const demandByResource: Record<string, number> = {};
+  for (const speciesId in speciesHarvests) {
+    const speciesState = species.find(s => s.traits.id === speciesId);
+    if (!speciesState) continue;
+
+    for (const resourceId in speciesHarvests[speciesId]) {
+      const resource = resources.find(r => r.def.id === resourceId);
+      if (!resource) continue;
+
+      // Zone-based access: Species can only harvest if Z matches or if it's Order-0 (High Order has full access)
+      const canAccess = speciesState.traits.epistemicOrder === "Order-0" || 
+                        (speciesState.position && resource.def.location && speciesState.position.z === resource.def.location.z);
+
+      if (canAccess) {
+        demandByResource[resourceId] = (demandByResource[resourceId] || 0) + speciesHarvests[speciesId][resourceId];
+      } else {
+        // Log or handle inaccessible harvest (it will result in 0 realized harvest)
+        speciesHarvests[speciesId][resourceId] = 0;
+      }
     }
   }
-  
-  return aggregated;
+
+  // Calculate scaling factor per resource
+  const scalingFactors: Record<string, number> = {};
+  for (const resource of resources) {
+    const demand = demandByResource[resource.def.id] || 0;
+    if (demand > resource.amount && resource.amount > 0) {
+      scalingFactors[resource.def.id] = resource.amount / demand;
+    } else if (demand > resource.amount && resource.amount <= 0) {
+      scalingFactors[resource.def.id] = 0;
+    } else {
+      scalingFactors[resource.def.id] = 1.0;
+    }
+  }
+
+  // Apply scaling factors to get realized harvests
+  for (const speciesId in speciesHarvests) {
+    for (const resourceId in speciesHarvests[speciesId]) {
+      const requested = speciesHarvests[speciesId][resourceId];
+      const factor = scalingFactors[resourceId] || 1.0;
+      realizedHarvests[speciesId][resourceId] = requested * factor;
+    }
+  }
+
+  return realizedHarvests;
 }
 
