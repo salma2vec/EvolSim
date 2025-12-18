@@ -4,6 +4,7 @@
 
 import { PlanetEnv, SpeciesTraits, SpeciesState, LinguisticRegime, EpistemicOrder } from "./types";
 import { getRNG } from "./random";
+import { LEX_CONSTANTS } from "../config";
 
 /**
  * Generate planet environment from preset ID
@@ -159,7 +160,7 @@ export function generateSpeciesTraits(
 
   let epistemicOrder: EpistemicOrder | undefined;
   if (config?.useEpistemicOrders) {
-    epistemicOrder = rng.choice(["FastOrder", "CloisteredOrder"]);
+    epistemicOrder = rng.choice(["Order-0", "Order-1", "Order-2"]);
   }
   
   return {
@@ -210,6 +211,8 @@ export function generateSpeciesForPlanet(
       },
       policyBrainId: defaultPolicyBrainId,
       alive: true,
+      lexBudget: LEX_CONSTANTS.INITIAL_BUDGET,
+      lexRegenRate: config?.lexRegenRate ?? LEX_CONSTANTS.REGEN_RATE,
       relations: {},
       lastDecisionStep: -1, // Initialize as never having decided
     });
