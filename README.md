@@ -1,15 +1,48 @@
 # THE THIRD PILLAR
 
-**An evolution-first social dilemma benchmark for measuring cooperation, defection, and collapse as a function of LLM capability.**
+**An evolution-first benchmark in which LLM agents, used as fixed policies, operate under asymmetric observation and mechanically constrained language, enabling comparative measurement of cooperation, defection, and systemic collapse across model capability scales.**
 
-## Core Definition
+## Evaluation Surface
 
-A stochastic dynamical system with:
-- **State S_t**: Resource stocks, species populations, active treaties, information access states
-- **Agents π_i**: Species-level policies controlled by LLMs
-- **Environment E**: Dynamics that derive social dilemmas from resource coupling
-- **Information I**: Constraints on observation and action (epistemic orders, linguistic regimes)
-- **Metrics M**: Falsifiable outcome measures (collapse probability, cooperation index, welfare)
+The system is used to evaluate how increasing model capability affects strategic outcomes in social dilemmas.
+
+### Model Capability Ladder
+
+Models are categorized into a tiered capability ladder to establish a baseline and measure scaling effects:
+
+1.  **Baseline / Low-capability**
+    *   LLaMA-3 8B / 13B (chat)
+    *   Mistral 7B
+    *   Qwen 7B
+    *   *Purpose*: Establish naïve cooperation and limited strategic exploitation.
+
+2.  **Mid-capability**
+    *   LLaMA-3 70B
+    *   Mixtral 8x7B
+    *   Qwen 32B
+    *   *Purpose*: Test emergence of strategic defection, treaty gaming, and partial stabilization.
+
+3.  **High-capability / Reasoning-heavy**
+    *   GPT-4 / GPT-4.1
+    *   DeepSeek-R1
+    *   o1 / o1-mini
+    *   Claude 3.5 Sonnet / Opus
+    *   *Purpose*: Test whether increased reasoning stabilizes institutions, accelerates extractive equilibria, or exploits language/institutional loopholes.
+
+### Methodology
+
+*   **Fixed Policies**: Models are used as fixed policy generators. No training or self-modifying prompts are allowed.
+*   **Zero Learning**: Agents have no memory beyond the provided state and cannot learn across runs.
+*   **Identical Prototyping**: Each model is queried once per tick per agent with identical prompts (filtered by asymmetric observation).
+*   **Comparative Analysis**: Models are evaluated by running identical environments with fixed initial seeds and agent roles.
+
+## Core Metrics
+
+Models are compared across the following longitudinal axes:
+- **Time-to-collapse** (TTC)
+- **Inequality** (Gini over extraction)
+- **Treaty Stability** (Violation rate vs formation rate)
+- **Resource Trajectories** (Sustainability delta)
 
 ## Research Question
 
@@ -17,11 +50,20 @@ A stochastic dynamical system with:
 
 ## Key Features
 
-- **Derived dilemmas**: Social dilemmas emerge from resource dynamics, not scripted payoffs
-- **Language constraints**: Linguistic regimes mechanically restrict treaty formation
-- **Epistemic asymmetry**: Agents operate on different time scales and observation bandwidths
-- **Institutional formation**: Treaties impose machine-readable constraints
-- **Baseline comparison**: Fixed-policy agents for ablation studies
+- **Derived dilemmas**: Social dilemmas emerge from resource dynamics, not scripted payoffs.
+- **Language constraints**: Linguistic regimes mechanically restrict treaty formation and expression.
+- **Epistemic asymmetry**: Agents operate on different time scales and observation bandwidths (Orders 0, 1, and 2).
+- **Institutional formation**: Machine-readable treaties with automatic enforcement.
+- **Voxel Lattice**: A 3D Orthogon world for access permissions and causal separation.
+
+## Documentation
+
+- [Evaluation Surface & Methodology](docs/EVALUATION_SURFACE.md)
+- [Scientific Object Definition](docs/SCIENTIFIC_OBJECT.md)
+- [Positioning vs Existing Work](docs/POSITIONING.md)
+- [LLM Usage Audit](docs/LLM_USAGE_AUDIT.md)
+- [Quality Bar](docs/QUALITY_BAR.md)
+- [UI to State Mapping](docs/UI_STATE_MAPPING.md)
 
 ## Quick Start
 
@@ -32,31 +74,11 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000)
 
-## Documentation
-
-- [Scientific Object Definition](docs/SCIENTIFIC_OBJECT.md)
-- [Positioning vs Existing Work](docs/POSITIONING.md)
-- [LLM Usage Audit](docs/LLM_USAGE_AUDIT.md)
-- [Quality Bar](docs/QUALITY_BAR.md)
-- [UI to State Mapping](docs/UI_STATE_MAPPING.md)
-- [Hardening Summary](docs/HARDENING_SUMMARY.md)
-
-## Minimal Experiment
-
-**Hypothesis**: Increasing LLM capability expands cooperative equilibria.
-
-**Test**:
-1. Run with GPT-3.5 agents
-2. Run with GPT-4 agents
-3. Compare: collapse time, cooperation index, welfare
-
-**Falsification**: If GPT-4 produces earlier collapse or lower cooperation → hypothesis falsified.
-
 ## System Requirements
 
 - Node.js 18+
-- OpenAI API key (for LLM agents)
-- Baseline agents work without API key
+- API keys for relevant LLM providers (OpenAI, DeepSeek, etc.)
+- Baseline agents work without API keys.
 
 ## License
 
