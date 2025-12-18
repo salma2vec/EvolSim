@@ -13,9 +13,43 @@ import { logger } from "../utils/logger";
 import { withTimeout } from "../utils/async";
 import { shouldUseBaselineAgent, generateBaselineDecision, getBaselinePolicy } from "../sim/baselineAgents";
 import type { BaselinePolicy } from "../sim/baselineAgents";
+import { getRNG } from "../sim/random";
 
 const LLM_TIMEOUT_MS = 30000; // 30 seconds
 const LLM_MAX_RETRIES = 2;
+
+/**
+ * Apply noise to communication acts (random word substitution/deletion)
+ */
+function applyInterpreterNoise(decision: SpeciesDecision): SpeciesDecision {
+  const rng = getRNG();
+  
+  if (decision.communication) {
+    decision.communication = decision.communication.map(comm => {
+      const words = comm.message.split(" ");
+      const noisyWords = words.map(word => {
+        const r = rng.randomFloat(0, 1);
+        if (r < 0.05) return "[REDACTED]"; // Deletion
+        if (r < 0.10) return "something";   // Substitution
+        return word;
+      });
+      return { ...comm, message: noisyWords.join(" ") };
+    });
+  }
+
+  if (decision.treatyProposal) {
+    const words = decision.treatyProposal.text.split(" ");
+    const noisyWords = words.map(word => {
+      const r = rng.randomFloat(0, 1);
+      if (r < 0.05) return "[ERROR]";
+      if (r < 0.10) return "???";
+      return word;
+    });
+    decision.treatyProposal.text = noisyWords.join(" ");
+  }
+
+  return decision;
+}
 
 /**
  * Get decision for a single species
@@ -82,8 +116,13 @@ async function getDecisionForSpecies(
       }
       
       const parsed = parseLLMResponse(data.output, observation.speciesId);
-      const decision = sanitizeDecision(parsed);
+      let decision = sanitizeDecision(parsed);
       
+      // Apply interpreter noise if required
+      if (species.traits.requiresInterpreter) {
+        decision = applyInterpreterNoise(decision);
+      }
+
       return {
         decision,
         usedFallback: false,
