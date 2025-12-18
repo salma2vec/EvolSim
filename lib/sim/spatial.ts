@@ -1,112 +1,83 @@
 /**
- * Spatial model: Simple fixed-position layout for visualization
+ * Orthogon Spatial Lattice: Voxel assignment logic
  * 
- * Resources and species are assigned positions on a 2D grid.
- * Positions are deterministic (grid-based) for reproducibility.
+ * Resources and species are assigned voxels in a stratified 3D lattice.
+ * - X/Y: Resource partitioning
+ * - Z: Epistemic depth (Stratification)
+ * 
+ * This is a permission lattice, not a physics space.
  */
 
-import { ResourceDef, SpeciesState, ResourceState } from "./types";
+import { ResourceDef, SpeciesState, ResourceState, EpistemicOrder } from "./types";
 import { getRNG } from "./random";
 
 /**
- * Assign grid-based positions to resources
- * 
- * Resources are placed on a grid with spacing to avoid overlap.
- * Position is deterministic based on resource index.
+ * Get Z-layer from Epistemic Order
  */
-export function assignResourcePositions(
-  resources: ResourceState[],
-  gridSize: number = 5 // 5x5 grid
+export function getZFromOrder(order: EpistemicOrder | undefined): number {
+  switch (order) {
+    case "Order-0": return 0;
+    case "Order-1": return 1;
+    case "Order-2": return 2;
+    default: return 2;
+  }
+}
+
+/**
+ * Assign voxels to resources
+ * 
+ * Resources are distributed across layers.
+ */
+export function assignResourceVoxels(
+  resources: ResourceState[]
 ): void {
-  const spacing = 1.0 / (gridSize + 1);
+  const rng = getRNG();
   
   resources.forEach((resource, index) => {
     if (!resource.def.location) {
-      const row = Math.floor(index / gridSize);
-      const col = index % gridSize;
+      // Stratification: distribute resources across Z-layers
+      // Default: spread them out
+      const z = index % 3; 
       
       resource.def.location = {
-        x: (col + 1) * spacing,
-        y: (row + 1) * spacing,
+        x: rng.randomFloat(0.1, 0.9),
+        y: rng.randomFloat(0.1, 0.9),
+        z: z,
       };
     }
   });
 }
 
 /**
- * Assign initial positions to species
+ * Assign voxels to species
  * 
- * Species are positioned near resources (attracted to high-resource areas)
- * or randomly if no resources available.
+ * Species are fixed to the Z-layer of their Epistemic Order.
  */
-export function assignSpeciesPositions(
-  species: SpeciesState[],
-  resources: ResourceState[],
-  gridSize: number = 5
+export function assignSpeciesVoxels(
+  species: SpeciesState[]
 ): void {
   const rng = getRNG();
   
-  // If no resources, place species randomly on grid
-  if (resources.length === 0) {
-    species.forEach((s) => {
-      if (!s.position) {
-        s.position = {
-          x: rng.randomFloat(0.1, 0.9),
-          y: rng.randomFloat(0.1, 0.9),
-        };
-      }
-    });
-    return;
-  }
-  
-  // Place species near resources (weighted by resource amount)
   species.forEach((s) => {
     if (!s.position) {
-      // Calculate weighted center of resources
-      let totalWeight = 0;
-      let weightedX = 0;
-      let weightedY = 0;
+      const z = getZFromOrder(s.traits.epistemicOrder);
       
-      resources.forEach((resource) => {
-        if (resource.def.location) {
-          const weight = resource.amount / resource.def.capacityK;
-          totalWeight += weight;
-          weightedX += resource.def.location.x * weight;
-          weightedY += resource.def.location.y * weight;
-        }
-      });
-      
-      if (totalWeight > 0) {
-        // Position near weighted center with some randomness
-        const centerX = weightedX / totalWeight;
-        const centerY = weightedY / totalWeight;
-        const offset = 0.15; // Max offset from center
-        
-        s.position = {
-          x: Math.max(0.05, Math.min(0.95, centerX + rng.randomFloat(-offset, offset))),
-          y: Math.max(0.05, Math.min(0.95, centerY + rng.randomFloat(-offset, offset))),
-        };
-      } else {
-        // Fallback: random position
-        s.position = {
-          x: rng.randomFloat(0.1, 0.9),
-          y: rng.randomFloat(0.1, 0.9),
-        };
-      }
+      s.position = {
+        x: rng.randomFloat(0.1, 0.9),
+        y: rng.randomFloat(0.1, 0.9),
+        z: z,
+      };
     }
   });
 }
 
 /**
- * Initialize spatial layout for a world
- * 
- * Assigns positions to all resources and species.
+ * Initialize Orthogon lattice for a world
  */
 export function initializeSpatialLayout(
   resources: ResourceState[],
   species: SpeciesState[]
 ): void {
-  assignResourcePositions(resources);
-  assignSpeciesPositions(species, resources);
+  assignResourceVoxels(resources);
+  assignSpeciesVoxels(species);
 }
-
