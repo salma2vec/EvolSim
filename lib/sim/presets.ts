@@ -283,22 +283,22 @@ function createEmbassytownScenario(
 
   const species = generateSpeciesForPlanet(planet, 3, "small");
 
-  // LiteralOnly regime
+  // Order-2 (Emergent)
   if (species.length > 0) {
     species[0].traits.linguisticRegime = "LiteralOnly";
-    species[0].traits.epistemicOrder = "FastOrder";
+    species[0].traits.epistemicOrder = "Order-2";
   }
 
-  // Expressive regime
+  // Order-1 (Administrative)
   if (species.length > 1) {
     species[1].traits.linguisticRegime = "Expressive";
-    species[1].traits.epistemicOrder = "FastOrder";
+    species[1].traits.epistemicOrder = "Order-1";
   }
 
-  // AnchoredReference regime
+  // Order-0 (Sæcular)
   if (species.length > 2) {
     species[2].traits.linguisticRegime = "AnchoredReference";
-    species[2].traits.epistemicOrder = "FastOrder";
+    species[2].traits.epistemicOrder = "Order-0";
   }
 
   if (speciesModelMap) {
@@ -348,21 +348,21 @@ function createAnathemScenario(
 
   const species = generateSpeciesForPlanet(planet, 3, "small");
 
-  // FastOrder
+  // Order-2
   if (species.length > 0) {
-    species[0].traits.epistemicOrder = "FastOrder";
+    species[0].traits.epistemicOrder = "Order-2";
     species[0].traits.linguisticRegime = "LiteralOnly";
   }
 
-  // CloisteredOrder
+  // Order-1
   if (species.length > 1) {
-    species[1].traits.epistemicOrder = "CloisteredOrder";
+    species[1].traits.epistemicOrder = "Order-1";
     species[1].traits.linguisticRegime = "AnchoredReference";
   }
 
-  // CloisteredOrder with different regime
+  // Order-0
   if (species.length > 2) {
-    species[2].traits.epistemicOrder = "CloisteredOrder";
+    species[2].traits.epistemicOrder = "Order-0";
     species[2].traits.linguisticRegime = "AnchoredReference";
   }
 
