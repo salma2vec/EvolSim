@@ -3,15 +3,30 @@
  */
 
 /**
+ * Lex Budget constants
+ */
+export const LEX_CONSTANTS = {
+  INITIAL_BUDGET: 100,
+  REGEN_RATE: 5,
+  COSTS: {
+    DESCRIBE: 10,
+    PROMISE: 20,
+    COMMIT: 30,
+    PROPOSE: 30,
+    REPORT: 10,
+  },
+} as const;
+
+/**
  * Default simulation configuration values
- * 
- * Ablation switches default to false (features enabled by default).
- * Set to true to disable features for ablation studies.
  */
 export const DEFAULT_SIM_CONFIG = {
   maxTimeSteps: 100,
   harvestNoise: 0.05,
   historyLength: 5,
+  // Lex defaults
+  lexRegenRate: LEX_CONSTANTS.REGEN_RATE,
+  lexCosts: LEX_CONSTANTS.COSTS,
   // Ablation switches
   useLinguisticRegimes: false,  // If false, all agents can express freely
   useEpistemicOrders: false,     // If false, all agents act every step with full information
