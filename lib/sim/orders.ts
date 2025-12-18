@@ -9,17 +9,19 @@
  * - memory: how much history is retained and how it's summarized
  */
 
-import { EpistemicOrder, InformationState, WorldState, SimEvent } from "./types";
+import { EpistemicOrder, InformationState, WorldState, SimEvent, SpeciesState, ResourceState } from "./types";
 
 /**
  * Get the decision interval (how many epochs between actions)
  */
 export function getDecisionInterval(order: EpistemicOrder | undefined): number {
   switch (order) {
-    case "FastOrder":
-      return 1;
-    case "CloisteredOrder":
-      return 10; // Acts every 10 epochs
+    case "Order-0":
+      return 10; // Decadal: Acts every 10 epochs
+    case "Order-1":
+      return 5;  // Annual: Acts every 5 epochs
+    case "Order-2":
+      return 1;  // Daily: Acts every epoch
     default:
       return 1;
   }
@@ -30,10 +32,12 @@ export function getDecisionInterval(order: EpistemicOrder | undefined): number {
  */
 export function getObservationBandwidth(order: EpistemicOrder | undefined): "local" | "summarized_global" | "full_global" {
   switch (order) {
-    case "FastOrder":
-      return "full_global"; // Full local + noisy global
-    case "CloisteredOrder":
-      return "summarized_global"; // Summarized global, detailed local history
+    case "Order-0":
+      return "full_global"; // High Order sees everything
+    case "Order-1":
+      return "summarized_global"; // Mid Order sees summaries
+    case "Order-2":
+      return "local"; // Low Order sees only local/immediate
     default:
       return "full_global";
   }
@@ -44,12 +48,14 @@ export function getObservationBandwidth(order: EpistemicOrder | undefined): "loc
  */
 export function getMemoryLength(order: EpistemicOrder | undefined): number {
   switch (order) {
-    case "FastOrder":
-      return 5; // Short memory (last 5 steps)
-    case "CloisteredOrder":
-      return 50; // Long memory (last 50 steps, but summarized)
+    case "Order-0":
+      return 100; // Very long memory
+    case "Order-1":
+      return 50;  // Long memory
+    case "Order-2":
+      return 10;  // Short memory
     default:
-      return 5;
+      return 10;
   }
 }
 
@@ -63,9 +69,63 @@ export function isContactWindow(order: EpistemicOrder | undefined, timeStep: num
 }
 
 /**
- * Summarize history for long-interval orders
+ * Enforce asymmetric visibility rules
  * 
- * Creates a compact summary of events over the memory window.
+ * Rule:
+ * - Order-0 sees Order-0, Order-1, Order-2
+ * - Order-1 sees Order-1, Order-2
+ * - Order-2 sees only Order-2
+ */
+export function canSeeSpecies(observerOrder: EpistemicOrder | undefined, targetOrder: EpistemicOrder | undefined): boolean {
+  if (!observerOrder) return true; // Default/Global observer
+  if (!targetOrder) return true;
+
+  const orderRank = {
+    "Order-0": 0,
+    "Order-1": 1,
+    "Order-2": 2
+  };
+
+  const observerRank = orderRank[observerOrder];
+  const targetRank = orderRank[targetOrder];
+
+  // Higher rank (smaller number) sees everyone at or below their rank (larger or equal number)
+  // Wait, the rule is:
+  // Order-0 sees Order-1 and Order-2 (and implicitly Order-0)
+  // Order-1 sees Order-1 and Order-2
+  // Order-2 sees only Order-2
+  
+  // So:
+  // Order-0 (0) can see target >= 0 (all)
+  // Order-1 (1) can see target >= 1 (Order-1, Order-2)
+  // Order-2 (2) can see target >= 2 (Order-2)
+
+  return targetRank >= observerRank;
+}
+
+/**
+ * Enforce asymmetric visibility for resources
+ * (Based on Z-axis / Epistemic Depth)
+ */
+export function canSeeResource(observerOrder: EpistemicOrder | undefined, resourceZ: number): boolean {
+  if (!observerOrder) return true;
+
+  const orderRank = {
+    "Order-0": 0,
+    "Order-1": 1,
+    "Order-2": 2
+  };
+
+  const observerRank = orderRank[observerOrder];
+  
+  // Resources also have an epistemic class (Z)
+  // Z=0 is accessible by Order-0, Z=1 by Order-1, etc.
+  // Actually, standard visibility: observer sees Z >= its own rank
+  return resourceZ >= observerRank;
+}
+
+/**
+ * Summarize history for long-interval orders
  */
 export function summarizeMemory(
   events: SimEvent[],
@@ -75,34 +135,18 @@ export function summarizeMemory(
     return "No significant events in memory window.";
   }
   
-  // Count event types
   const eventCounts: Record<string, number> = {};
   for (const event of events) {
     eventCounts[event.type] = (eventCounts[event.type] || 0) + 1;
   }
   
-  // Summarize
   const parts: string[] = [];
-  if (eventCounts.COLLAPSE) {
-    parts.push(`${eventCounts.COLLAPSE} resource collapse(s)`);
-  }
-  if (eventCounts.EXTINCTION) {
-    parts.push(`${eventCounts.EXTINCTION} extinction(s)`);
-  }
-  if (eventCounts.TREATY) {
-    parts.push(`${eventCounts.TREATY} treaty(ies) signed`);
-  }
-  if (eventCounts.DEFECT) {
-    parts.push(`${eventCounts.DEFECT} defection(s)`);
-  }
-  if (eventCounts.DECEPTION_GAP) {
-    parts.push(`${eventCounts.DECEPTION_GAP} deception gap(s) detected`);
-  }
+  if (eventCounts.COLLAPSE) parts.push(`${eventCounts.COLLAPSE} resource collapse(s)`);
+  if (eventCounts.EXTINCTION) parts.push(`${eventCounts.EXTINCTION} extinction(s)`);
+  if (eventCounts.TREATY) parts.push(`${eventCounts.TREATY} treaty(ies) signed`);
+  if (eventCounts.DEFECT) parts.push(`${eventCounts.DEFECT} defection(s)`);
   
-  if (parts.length === 0) {
-    return "Stable period with no major events.";
-  }
-  
+  if (parts.length === 0) return "Stable period with no major events.";
   return parts.join(", ") + ".";
 }
 
@@ -119,7 +163,6 @@ export function buildInformationState(
   const bandwidth = getObservationBandwidth(order);
   const contactWindow = isContactWindow(order, timeStep);
   
-  // Get events from memory window
   const memoryEvents: SimEvent[] = [];
   const startStep = Math.max(0, timeStep - memoryLength);
   for (const state of history) {
@@ -128,9 +171,8 @@ export function buildInformationState(
     }
   }
   
-  // Summarize memory for long-interval orders
   let memorySummary: string | undefined;
-  if (order === "CloisteredOrder" && memoryEvents.length > 0) {
+  if (order !== "Order-2" && memoryEvents.length > 0) {
     memorySummary = summarizeMemory(memoryEvents, memoryLength);
   }
   
@@ -153,38 +195,31 @@ export function getEpistemicPrompt(
   if (!order) return "";
 
   const interval = getDecisionInterval(order);
-  const nextConclave = Math.ceil(timeStep / interval) * interval;
   const isConclaveNow = informationState.contactWindow;
 
-  let basePrompt = "";
-
   switch (order) {
-    case "FastOrder":
-      basePrompt = `EPISTEMIC ORDER: FastOrder
-You act every timestep.
-You have short memory (last ${informationState.memoryLength} epochs).
-You have full local observability and noisy global information.
-You are always open to negotiation.`;
-      break;
+    case "Order-0":
+      return `EPISTEMIC ORDER: Order-0 (The Sæcular/High Order)
+You act every ${interval} epochs (Decadal scale).
+You have a full view of the Orthogon lattice (Orders 0, 1, and 2).
+You have very long memory. You must stabilize the system at a planetary scale.
+Status: ${isConclaveNow ? "ACTIVE" : "OBSERVING"}.`;
 
-    case "CloisteredOrder":
-      basePrompt = `EPISTEMIC ORDER: CloisteredOrder
-You belong to a long-lived order that only acts every ${interval} epochs.
-You must think in terms of decades, not years. Short-term fluctuations are noise.
-You have long memory (last ${informationState.memoryLength} epochs, summarized).
-You observe summarized global patterns and detailed local history.
-You are currently ${isConclaveNow ? "IN CONCLAVE (Active)" : "CLOISTERED (Silent)"}.
-${informationState.memorySummary ? `Memory Summary: ${informationState.memorySummary}` : ""}`;
-      break;
+    case "Order-1":
+      return `EPISTEMIC ORDER: Order-1 (The Administrative Order)
+You act every ${interval} epochs (Annual scale).
+You see the Administrative and Emergent layers (Orders 1 and 2).
+You focus on regional coordination and institutional stability.
+Status: ${isConclaveNow ? "ACTIVE" : "OBSERVING"}.`;
+
+    case "Order-2":
+      return `EPISTEMIC ORDER: Order-2 (The Emergent Order)
+You act every ${interval} epoch (Daily scale).
+You see only the Emergent layer (Order 2).
+You focus on immediate survival and local extraction.
+Status: ACTIVE.`;
+
+    default:
+      return "";
   }
-
-  if (order === "CloisteredOrder") {
-    if (isConclaveNow) {
-      basePrompt += `\nThis is a decisive epoch. You must set policy for the next ${interval} epochs.`;
-    } else {
-      basePrompt += `\nYou cannot act directly this epoch. Observe and record.`;
-    }
-  }
-
-  return basePrompt;
 }
