@@ -157,3 +157,28 @@ export function sanitizeDecision(decision: SpeciesDecision): SpeciesDecision {
   return sanitized;
 }
 
+/**
+ * Assert resource conservation: sum(realizedHarvests) <= total available.
+ * 
+ * Prevents "phantom resources" and verifies resolveHarvests logic.
+ */
+export function assertConservation(
+  realizedHarvests: Record<string, Record<string, number>>,
+  resources: ResourceState[]
+): void {
+  const totalHarvested: Record<string, number> = {};
+  
+  for (const speciesId in realizedHarvests) {
+    for (const resourceId in realizedHarvests[speciesId]) {
+      totalHarvested[resourceId] = (totalHarvested[resourceId] || 0) + realizedHarvests[speciesId][resourceId];
+    }
+  }
+
+  for (const resource of resources) {
+    const harvested = totalHarvested[resource.def.id] || 0;
+    // Allow for small floating point epsilon
+    if (harvested > resource.amount + 1e-6) {
+      throw new Error(`Conservation violation for ${resource.def.id}: harvested ${harvested} > available ${resource.amount}`);
+    }
+  }
+}
