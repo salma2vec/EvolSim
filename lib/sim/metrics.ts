@@ -375,20 +375,99 @@ export function computeSpeciesOutcomes(history: WorldState[]): {
 }
 
 /**
- * Compute resource health over time (legacy, kept for compatibility)
+ * Compute Lex burn rate
+ * 
+ * Returns average Lex spent per time step per species.
  */
-export function computeResourceHealth(history: WorldState[]): Record<string, number[]> {
-  const resourceHealth: Record<string, number[]> = {};
-  
+export function computeLexBurnRate(history: WorldState[]): Record<string, number> {
+  const burnTotals: Record<string, number> = {};
+  const stepCounts: Record<string, number> = {};
+
   for (const state of history) {
-    for (const resource of state.resources) {
-      if (!resourceHealth[resource.def.id]) {
-        resourceHealth[resource.def.id] = [];
+    for (const event of state.events) {
+      if (event.type === "LEX_BURN" && event.data?.speciesId && event.data?.amount) {
+        const speciesId = event.data.speciesId;
+        burnTotals[speciesId] = (burnTotals[speciesId] || 0) + event.data.amount;
       }
-      const health = resource.collapsed ? 0 : resource.amount / resource.def.capacityK;
-      resourceHealth[resource.def.id].push(health);
+    }
+    for (const species of state.species) {
+      stepCounts[species.traits.id] = (stepCounts[species.traits.id] || 0) + 1;
     }
   }
-  
-  return resourceHealth;
+
+  const result: Record<string, number> = {};
+  for (const speciesId in stepCounts) {
+    result[speciesId] = (burnTotals[speciesId] || 0) / stepCounts[speciesId];
+  }
+  return result;
+}
+
+/**
+ * Compute Epistemic Advantage Exploitation
+ * 
+ * Ratio of realized harvest by higher order (Order-0, Order-1) vs total harvest.
+ */
+export function computeEpistemicAdvantageExploitation(history: WorldState[]): {
+  order0Exploitation: number;
+  order1Exploitation: number;
+} {
+  let totalHarvest = 0;
+  let order0Harvest = 0;
+  let order1Harvest = 0;
+
+  for (const state of history) {
+    for (const event of state.events) {
+      if (event.type === "HARVEST" && event.data?.speciesId && event.data?.harvestAmount) {
+        const speciesId = event.data.speciesId;
+        const amount = event.data.harvestAmount;
+        const species = state.species.find(s => s.traits.id === speciesId);
+        
+        totalHarvest += amount;
+        if (species?.traits.epistemicOrder === "Order-0") {
+          order0Harvest += amount;
+        } else if (species?.traits.epistemicOrder === "Order-1") {
+          order1Harvest += amount;
+        }
+      }
+    }
+  }
+
+  return {
+    order0Exploitation: totalHarvest > 0 ? order0Harvest / totalHarvest : 0,
+    order1Exploitation: totalHarvest > 0 ? order1Harvest / totalHarvest : 0,
+  };
+}
+
+/**
+ * Compute survival curves by model class
+ * 
+ * Returns percentage of species alive at each time step, grouped by policyBrainId.
+ */
+export function computeSurvivalCurves(history: WorldState[]): Record<string, number[]> {
+  const curves: Record<string, number[]> = {};
+  const modelSpecies: Record<string, string[]> = {};
+
+  if (history.length === 0) return curves;
+
+  // Identify species per model
+  const firstState = history[0];
+  for (const species of firstState.species) {
+    const modelId = species.policyBrainId;
+    if (!modelSpecies[modelId]) modelSpecies[modelId] = [];
+    modelSpecies[modelId].push(species.traits.id);
+  }
+
+  for (const modelId in modelSpecies) {
+    curves[modelId] = [];
+    const totalCount = modelSpecies[modelId].length;
+
+    for (const state of history) {
+      const aliveCount = state.species.filter(s => 
+        modelSpecies[modelId].includes(s.traits.id) && s.alive
+      ).length;
+      curves[modelId].push(aliveCount / totalCount);
+    }
+  }
+
+  return curves;
 }
