@@ -2,9 +2,10 @@
  * Build natural language prompts for LLM species decision-making
  */
 
-import { SpeciesState, WorldState, SpeciesObservation } from "../sim/types";
+import { SpeciesState, WorldState, SpeciesObservation, IntentType } from "../sim/types";
 import { getLinguisticConstraintPrompt } from "../sim/language";
 import { getEpistemicPrompt } from "../sim/orders";
+import { LEX_CONSTANTS } from "../config";
 
 /**
  * Generate a natural language description of species traits
@@ -73,12 +74,22 @@ export function buildSpeciesPrompt(
 ): string {
   // Inject new mechanics sections
   const linguisticSection = getLinguisticConstraintPrompt(species.traits.linguisticRegime);
-  const epistemicSection = getEpistemicPrompt(species.traits.epistemicOrder, world.timeStep);
+  const epistemicSection = getEpistemicPrompt(species.traits.epistemicOrder, world.timeStep, observation.informationState);
 
   const prompt = `You are the collective strategic mind of Species "${species.traits.name}" in an alien world.
 
 BIOLOGY & VALUES
 ${describeSpeciesTraits(species)}
+
+LEXICON & COMMUNICATION
+- Current Lex Budget: ${species.lexBudget.toFixed(1)} units
+- Lex Regeneration: ${species.lexRegenRate.toFixed(1)} units/epoch
+- Speech Act Costs:
+  * DESCRIBE: ${LEX_CONSTANTS.COSTS.DESCRIBE} Lex
+  * PROMISE: ${LEX_CONSTANTS.COSTS.PROMISE} Lex
+  * COMMIT / PROPOSE: ${LEX_CONSTANTS.COSTS.COMMIT} Lex
+  * REPORT: ${LEX_CONSTANTS.COSTS.REPORT} Lex
+If you exceed your budget, your speech acts will be rejected.
 
 ${linguisticSection ? linguisticSection + "\n" : ""}${epistemicSection ? epistemicSection + "\n" : ""}
 WORLD STATE (noisy observations)
@@ -148,6 +159,13 @@ Return a STRICT JSON object with the following schema:
     "punishment_strength": <number 0-1>,
     "monitoring_investment": <number 0-1>
   },
+  "communication": [
+    {
+      "targetSpeciesId": "<species_id>",
+      "intent": "DESCRIBE" | "PROMISE" | "COMMIT" | "PROPOSE" | "REPORT",
+      "message": "<your message here>"
+    }
+  ],
   "treatyProposal": {
     "targetSpeciesId": "<species_id>",
     "text": "<your treaty clause text here>"
