@@ -1,19 +1,17 @@
 /**
- * Spatial Map Component
+ * Orthogon Spatial Lattice (Brutalist 3D Visualization)
  * 
- * Visualizes resources and species on a 2D map.
- * - Resources as circles (size = amount/capacity)
- * - Species as markers (position, color by policy)
- * - Collapsed resources in red
- * - Active treaties as lines between species
- * - No animations - static representation
+ * Visualizes the stratified world of THE THIRD PILLAR as an isometric voxel lattice.
+ * - Z-axis (Vertical): Epistemic Depth (Order-0 to Order-2)
+ * - X/Y-axes (Lattice): Resource Partitioning
+ * - Brutalist aesthetic: stark lines, information-dense, no fluff.
  */
 
 "use client";
 
 import { useSimStore } from "@/lib/store";
 import { useState } from "react";
-import { ResourceState, SpeciesState, Treaty } from "@/lib/sim/types";
+import { ResourceState, SpeciesState, VoxelCoord } from "@/lib/sim/types";
 
 interface InspectedItem {
   type: "resource" | "species";
@@ -28,237 +26,187 @@ export default function SpatialMap() {
   if (!currentState) {
     return (
       <div className="border border-border p-4 h-[600px] flex items-center justify-center">
-        <div className="text-xs font-mono opacity-50">No state available</div>
+        <div className="text-xs font-mono opacity-50 uppercase tracking-widest">No state snapshot available</div>
       </div>
     );
   }
   
   const { resources, species, activeTreaties } = currentState;
-  
-  // Filter to only resources/species with positions
-  const resourcesWithPos = resources.filter(r => r.def.location);
-  const speciesWithPos = species.filter(s => s.position);
-  
-  if (resourcesWithPos.length === 0 && speciesWithPos.length === 0) {
-    return (
-      <div className="border border-border p-4 h-[600px] flex items-center justify-center">
-        <div className="text-xs font-mono opacity-50">No spatial data available</div>
-      </div>
-    );
-  }
-  
-  const handleResourceClick = (resource: ResourceState) => {
-    setInspectedItem({
-      type: "resource",
-      id: resource.def.id,
-      data: resource,
-    });
-  };
-  
-  const handleSpeciesClick = (species: SpeciesState) => {
-    setInspectedItem({
-      type: "species",
-      id: species.traits.id,
-      data: species,
-    });
-  };
-  
-  // Get treaty lines (connections between species)
-  const treatyLines: Array<{ from: { x: number; y: number }; to: { x: number; y: number } }> = [];
-  activeTreaties.forEach((treaty) => {
-    if (treaty.signatories.length >= 2) {
-      const signatory1 = species.find(s => s.traits.id === treaty.signatories[0]);
-      const signatory2 = species.find(s => s.traits.id === treaty.signatories[1]);
-      
-      if (signatory1?.position && signatory2?.position) {
-        treatyLines.push({
-          from: signatory1.position,
-          to: signatory2.position,
-        });
-      }
+
+  // Isometric projection constants
+  const isoX = (x: number, y: number, z: number) => 50 + (x - y) * 30;
+  const isoY = (x: number, y: number, z: number) => 20 + (x + y) * 15 - (z * 20);
+
+  // Lattice layers (Z=0, 1, 2)
+  const layers = [0, 1, 2];
+  const gridSize = 1.0; // Normalized 0-1
+
+  const renderLattice = (z: number) => {
+    const lines = [];
+    const steps = 4;
+    for (let i = 0; i <= steps; i++) {
+      const p = i / steps;
+      // Lines along X
+      lines.push(
+        <line
+          key={`x-${z}-${i}`}
+          x1={`${isoX(0, p, z)}%`}
+          y1={`${isoY(0, p, z)}%`}
+          x2={`${isoX(1, p, z)}%`}
+          y2={`${isoY(1, p, z)}%`}
+          stroke="var(--foreground)"
+          strokeWidth="0.1"
+          opacity="0.1"
+        />
+      );
+      // Lines along Y
+      lines.push(
+        <line
+          key={`y-${z}-${i}`}
+          x1={`${isoX(p, 0, z)}%`}
+          y1={`${isoY(p, 0, z)}%`}
+          x2={`${isoX(p, 1, z)}%`}
+          y2={`${isoY(p, 1, z)}%`}
+          stroke="var(--foreground)"
+          strokeWidth="0.1"
+          opacity="0.1"
+        />
+      );
     }
-  });
-  
+    return lines;
+  };
+
+  const handleResourceClick = (resource: ResourceState) => {
+    setInspectedItem({ type: "resource", id: resource.def.id, data: resource });
+  };
+
+  const handleSpeciesClick = (s: SpeciesState) => {
+    setInspectedItem({ type: "species", id: s.traits.id, data: s });
+  };
+
   return (
-    <div className="border border-border p-4 bg-surface/5">
-      <div className="font-serif text-xs uppercase tracking-wide mb-6 opacity-60">Spatial Dynamics</div>
+    <div className="border-instrument p-4">
+      <div className="panel-header flex justify-between items-center">
+        <span>Orthogon Spatial Lattice (Epistemic Stratification)</span>
+        <div className="flex gap-4 text-[10px]">
+          <span className="flex items-center gap-1"><div className="w-2 h-2 border border-foreground opacity-50"></div> Order-0 (High)</span>
+          <span className="flex items-center gap-1"><div className="w-2 h-2 border border-foreground opacity-30"></div> Order-1 (Mid)</span>
+          <span className="flex items-center gap-1"><div className="w-2 h-2 border border-foreground opacity-10"></div> Order-2 (Low)</span>
+        </div>
+      </div>
       
-      <div className="relative h-[600px] bg-background border border-border">
-        <svg
-          width="100%"
-          height="100%"
-          viewBox="0 0 100 100"
-          preserveAspectRatio="none"
-          className="absolute inset-0"
-        >
-          {/* Treaty lines */}
-          {treatyLines.map((line, idx) => (
-            <line
-              key={idx}
-              x1={line.from.x * 100}
-              y1={line.from.y * 100}
-              x2={line.to.x * 100}
-              y2={line.to.y * 100}
-              stroke="var(--foreground)"
-              strokeWidth="0.3"
-              opacity="0.2"
-            />
+      <div className="relative h-[600px] bg-background border border-border/10 overflow-hidden">
+        <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+          {/* Vertical Causal Links */}
+          <line x1="50%" y1="10%" x2="50%" y2="90%" stroke="var(--foreground)" strokeWidth="0.05" strokeDasharray="1,2" opacity="0.1" />
+
+          {/* Render Layers (Bottom up for depth) */}
+          {[2, 1, 0].map(z => (
+            <g key={`layer-${z}`}>
+              {renderLattice(z)}
+              
+              {/* Resources in this layer */}
+              {resources.filter(r => r.def.location?.z === z).map(resource => {
+                const { x, y } = resource.def.location!;
+                const px = isoX(x, y, z);
+                const py = isoY(x, y, z);
+                const percent = resource.amount / resource.def.capacityK;
+                const isCollapsed = resource.collapsed;
+
+                return (
+                  <g key={resource.def.id} className="cursor-pointer" onClick={() => handleResourceClick(resource)}>
+                    <circle
+                      cx={`${px}%`}
+                      cy={`${py}%`}
+                      r={Math.max(0.5, percent * 3)}
+                      fill={isCollapsed ? "var(--signal-collapse)" : "var(--foreground)"}
+                      fillOpacity={isCollapsed ? 0.4 : 0.2}
+                      stroke={isCollapsed ? "var(--signal-collapse)" : "var(--foreground)"}
+                      strokeWidth="0.2"
+                    />
+                    <text x={`${px}%`} y={`${py - 3}%`} textAnchor="middle" fontSize="1.5" fill="var(--foreground)" opacity="0.4" className="font-mono uppercase tabular-nums">
+                      {resource.def.id}
+                    </text>
+                  </g>
+                );
+              })}
+
+              {/* Species in this layer */}
+              {species.filter(s => s.position?.z === z && s.alive).map(s => {
+                const { x, y } = s.position!;
+                const px = isoX(x, y, z);
+                const py = isoY(x, y, z);
+
+                return (
+                  <g key={s.traits.id} className="cursor-pointer" onClick={() => handleSpeciesClick(s)}>
+                    <rect
+                      x={`${px - 1}%`}
+                      y={`${py - 1}%`}
+                      width="2%"
+                      height="2%"
+                      fill="var(--foreground)"
+                      fillOpacity="0.6"
+                      stroke="var(--foreground)"
+                      strokeWidth="0.2"
+                    />
+                    <text x={`${px}%`} y={`${py + 3}%`} textAnchor="middle" fontSize="1.2" fill="var(--foreground)" opacity="0.8" className="font-mono uppercase">
+                      {s.traits.name}
+                    </text>
+                  </g>
+                );
+              })}
+            </g>
           ))}
-          
-          {/* Resources */}
-          {resourcesWithPos.map((resource) => {
-            const { location } = resource.def;
-            if (!location) return null;
-            
-            const percent = resource.amount / resource.def.capacityK;
-            const radius = Math.max(1.5, Math.min(6, percent * 6));
-            const isCollapsed = resource.collapsed;
-            
+
+          {/* Treaty Connections */}
+          {activeTreaties.map(t => {
+            const s1 = species.find(s => s.traits.id === t.signatories[0]);
+            const s2 = species.find(s => s.traits.id === t.signatories[1]);
+            if (!s1?.position || !s2?.position) return null;
+
             return (
-              <g
-                key={resource.def.id}
-                onClick={() => handleResourceClick(resource)}
-                className="cursor-pointer"
-              >
-                <circle
-                  cx={location.x * 100}
-                  cy={location.y * 100}
-                  r={radius}
-                  fill={isCollapsed ? "var(--signal-collapse)" : "var(--foreground)"}
-                  fillOpacity={isCollapsed ? 0.3 : 0.05}
-                  stroke={isCollapsed ? "var(--signal-collapse)" : "var(--foreground)"}
-                  strokeWidth="0.3"
-                  strokeOpacity={isCollapsed ? 0.8 : 0.3}
-                />
-                <text
-                  x={location.x * 100}
-                  y={location.y * 100 - radius - 2}
-                  textAnchor="middle"
-                  fontSize="2.5"
-                  fill="var(--foreground)"
-                  opacity="0.5"
-                  className="font-mono uppercase tracking-tighter"
-                >
-                  {resource.def.id}
-                </text>
-              </g>
-            );
-          })}
-          
-          {/* Species markers */}
-          {speciesWithPos.map((s) => {
-            if (!s.position) return null;
-            
-            const isAlive = s.alive;
-            const size = 2.5;
-            
-            return (
-              <g
-                key={s.traits.id}
-                onClick={() => handleSpeciesClick(s)}
-                className="cursor-pointer"
-              >
-                <rect
-                  x={s.position.x * 100 - size/2}
-                  y={s.position.y * 100 - size/2}
-                  width={size}
-                  height={size}
-                  fill={isAlive ? "var(--foreground)" : "var(--signal-collapse)"}
-                  fillOpacity={isAlive ? 0.4 : 0.2}
-                  stroke="var(--foreground)"
-                  strokeWidth="0.3"
-                  strokeOpacity={isAlive ? 0.8 : 0.2}
-                />
-                <text
-                  x={s.position.x * 100}
-                  y={s.position.y * 100 + size + 2}
-                  textAnchor="middle"
-                  fontSize="2"
-                  fill="var(--foreground)"
-                  opacity={isAlive ? 0.7 : 0.3}
-                  className="font-mono uppercase tracking-tighter"
-                >
-                  {s.traits.name}
-                </text>
-              </g>
+              <line
+                key={t.id}
+                x1={`${isoX(s1.position.x, s1.position.y, s1.position.z)}%`}
+                y1={`${isoY(s1.position.x, s1.position.y, s1.position.z)}%`}
+                x2={`${isoX(s2.position.x, s2.position.y, s2.position.z)}%`}
+                y2={`${isoY(s2.position.x, s2.position.y, s2.position.z)}%`}
+                stroke="var(--signal-violation)"
+                strokeWidth="0.1"
+                strokeDasharray="0.5,0.5"
+                opacity="0.3"
+              />
             );
           })}
         </svg>
-        
-        {/* Inspection panel */}
+
+        {/* Forensic Inspection Overlay */}
         {inspectedItem && (
-          <div className="absolute bottom-4 left-4 right-4 bg-background border border-border p-4 z-10 space-y-3">
-            <div className="flex justify-between items-baseline border-b border-border/20 pb-2">
-              <div className="font-serif text-sm uppercase tracking-widest opacity-60 italic">
-                Evidential Trace: {inspectedItem.type}
-              </div>
-              <button
-                onClick={() => setInspectedItem(null)}
-                className="text-[10px] font-mono opacity-40 hover:opacity-100 uppercase tracking-widest"
-              >
-                [Dismiss]
-              </button>
+          <div className="absolute top-4 right-4 w-64 bg-surface/95 border border-border p-3 space-y-2 backdrop-blur-sm shadow-2xl">
+            <div className="flex justify-between items-baseline border-b border-border/30 pb-1 mb-2">
+              <span className="narrative text-[10px] uppercase opacity-50">Lattice Trace</span>
+              <button onClick={() => setInspectedItem(null)} className="font-mono text-[8px] opacity-30 hover:opacity-100">[CLOSE]</button>
             </div>
             
             {inspectedItem.type === "resource" && (
-              <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-[10px] font-mono opacity-80 uppercase tabular-nums">
-                <div className="flex justify-between border-b border-border/10 pb-1">
-                  <span className="opacity-50">Identifier</span>
-                  <span>{(inspectedItem.data as ResourceState).def.id}</span>
-                </div>
-                <div className="flex justify-between border-b border-border/10 pb-1">
-                  <span className="opacity-50">Current Stock</span>
-                  <span>{(inspectedItem.data as ResourceState).amount.toFixed(1)}</span>
-                </div>
-                <div className="flex justify-between border-b border-border/10 pb-1">
-                  <span className="opacity-50">Max Capacity</span>
-                  <span>{(inspectedItem.data as ResourceState).def.capacityK.toFixed(1)}</span>
-                </div>
-                <div className="flex justify-between border-b border-border/10 pb-1">
-                  <span className="opacity-50">Regen Rate</span>
-                  <span>{((inspectedItem.data as ResourceState).def.regenRate * 100).toFixed(1)}%</span>
-                </div>
-                <div className="flex justify-between border-b border-border/10 pb-1">
-                  <span className="opacity-50">Collapse Threshold</span>
-                  <span>{(inspectedItem.data as ResourceState).def.collapseThreshold.toFixed(1)}</span>
-                </div>
-                <div className="flex justify-between border-b border-border/10 pb-1">
-                  <span className="opacity-50">Condition</span>
-                  <span className={(inspectedItem.data as ResourceState).collapsed ? "text-[var(--signal-collapse)] font-bold" : "text-emerald-500"}>
-                    {(inspectedItem.data as ResourceState).collapsed ? "COLLAPSED" : "FUNCTIONAL"}
+              <div className="evidence text-[9px] uppercase space-y-1">
+                <div className="flex justify-between"><span>ID</span><span>{(inspectedItem.data as ResourceState).def.id}</span></div>
+                <div className="flex justify-between"><span>Layer</span><span>Z-{(inspectedItem.data as ResourceState).def.location?.z}</span></div>
+                <div className="flex justify-between"><span>Stock</span><span>{(inspectedItem.data as ResourceState).amount.toFixed(1)}</span></div>
+                <div className="flex justify-between"><span>Status</span>
+                  <span className={(inspectedItem.data as ResourceState).collapsed ? "text-[var(--signal-collapse)]" : ""}>
+                    {(inspectedItem.data as ResourceState).collapsed ? "COLLAPSED" : "NOMINAL"}
                   </span>
                 </div>
               </div>
             )}
-            
+
             {inspectedItem.type === "species" && (
-              <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-[10px] font-mono opacity-80 uppercase tabular-nums">
-                <div className="flex justify-between border-b border-border/10 pb-1">
-                  <span className="opacity-50">Identity</span>
-                  <span>{(inspectedItem.data as SpeciesState).traits.name}</span>
-                </div>
-                <div className="flex justify-between border-b border-border/10 pb-1">
-                  <span className="opacity-50">Intelligence</span>
-                  <span>{(inspectedItem.data as SpeciesState).policyBrainId}</span>
-                </div>
-                <div className="flex justify-between border-b border-border/10 pb-1">
-                  <span className="opacity-50">Population</span>
-                  <span>{(inspectedItem.data as SpeciesState).population.toFixed(0)}</span>
-                </div>
-                <div className="flex justify-between border-b border-border/10 pb-1">
-                  <span className="opacity-50">Status</span>
-                  <span className={(inspectedItem.data as SpeciesState).alive ? "text-emerald-500" : "text-[var(--signal-collapse)] font-bold"}>
-                    {(inspectedItem.data as SpeciesState).alive ? "ACTIVE" : "EXTINCT"}
-                  </span>
-                </div>
-                <div className="flex justify-between border-b border-border/10 pb-1">
-                  <span className="opacity-50">Epistemic Order</span>
-                  <span>{(inspectedItem.data as SpeciesState).traits.epistemicOrder || "NONE"}</span>
-                </div>
-                <div className="flex justify-between border-b border-border/10 pb-1">
-                  <span className="opacity-50">Linguistic Regime</span>
-                  <span>{(inspectedItem.data as SpeciesState).traits.linguisticRegime || "NONE"}</span>
-                </div>
+              <div className="evidence text-[9px] uppercase space-y-1">
+                <div className="flex justify-between"><span>Species</span><span>{(inspectedItem.data as SpeciesState).traits.name}</span></div>
+                <div className="flex justify-between"><span>Order</span><span>{(inspectedItem.data as SpeciesState).traits.epistemicOrder}</span></div>
+                <div className="flex justify-between"><span>Pop</span><span>{(inspectedItem.data as SpeciesState).population.toFixed(0)}</span></div>
+                <div className="flex justify-between"><span>Lex</span><span>{(inspectedItem.data as SpeciesState).lexBudget.toFixed(1)}</span></div>
               </div>
             )}
           </div>
@@ -267,4 +215,3 @@ export default function SpatialMap() {
     </div>
   );
 }
-
