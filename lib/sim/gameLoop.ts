@@ -12,14 +12,14 @@ import {
   Treaty,
   SpeciesState,
 } from "./types";
-import { updateResources, updateSpeciesPopulation, computePerCapitaResource, computeStress, applyGovernanceEffects } from "./dynamics";
+import { updateResources, updateSpeciesPopulation, computePerCapitaResource, computeStress, applyGovernanceEffects, resolveHarvests } from "./dynamics";
 import { getRNG } from "./random";
-import { isContactWindow, buildInformationState, getMemoryLength, getObservationBandwidth } from "./orders";
+import { isContactWindow, buildInformationState, getMemoryLength, getObservationBandwidth, canSeeSpecies, canSeeResource } from "./orders";
 import { validateTreatyText } from "./language";
 import { HARVEST_CONSTANTS } from "../config";
 import { shouldUseBaselineAgent, generateBaselineDecision, getBaselinePolicy } from "./baselineAgents";
 import type { BaselinePolicy } from "./baselineAgents";
-import { assertWorldState, sanitizeDecision, assertDecisionValid } from "./guards";
+import { assertWorldState, sanitizeDecision, assertDecisionValid, assertConservation } from "./guards";
 
 /**
  * Build observations for a species (noisy estimates of world state)
@@ -46,28 +46,31 @@ export function buildObservation(
   const observationBandwidth = informationState.observationBandwidth;
   const historyLength = config.historyLength ?? memoryLength;
   
-  // Noisy resource estimates (filtered by observation bandwidth)
-  const resourceEstimates = world.resources.map((resource) => {
-    let noise = rng.normal(0, species.traits.perceptionNoise * resource.def.capacityK);
-    
-    // If summarized_global, add more noise
-    if (observationBandwidth === "summarized_global") {
-      noise += rng.normal(0, resource.def.capacityK * 0.2);
-    }
-    
-    const estimatedAmount = Math.max(0, resource.amount + noise);
-    const uncertainty = species.traits.perceptionNoise * resource.def.capacityK;
-    
-    return {
-      resourceId: resource.def.id,
-      estimatedAmount,
-      uncertainty,
-    };
-  });
+  // Noisy resource estimates (filtered by asymmetric visibility and bandwidth)
+  const resourceEstimates = world.resources
+    .filter((resource) => canSeeResource(species.traits.epistemicOrder, resource.def.location?.z || 0))
+    .map((resource) => {
+      let noise = rng.normal(0, species.traits.perceptionNoise * resource.def.capacityK);
+      
+      // If summarized_global, add more noise
+      if (observationBandwidth === "summarized_global") {
+        noise += rng.normal(0, resource.def.capacityK * 0.2);
+      }
+      
+      const estimatedAmount = Math.max(0, resource.amount + noise);
+      const uncertainty = species.traits.perceptionNoise * resource.def.capacityK;
+      
+      return {
+        resourceId: resource.def.id,
+        estimatedAmount,
+        uncertainty,
+      };
+    });
   
-  // Other species (noisy summaries, filtered by observation bandwidth)
+  // Other species (noisy summaries, filtered by asymmetric visibility and bandwidth)
   const otherSpecies = world.species
     .filter((s) => s.traits.id !== species.traits.id && s.alive)
+    .filter((s) => canSeeSpecies(species.traits.epistemicOrder, s.traits.epistemicOrder))
     .map((s) => {
       let popNoise = rng.normal(0, s.population * 0.1);
       
@@ -274,10 +277,54 @@ export async function stepWorld(
   
   // Sanitize and validate all decisions
   const sanitizedDecisions = newDecisions.map(d => sanitizeDecision(d));
+  
+  // Lex budget enforcement
+  const lexCosts = config.lexCosts || { DESCRIBE: 10, PROMISE: 20, COMMIT: 30, PROPOSE: 30, REPORT: 10 };
+  
   for (const decision of sanitizedDecisions) {
     const species = state.species.find(s => s.traits.id === decision.speciesId);
     if (species) {
       assertDecisionValid(decision, species);
+      
+      // Calculate total Lex cost for communication acts
+      let totalLexCost = 0;
+      if (decision.communication) {
+        for (const comm of decision.communication) {
+          totalLexCost += lexCosts[comm.intent] || 10;
+        }
+      }
+      
+      // Add treaty proposal cost if applicable
+      if (decision.treatyProposal) {
+        totalLexCost += lexCosts.PROPOSE;
+      }
+      
+      // Enforce budget
+      if (totalLexCost > species.lexBudget) {
+        // Budget exceeded: strip communications and proposals
+        decision.communication = [];
+        decision.treatyProposal = undefined;
+        
+        events.push({
+          timeStep: state.timeStep,
+          type: "LANGUAGE_REJECTED",
+          message: `Speech acts for ${species.traits.name} rejected: Lex cost (${totalLexCost}) exceeds budget (${species.lexBudget.toFixed(1)}).`,
+          data: { speciesId: species.traits.id }
+        });
+      } else {
+        // Deduct Lex cost
+        // Note: Lex deduction will be applied when creating newSpecies
+        (decision as any)._lexCost = totalLexCost;
+
+        if (totalLexCost > 0) {
+          events.push({
+            timeStep: state.timeStep,
+            type: "LEX_BURN",
+            message: `${species.traits.name} burned ${totalLexCost} Lex units on speech acts.`,
+            data: { speciesId: species.traits.id, amount: totalLexCost }
+          });
+        }
+      }
     }
   }
 
@@ -434,12 +481,40 @@ export async function stepWorld(
     }
   }
 
-  // 5. Apply governance & Update World
-  const effectiveHarvests = applyGovernanceEffects(allDecisions, state.species);
+  // 5. Resolve harvests (strict conservation and voxel access)
+  const governanceAdjustedHarvests = applyGovernanceEffects(allDecisions, state.species);
+  const realizedHarvestsBySpecies = resolveHarvests(governanceAdjustedHarvests, state.resources, state.species);
   
+  // CRITICAL: Assert resource conservation before applying dynamics
+  assertConservation(realizedHarvestsBySpecies, state.resources);
+
+  // Aggregate realized harvests by resource for world dynamics
+  const totalRealizedHarvests: Record<string, number> = {};
+  for (const [speciesId, harvests] of Object.entries(realizedHarvestsBySpecies)) {
+    for (const [resId, amount] of Object.entries(harvests)) {
+      totalRealizedHarvests[resId] = (totalRealizedHarvests[resId] || 0) + amount;
+    }
+  }
+
+  // Detect and log scarcity conflicts
+  for (const resource of state.resources) {
+    const resId = resource.def.id;
+    const requested = Object.values(governanceAdjustedHarvests).reduce((sum, h) => sum + (h[resId] || 0), 0);
+    const realized = totalRealizedHarvests[resId] || 0;
+    
+    if (requested > resource.amount && resource.amount > 0) {
+      events.push({
+        timeStep: state.timeStep,
+        type: "RESOURCE_SCARCITY_CONFLICT",
+        message: `Resource conflict for ${resId}: requested ${requested.toFixed(1)}, only ${resource.amount.toFixed(1)} available. Proportional scaling applied.`,
+        data: { resourceId: resId, amount: resource.amount }
+      });
+    }
+  }
+
   const newResources = updateResources(
     state.resources,
-    effectiveHarvests,
+    totalRealizedHarvests,
     state.planet,
     config
   );
@@ -447,16 +522,10 @@ export async function stepWorld(
   const newSpecies = state.species.map((species) => {
     if (!species.alive) return species;
     
-    // Compute per-capita resource
-    const speciesHarvests: Record<string, number> = {};
-    const decision = allDecisions.find((d) => d.speciesId === species.traits.id);
-    if (decision) {
-      for (const [resourceId, harvest] of Object.entries(decision.harvest)) {
-        speciesHarvests[resourceId] = harvest;
-      }
-    }
+    // Compute per-capita resource based on REALIZED harvest
+    const speciesRealizedHarvest = realizedHarvestsBySpecies[species.traits.id] || {};
     
-    const perCapitaResource = computePerCapitaResource(species, state.resources, speciesHarvests);
+    const perCapitaResource = computePerCapitaResource(species, state.resources, speciesRealizedHarvest);
     const stress = computeStress(species, newResources, state.planet);
     
     const updatedSpecies = updateSpeciesPopulation(species, perCapitaResource, stress, state.planet);
@@ -472,6 +541,12 @@ export async function stepWorld(
       updatedSpecies.lastDecisionStep = state.timeStep;
     }
     
+    // Update Lex budget: deduct and regenerate
+    const lexCost = (decision as any)?._lexCost || 0;
+    const lexRegen = config.lexRegenRate || 5;
+    updatedSpecies.lexBudget = Math.max(0, species.lexBudget - lexCost + lexRegen);
+    updatedSpecies.lexRegenRate = lexRegen;
+
     updatedSpecies.techLevel = Math.min(1.0, updatedSpecies.techLevel + 0.001);
     
     return updatedSpecies;
