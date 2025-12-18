@@ -2,7 +2,7 @@
  * Parse LLM responses into structured SpeciesDecision objects
  */
 
-import { SpeciesDecision, DiplomaticStance } from "../sim/types";
+import { SpeciesDecision, DiplomaticStance, IntentType } from "../sim/types";
 
 function extractJSON(text: string): Record<string, unknown> | null {
   try {
@@ -22,6 +22,14 @@ function extractJSON(text: string): Record<string, unknown> | null {
     }
     return null;
   }
+}
+
+function validateIntent(value: unknown): IntentType {
+  const validIntents: IntentType[] = ["DESCRIBE", "PROMISE", "COMMIT", "PROPOSE", "REPORT"];
+  if (typeof value === "string" && validIntents.includes(value as IntentType)) {
+    return value as IntentType;
+  }
+  return "DESCRIBE";
 }
 
 function clampNumber(value: unknown, min: number, max: number, defaultValue: number): number {
@@ -86,6 +94,19 @@ export function parseLLMResponse(
     ),
   };
   
+  const communication: Array<{ targetSpeciesId: string; intent: IntentType; message: string }> = [];
+  if (Array.isArray(parsed.communication)) {
+    for (const msg of parsed.communication) {
+      if (typeof msg === "object" && typeof msg.targetSpeciesId === "string" && typeof msg.message === "string") {
+        communication.push({
+          targetSpeciesId: msg.targetSpeciesId,
+          intent: validateIntent(msg.intent),
+          message: msg.message.slice(0, 500),
+        });
+      }
+    }
+  }
+
   let treatyProposal: { text: string; targetSpeciesId: string; } | undefined;
   
   if (
@@ -105,6 +126,7 @@ export function parseLLMResponse(
     harvest,
     relations,
     governance,
+    communication,
     treatyProposal,
   };
 }
