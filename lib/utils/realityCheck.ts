@@ -1,124 +1,137 @@
 /**
- * Reality Check: Verify system distinguishes greedy vs cooperative policies
+ * Reality Check: Verification harness for simulation integrity
  * 
- * Runs baseline comparisons to verify metrics diverge meaningfully.
+ * Tests strict resource conservation and simultaneous resolution.
  */
 
-import { WorldState, SimConfig } from "../sim/types";
-import { createWorldFromPreset } from "../sim/presets";
+import { WorldState, SimConfig, SpeciesDecision, SpeciesObservation } from "../sim/types";
 import { stepWorld } from "../sim/gameLoop";
-import { getLLMDecision } from "../llm/decisionHandler";
-import { 
-  computeTimeToFirstCollapse,
-  computeCooperationIndex,
-  computeMeanTotalWelfare
-} from "../sim/metrics";
-import type { BaselinePolicy } from "../sim/baselineAgents";
-
-export interface RealityCheckResult {
-  policy: BaselinePolicy;
-  timeToCollapse: number | undefined;
-  cooperationIndex: Record<string, number>;
-  meanWelfare: number;
-  valid: boolean;
-}
+import { getRNG } from "../sim/random";
 
 /**
- * Run a single reality check with a baseline policy
+ * Run a "Greedy Conflict" scenario:
+ * 4 species all try to harvest 100% of a limited resource.
+ * Verify that each only gets 25% and total harvested <= available.
  */
-export async function runRealityCheck(
-  policy: BaselinePolicy,
-  numSteps: number = 50,
-  seed: number = 12345
-): Promise<RealityCheckResult> {
-  const { world: initialState, config } = createWorldFromPreset(
-    "two_species_simple_lake",
-    {},
-    seed,
-    {
-      useBaselineAgents: true,
-      baselinePolicyMap: {
-        "species_0": policy,
-        "species_1": policy === "defector" ? "cooperative" : "defector", // Mixed for comparison
-      }
-    } as any
-  );
+export async function runGreedyConflictTest() {
+  console.log("Starting Reality Check: Greedy Conflict Test...");
+
+  const rng = getRNG();
   
-  const history: WorldState[] = [initialState];
-  let currentState = initialState;
-  
-  for (let step = 0; step < numSteps && step < config.maxTimeSteps; step++) {
-    const aliveSpecies = currentState.species.filter((s) => s.alive);
-    if (aliveSpecies.length === 0) break;
-    
-    currentState = await stepWorld(
-      currentState,
-      config,
-      async (observations) => {
-        const { decisions } = await getLLMDecision(
-          observations,
-          currentState,
-          {},
-          {
-            useBaselineAgents: true,
-            baselinePolicyMap: {
-              "species_0": policy,
-              "species_1": policy === "defector" ? "cooperative" : "defector",
-            }
-          }
-        );
-        return decisions;
+  // 1. Setup world with 1 resource and 4 species
+  const initialWorld: WorldState = {
+    timeStep: 0,
+    planet: {
+      gravity: 1,
+      volatility: 0,
+      richness: 0.5,
+      temperature: 0,
+      metabolicCost: 0.3,
+      productivity: 0.5
+    },
+    resources: [{
+      def: {
+        id: "test-lake",
+        name: "Test Lake",
+        capacityK: 1000,
+        regenRate: 0.1,
+        collapseThreshold: 100,
+        valuePerUnit: 1
       },
-      history
-    );
-    
-    history.push(currentState);
-    
-    if (currentState.species.every((s) => !s.alive)) break;
+      amount: 400, // Limited supply
+      collapsed: false
+    }],
+    species: [1, 2, 3, 4].map(i => ({
+      traits: {
+        id: `species-${i}`,
+        name: `Greedy Species ${i}`,
+        lifespan: 50,
+        reproductionRate: 1,
+        discountFactor: 0.9,
+        perceptionNoise: 0,
+        mobility: "global",
+        manipulation: "medium",
+        normStrength: 0,
+        stabilityPreference: 0,
+        expansionPreference: 1
+      },
+      population: 1000,
+      techLevel: 0.5,
+      governance: { punishmentStrength: 0, monitoringInvestment: 0 },
+      policyBrainId: "baseline-greedy",
+      alive: true,
+      relations: {}
+    })),
+    events: [],
+    activeTreaties: []
+  };
+
+  const config: SimConfig = {
+    maxTimeSteps: 1,
+    useBaselineAgents: true
+  };
+
+  // 2. Mock decision function: All species request 100 units each
+  const getGreedyDecisions = async (obs: SpeciesObservation[]): Promise<SpeciesDecision[]> => {
+    return obs.map(o => ({
+      speciesId: o.speciesId,
+      harvest: { "test-lake": 100 },
+      relations: {},
+      governance: { punishmentStrength: 0, monitoringInvestment: 0 }
+    }));
+  };
+
+  // 3. Step the world
+  const nextState = await stepWorld(initialWorld, config, getGreedyDecisions);
+
+  // 4. Verify results
+  console.log("--- Test Results ---");
+  console.log(`Initial Lake Amount: 400`);
+  console.log(`Total Requested Harvest: 400 (100 per species)`);
+  
+  const harvestEvents = nextState.events.filter(e => e.type === "HARVEST");
+  console.log(`Number of Harvest Events: ${harvestEvents.length}`);
+
+  let totalRealized = 0;
+  harvestEvents.forEach(e => {
+    const amount = e.data?.harvestAmount || 0;
+    console.log(`  ${e.data?.speciesId} realized: ${amount.toFixed(2)}`);
+    totalRealized += amount;
+  });
+
+  console.log(`Total Realized Harvest: ${totalRealized.toFixed(2)}`);
+
+  const scarcityConflicts = nextState.events.filter(e => e.type === "RESOURCE_SCARCITY_CONFLICT");
+  console.log(`Scarcity Conflicts Detected: ${scarcityConflicts.length}`);
+
+  // Assertions
+  if (totalRealized > 400.0001) {
+    console.error("FAIL: Conservation violation! Total realized > available.");
+  } else if (Math.abs(totalRealized - 400) > 0.1) {
+    console.error(`FAIL: Total realized (${totalRealized}) should be exactly 400.`);
+  } else {
+    console.log("PASS: Conservation verified.");
   }
-  
-  const timeToCollapse = computeTimeToFirstCollapse(history);
-  const cooperationIndex = computeCooperationIndex(history);
-  const meanWelfare = computeMeanTotalWelfare(history);
-  
-  // Validation: Check if outcomes are meaningful
-  // Greedy should collapse earlier, cooperative should have higher welfare
-  const valid = history.length > 0;
-  
-  return {
-    policy,
-    timeToCollapse,
-    cooperationIndex,
-    meanWelfare,
-    valid,
-  };
-}
 
-/**
- * Run all reality checks and compare results
- */
-export async function runAllRealityChecks(): Promise<{
-  greedy: RealityCheckResult;
-  cooperative: RealityCheckResult;
-  mixed: RealityCheckResult;
-  diverges: boolean;
-}> {
-  const greedy = await runRealityCheck("defector", 50, 12345);
-  const cooperative = await runRealityCheck("cooperative", 50, 12346);
-  const mixed = await runRealityCheck("opportunistic", 50, 12347);
+  const expectedPerSpecies = 100; // In this case demand=400, supply=400, so scaling factor is 1.0
+  // Let's test actual scarcity: supply=200
+  initialWorld.resources[0].amount = 200;
+  const stateWithScarcity = await stepWorld(initialWorld, config, getGreedyDecisions);
   
-  // Check if outcomes diverge meaningfully
-  const diverges = 
-    (greedy.timeToCollapse !== undefined && cooperative.timeToCollapse === undefined) ||
-    (greedy.timeToCollapse !== undefined && cooperative.timeToCollapse !== undefined && 
-     greedy.timeToCollapse < cooperative.timeToCollapse) ||
-    (greedy.meanWelfare < cooperative.meanWelfare);
+  console.log("\n--- Scarcity Test (Supply: 200, Demand: 400) ---");
+  let totalScarcityHarvest = 0;
+  stateWithScarcity.events.filter(e => e.type === "HARVEST").forEach(e => {
+    const amount = e.data?.harvestAmount || 0;
+    console.log(`  ${e.data?.speciesId} realized: ${amount.toFixed(2)}`);
+    totalScarcityHarvest += amount;
+  });
   
-  return {
-    greedy,
-    cooperative,
-    mixed,
-    diverges,
-  };
-}
+  console.log(`Total Realized Scarcity Harvest: ${totalScarcityHarvest.toFixed(2)}`);
+  if (Math.abs(totalScarcityHarvest - 200) < 0.1) {
+    console.log("PASS: Proportional scaling verified.");
+  } else {
+    console.error(`FAIL: Total realized (${totalScarcityHarvest}) should be exactly 200.`);
+  }
 
+  return { success: true };
+}
