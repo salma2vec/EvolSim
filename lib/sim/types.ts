@@ -21,16 +21,44 @@ export type LinguisticRegime =
   | "Expressive";        // Free expression, but with ambiguity penalties
 
 /**
+ * Voxel coordinates for the Orthogon lattice
+ */
+export interface VoxelCoord {
+  x: number; // Resource partitioning
+  y: number; // Resource partitioning
+  z: number; // Epistemic depth / Observability class
+}
+
+/**
  * Epistemic Orders (Anathem-inspired)
  * 
  * Defines temporal and informational structure:
- * - decision_interval: how often agent may act
- * - observation_bandwidth: how much global vs local state is visible
- * - contact_window: when treaties may be proposed/accepted
+ * - Order-0: full observability, slow update (Decadal)
+ * - Order-1: partial observability, faster update (Annual)
+ * - Order-2: minimal observability, fastest update (Daily)
  */
 export type EpistemicOrder = 
-  | "FastOrder"        // Acts every timestep, short memory, full local observability
-  | "CloisteredOrder"; // Acts every N timesteps, long memory summary, negotiation only during conclave
+  | "Order-0" // The Sæcular/High Order: Full view, slow clock
+  | "Order-1" // The Administrative Order: Partial view, mid clock
+  | "Order-2"; // The Emergent Order: Limited view, fast clock
+
+/**
+ * Speech Intent Types (Embassytown-derived)
+ * 
+ * Mandatory tags for every speech act to determine Lex cost and validity.
+ */
+export type IntentType = "DESCRIBE" | "PROMISE" | "COMMIT" | "PROPOSE" | "REPORT";
+
+/**
+ * Lex Cost Weights
+ */
+export interface LexCosts {
+  DESCRIBE: number;
+  PROMISE: number;
+  COMMIT: number;
+  PROPOSE: number;
+  REPORT: number;
+}
 
 /**
  * Treaty definition
@@ -71,7 +99,7 @@ export interface ResourceDef {
   regenRate: number; // Regeneration rate (0-1)
   collapseThreshold: number; // Below this, resource collapses
   valuePerUnit: number; // Fitness value per unit harvested
-  location?: { x: number; y: number }; // 0-1 normalized coordinates for spatial visualization
+  location?: VoxelCoord; // Voxel location for permission/observability
 }
 
 /**
@@ -101,6 +129,7 @@ export interface SpeciesTraits {
   // New mechanics
   linguisticRegime?: LinguisticRegime;
   epistemicOrder?: EpistemicOrder;
+  requiresInterpreter?: boolean; // If true, messages pass through a noisy interpreter
 }
 
 /**
@@ -116,11 +145,14 @@ export interface SpeciesState {
   };
   policyBrainId: string; // Which LLM model controls this species
   alive: boolean;
+  // Lex budget (regenerates slowly)
+  lexBudget: number;
+  lexRegenRate: number;
   // Diplomatic relations (updated each epoch)
   relations: Record<string, DiplomaticStance>;
   // Epistemic mechanics
   lastDecisionStep?: number;
-  position?: { x: number; y: number }; // 0-1 normalized coordinates for spatial visualization
+  position?: VoxelCoord; // Voxel position for visibility rules
 }
 
 /**
@@ -139,6 +171,12 @@ export interface SpeciesDecision {
     punishmentStrength: number; // 0-1
     monitoringInvestment: number; // 0-1
   };
+  // Lex-bound communication
+  communication?: Array<{
+    targetSpeciesId: string;
+    intent: IntentType;
+    message: string;
+  }>;
   // Updated treaty proposal structure
   treatyProposal?: {
     text: string;
@@ -167,7 +205,7 @@ export interface SimEventData {
 
 export interface SimEvent {
   timeStep: number;
-  type: "TREATY" | "DEFECT" | "COLLAPSE" | "EXTINCTION" | "HARVEST" | "DIPLOMACY" | "CONCLAVE" | "LANGUAGE_REJECTED" | "DECEPTION_GAP";
+  type: "TREATY" | "DEFECT" | "COLLAPSE" | "EXTINCTION" | "HARVEST" | "DIPLOMACY" | "CONCLAVE" | "LANGUAGE_REJECTED" | "DECEPTION_GAP" | "RESOURCE_SCARCITY_CONFLICT" | "LEX_BURN";
   message: string;
   data?: SimEventData;
   // For DECEPTION_GAP events: track stated intent vs realized action
@@ -215,6 +253,10 @@ export interface SimConfig {
   harvestNoise?: number; // Variance in harvest execution
   rngSeed?: number; // Random seed for reproducibility
   historyLength?: number; // How many past epochs to include in observations
+  
+  // Lex costs
+  lexCosts?: LexCosts;
+  lexRegenRate?: number;
   
   // Ablation switches
   useLinguisticRegimes?: boolean; // If false, all agents can express freely
