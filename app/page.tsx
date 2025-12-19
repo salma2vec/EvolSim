@@ -37,51 +37,53 @@ export default function Home() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-background text-foreground font-mono">
-        <div className="max-w-[1800px] mx-auto p-6 md:p-8 space-y-12 md:space-y-16">
+      <div className="min-h-screen bg-background text-foreground antialiased">
+        <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-16 py-8 md:py-12 space-y-16 md:space-y-20">
           
           {/* Layer 1: Interpretive Summary (The "So What?") */}
-          <section className="space-y-6 md:space-y-8">
-            <header className="flex flex-col md:flex-row justify-between items-start gap-4 md:gap-0 border-b border-border pb-4 md:pb-6 mb-8 md:mb-10">
-              <div className="space-y-1">
-                <h1 className="text-xs md:text-sm font-mono uppercase tracking-[0.3em] opacity-50">Scientific Instrument</h1>
-                <div className="text-2xl md:text-4xl font-serif uppercase tracking-wider">The Third Pillar</div>
+          <section className="space-y-8 md:space-y-12">
+            <header className="flex flex-col md:flex-row justify-between items-start gap-6 border-b border-border/30 pb-8 mb-12">
+              <div className="space-y-2">
+                <h1 className="text-xs font-mono uppercase tracking-[0.2em] opacity-40 text-foreground/60">Scientific Instrument</h1>
+                <h2 className="text-3xl md:text-5xl font-serif uppercase tracking-tight leading-tight">The Third Pillar</h2>
               </div>
-              <div className="flex flex-col items-end gap-2">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2 border border-border px-2 py-1">
+              <div className="flex flex-col items-end gap-4 w-full md:w-auto">
+                <div className="flex items-center gap-3 flex-wrap">
+                  <div className="inline-flex items-center gap-0 border border-border/40 bg-surface/20">
                     <button
                       onClick={() => setViewMode("causal")}
-                      className={`text-[10px] font-mono uppercase px-2 py-1 ${
+                      className={`text-[10px] font-mono uppercase px-4 py-2 transition-all ${
                         viewMode === "causal" 
                           ? "bg-foreground text-background" 
-                          : "opacity-60 hover:opacity-100"
+                          : "opacity-60 hover:opacity-100 hover:bg-surface/40"
                       }`}
                     >
-                      Causal View
+                      Causal
                     </button>
                     <button
                       onClick={() => setViewMode("spatial")}
-                      className={`text-[10px] font-mono uppercase px-2 py-1 ${
+                      className={`text-[10px] font-mono uppercase px-4 py-2 transition-all border-l border-border/40 ${
                         viewMode === "spatial" 
                           ? "bg-foreground text-background" 
-                          : "opacity-60 hover:opacity-100"
+                          : "opacity-60 hover:opacity-100 hover:bg-surface/40"
                       }`}
                     >
-                      Spatial Map
+                      Voxel Map
                     </button>
                   </div>
-                  <label className="text-[10px] font-mono uppercase opacity-60 flex items-center gap-2 cursor-pointer border border-border px-3 py-2 hover:bg-surface/50">
+                  <label className="text-[10px] font-mono uppercase opacity-50 flex items-center gap-2 cursor-pointer border border-border/40 px-3 py-2 bg-surface/10 hover:bg-surface/30 transition-colors">
                     <input
                       type="checkbox"
                       checked={technicalMode}
                       onChange={(e) => setTechnicalMode(e.target.checked)}
-                      className="cursor-pointer"
+                      className="cursor-pointer w-3 h-3"
                     />
-                    Technical Mode
+                    Technical
                   </label>
                 </div>
-                <WorldControls />
+                <div className="w-full md:w-auto">
+                  <WorldControls />
+                </div>
               </div>
             </header>
 
@@ -90,27 +92,27 @@ export default function Home() {
 
           {/* Layer 2: Causal Panels (The "Why?") */}
           {viewMode === "causal" ? (
-            <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 lg:gap-10 items-start">
+            <section className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
               {/* Left: Institutions */}
-              <div className="lg:col-span-3 space-y-4">
-                <div className="font-serif text-xs uppercase tracking-widest opacity-40 mb-2">Institutional Overlays</div>
+              <div className="lg:col-span-3">
+                <div className="font-serif text-xs uppercase tracking-widest opacity-50 mb-4 text-foreground/70">Institutional Overlays</div>
                 <TreatyPanel />
               </div>
 
               {/* Center: Load-bearing Variable (Delta & Resources) */}
-              <div className="lg:col-span-6 space-y-4">
-                <div className="font-serif text-xs uppercase tracking-widest opacity-40 mb-2">Primary Causal Chain: Extraction vs Regen</div>
+              <div className="lg:col-span-6">
+                <div className="font-serif text-xs uppercase tracking-widest opacity-50 mb-4 text-foreground/70">Primary Causal Chain</div>
                 <WorldStatePanel />
               </div>
 
               {/* Right: Agent Policies */}
-              <div className="lg:col-span-3 space-y-4">
-                <div className="font-serif text-xs uppercase tracking-widest opacity-40 mb-2">Agent-Policy Outcomes</div>
+              <div className="lg:col-span-3">
+                <div className="font-serif text-xs uppercase tracking-widest opacity-50 mb-4 text-foreground/70">Agent Outcomes</div>
                 <AgentPanel />
               </div>
             </section>
           ) : (
-            <section className="border border-border p-4 bg-surface/5">
+            <section className="w-full">
               <SpatialMap />
             </section>
           )}

@@ -12,6 +12,7 @@
 import { useSimStore } from "@/lib/store";
 import { useState } from "react";
 import { ResourceState, SpeciesState, VoxelCoord } from "@/lib/sim/types";
+import VoxelMap from "./VoxelMap";
 
 interface InspectedItem {
   type: "resource" | "species";
@@ -85,17 +86,34 @@ export default function SpatialMap() {
   };
 
   return (
-    <div className="card">
-      <div className="panel-header flex justify-between items-center">
-        <span>Orthogon Spatial Lattice (Epistemic Stratification)</span>
-        <div className="flex gap-5 text-[10px] font-mono uppercase tracking-wider opacity-50">
-          <span className="flex items-center gap-2"><div className="w-2.5 h-2.5 border border-foreground opacity-50"></div> Order-0 (High)</span>
-          <span className="flex items-center gap-2"><div className="w-2.5 h-2.5 border border-foreground opacity-30"></div> Order-1 (Mid)</span>
-          <span className="flex items-center gap-2"><div className="w-2.5 h-2.5 border border-foreground opacity-10"></div> Order-2 (Low)</span>
-        </div>
+    <div className="w-full">
+      <VoxelMap />
+    </div>
+  );
+}
+
+// Legacy component kept for reference - using VoxelMap instead
+export function LegacySpatialMap() {
+  const { currentState } = useSimStore();
+  const [inspectedItem, setInspectedItem] = useState<InspectedItem | null>(null);
+  
+  if (!currentState) {
+    return (
+      <div className="border border-border p-4 h-[600px] flex items-center justify-center">
+        <div className="text-xs font-mono opacity-50 uppercase tracking-widest">No state snapshot available</div>
       </div>
-      
-      <div className="relative h-[600px] bg-background border border-border/20 overflow-hidden mt-6" role="img" aria-label="Spatial map showing resource and species locations">
+    );
+  }
+  
+  const { resources, species, activeTreaties } = currentState;
+
+  // Isometric projection constants
+  const isoX = (x: number, y: number, z: number) => 50 + (x - y) * 30;
+  const isoY = (x: number, y: number, z: number) => 20 + (x + y) * 15 - (z * 20);
+
+  return (
+    <div className="w-full">
+      <div className="relative h-[600px] bg-background border border-border/20 overflow-hidden" role="img" aria-label="Spatial map showing resource and species locations">
         <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
           {/* Vertical Causal Links */}
           <line x1="50%" y1="10%" x2="50%" y2="90%" stroke="var(--foreground)" strokeWidth="0.05" strokeDasharray="1,2" opacity="0.1" />

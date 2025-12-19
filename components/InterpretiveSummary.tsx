@@ -135,19 +135,19 @@ export default function InterpretiveSummary() {
             const outcomeStatus = s.alive && s.population > 1000000 ? "success" : s.alive ? "marginal" : "failure";
             
             return (
-              <div key={s.traits.id} className="card flex flex-col justify-between">
-                <div className="space-y-3">
-                  <div className="flex justify-between items-baseline border-b border-border/30 pb-2">
-                    <div className="text-[10px] font-mono opacity-50 uppercase tracking-widest">Policy Brain</div>
-                    <div className={`text-[8px] font-mono uppercase px-2 py-0.5 border ${
-                      capabilityTier === "high" ? "border-foreground/40 opacity-60" :
-                      capabilityTier === "medium" ? "border-foreground/30 opacity-50" :
-                      "border-foreground/20 opacity-40"
+              <div key={s.traits.id} className="bg-surface border border-border/40 p-5 flex flex-col justify-between hover:border-border/60 transition-colors">
+                <div className="space-y-4">
+                  <div className="flex justify-between items-baseline border-b border-border/20 pb-3">
+                    <div className="text-[10px] font-mono opacity-40 uppercase tracking-wider text-foreground/50">Policy Brain</div>
+                    <div className={`text-[8px] font-mono uppercase px-2.5 py-1 border ${
+                      capabilityTier === "high" ? "border-foreground/50 bg-foreground/5 opacity-70" :
+                      capabilityTier === "medium" ? "border-foreground/30 bg-foreground/3 opacity-60" :
+                      "border-foreground/20 bg-foreground/2 opacity-50"
                     }`}>
                       {capabilityTier}
                     </div>
                   </div>
-                  <div className="font-serif text-lg tracking-tight">{s.policyBrainId}</div>
+                  <div className="font-serif text-xl tracking-tight text-foreground/90">{s.policyBrainId}</div>
                   <div className="space-y-2 text-[10px] font-mono">
                     <div className="flex justify-between">
                       <span className="opacity-50 uppercase">Population:</span>
