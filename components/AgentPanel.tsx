@@ -70,12 +70,12 @@ export default function AgentPanel() {
               {/* Policy & Metadata */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col">
-                  <span className="font-serif text-[10px] uppercase opacity-40">Intelligence</span>
-                  <span className="font-mono text-xs">{s.policyBrainId}</span>
+                  <span className="font-serif text-[10px] uppercase opacity-40 mb-1">Intelligence</span>
+                  <span className="font-mono text-xs tabular-nums">{s.policyBrainId}</span>
                 </div>
                 <div className="flex flex-col text-right">
-                  <span className="font-serif text-[10px] uppercase opacity-40">Population</span>
-                  <span className="font-mono text-xs">{(s.population / 1000000).toFixed(2)}M</span>
+                  <span className="font-serif text-[10px] uppercase opacity-40 mb-1">Population</span>
+                  <span className="font-mono text-xs tabular-nums">{(s.population / 1000000).toFixed(2)}M</span>
                 </div>
               </div>
               
