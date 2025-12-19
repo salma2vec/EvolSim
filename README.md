@@ -1,6 +1,6 @@
 # THE THIRD PILLAR
 
-**An evolution-first benchmark in which LLM agents, used as fixed policies, operate under asymmetric observation and mechanically constrained language, enabling comparative measurement of cooperation, defection, and systemic collapse across model capability scales.**
+**Multi-agent simulation measuring LLM strategic behavior in resource competition under asymmetric information and institutional constraints.**
 
 ## Evaluation Surface
 
