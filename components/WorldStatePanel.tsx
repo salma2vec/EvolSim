@@ -77,30 +77,50 @@ export default function WorldStatePanel() {
               </div>
 
               {/* Resource Level Bar */}
-              <div className="relative h-8 bg-background border border-border">
+              <div className="relative h-10 bg-background border border-border overflow-hidden">
                 {/* Threshold Zone (Red background below threshold) */}
                 <div 
-                  className="absolute top-0 bottom-0 left-0 bg-[var(--signal-collapse)] opacity-10"
+                  className="absolute top-0 bottom-0 left-0 bg-[var(--signal-collapse)] opacity-10 transition-all duration-300"
                   style={{ width: `${thresholdPercent}%` }}
+                  aria-label="Collapse threshold zone"
                 />
                 
                 {/* Threshold marker line */}
                 <div 
-                  className="absolute top-0 bottom-0 w-px bg-[var(--signal-collapse)] z-10"
+                  className="absolute top-0 bottom-0 w-0.5 bg-[var(--signal-collapse)] z-10 transition-all duration-300"
                   style={{ left: `${thresholdPercent}%` }}
+                  aria-hidden="true"
                 />
                 <div 
-                  className="absolute -top-4 text-[8px] font-mono uppercase text-[var(--signal-collapse)]"
-                  style={{ left: `${thresholdPercent}%` }}
+                  className="absolute -top-5 text-[8px] font-mono uppercase text-[var(--signal-collapse)] opacity-70 transition-all duration-300"
+                  style={{ left: `${thresholdPercent}%`, transform: 'translateX(-50%)' }}
                 >
                   Collapse Zone
                 </div>
                 
-                {/* Current amount bar */}
+                {/* Current amount bar with smooth transition */}
                 <div
-                  className={`h-full ${collapsed ? 'bg-[var(--signal-collapse)] opacity-30' : isDeficit ? 'bg-amber-500 opacity-20' : 'bg-foreground opacity-10'}`}
+                  className={`h-full transition-all duration-500 ease-out ${
+                    collapsed 
+                      ? 'bg-[var(--signal-collapse)] opacity-40' 
+                      : isDeficit 
+                      ? 'bg-[var(--signal-violation)] opacity-25' 
+                      : 'bg-foreground opacity-15'
+                  }`}
                   style={{ width: `${Math.max(0, Math.min(100, percent))}%` }}
+                  role="progressbar"
+                  aria-valuenow={amount}
+                  aria-valuemin={0}
+                  aria-valuemax={capacity}
+                  aria-label={`${resource.def.id} resource level`}
                 />
+                
+                {/* Percentage label overlay */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-[9px] font-mono opacity-40 tabular-nums">
+                    {percent.toFixed(1)}%
+                  </span>
+                </div>
               </div>
               
               {/* Static Metadata */}
