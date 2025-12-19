@@ -97,17 +97,24 @@ h1, h2, h3, h4, h5, h6, .font-serif {
 
 /* Scrollbar - minimal, functional */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
+  height: 10px;
 }
 ::-webkit-scrollbar-track {
   background: var(--background);
+  border-left: 1px solid var(--border);
 }
 ::-webkit-scrollbar-thumb {
   background: var(--border);
+  border: 1px solid var(--background);
+  transition: background 0.2s ease;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--foreground);
-  opacity: 0.3;
+  opacity: 0.5;
+}
+::-webkit-scrollbar-corner {
+  background: var(--background);
 }
 
 /* NO ANIMATIONS - static layouts only */
