@@ -57,12 +57,14 @@ export default function TreatyPanel() {
           const isViolated = treaty.violated || !!violation;
           
           return (
-            <div key={treaty.id} className="space-y-4 p-4 border border-border/20 bg-surface/30 hover:bg-surface/40 transition-colors">
+            <div key={treaty.id} className="space-y-4 p-4 border border-border/20 bg-surface/30 hover:bg-surface/40 hover:border-border/30 transition-all duration-200">
               {/* Treaty identifier */}
               <div className="flex justify-between items-baseline border-b border-border/10 pb-3">
                 <span className="text-[10px] font-mono uppercase tracking-wider opacity-60">{treaty.id}</span>
                 {isViolated && (
-                  <span className="text-[10px] font-mono text-[var(--signal-collapse)] font-bold">BREACHED</span>
+                  <span className="text-[10px] font-mono text-[var(--signal-collapse)] font-bold animate-pulse">
+                    BREACHED
+                  </span>
                 )}
               </div>
               
