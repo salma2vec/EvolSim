@@ -38,14 +38,14 @@ export default function Home() {
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-background text-foreground font-mono">
-        <div className="max-w-[1800px] mx-auto p-8 space-y-16">
+        <div className="max-w-[1800px] mx-auto p-6 md:p-8 space-y-12 md:space-y-16">
           
           {/* Layer 1: Interpretive Summary (The "So What?") */}
-          <section className="space-y-8">
-            <header className="flex justify-between items-start border-b border-border pb-6 mb-10">
+          <section className="space-y-6 md:space-y-8">
+            <header className="flex flex-col md:flex-row justify-between items-start gap-4 md:gap-0 border-b border-border pb-4 md:pb-6 mb-8 md:mb-10">
               <div className="space-y-1">
-                <h1 className="text-sm font-mono uppercase tracking-[0.3em] opacity-50">Scientific Instrument</h1>
-                <div className="text-4xl font-serif uppercase tracking-wider">The Third Pillar</div>
+                <h1 className="text-xs md:text-sm font-mono uppercase tracking-[0.3em] opacity-50">Scientific Instrument</h1>
+                <div className="text-2xl md:text-4xl font-serif uppercase tracking-wider">The Third Pillar</div>
               </div>
               <div className="flex flex-col items-end gap-2">
                 <div className="flex items-center gap-4">
