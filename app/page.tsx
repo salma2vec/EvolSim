@@ -42,10 +42,10 @@ export default function Home() {
           
           {/* Layer 1: Interpretive Summary (The "So What?") */}
           <section className="space-y-8 md:space-y-12">
-            <header className="flex flex-col md:flex-row justify-between items-start gap-6 border-b border-border/30 pb-8 mb-12">
-              <div className="space-y-2">
+            <header className="flex flex-col md:flex-row justify-between items-start gap-8 border-b border-border/30 pb-10 mb-14">
+              <div className="space-y-3">
                 <h1 className="text-xs font-mono uppercase tracking-[0.2em] opacity-40 text-foreground/60">Scientific Instrument</h1>
-                <h2 className="text-3xl md:text-5xl font-serif uppercase tracking-tight leading-tight">The Third Pillar</h2>
+                <h2 className="text-4xl md:text-6xl font-serif uppercase tracking-tight leading-none">The Third Pillar</h2>
               </div>
               <div className="flex flex-col items-end gap-4 w-full md:w-auto">
                 <div className="flex items-center gap-3 flex-wrap">
