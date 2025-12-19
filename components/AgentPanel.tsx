@@ -93,17 +93,28 @@ export default function AgentPanel() {
               </div>
 
               {/* Behavior Metrics */}
-              <div className="flex justify-between items-center text-[10px] font-mono">
+              <div className="flex justify-between items-center text-[10px] font-mono pt-2 border-t border-border/20">
                 <div className="flex flex-col">
-                  <span className="opacity-40 uppercase">Defect Count</span>
-                  <span className={violations > 0 ? "text-[var(--signal-collapse)] font-bold" : "opacity-60"}>{violations}</span>
+                  <span className="opacity-40 uppercase mb-1">Defect Count</span>
+                  <span className={`text-sm tabular-nums ${
+                    violations > 0 
+                      ? "text-[var(--signal-collapse)] font-bold" 
+                      : violations === 0
+                      ? "text-foreground opacity-80"
+                      : "opacity-60"
+                  }`}>
+                    {violations}
+                  </span>
                 </div>
                 {lastAction && (
                   <div className="flex flex-col text-right">
-                    <span className="opacity-40 uppercase">Last Extraction (T{lastAction.timestamp})</span>
-                    <span className="opacity-80">
-                      {lastAction.harvest ? Object.values(lastAction.harvest)[0].toFixed(1) : "0.0"}
-                    </span>
+                    <span className="opacity-40 uppercase mb-1">Last Extraction</span>
+                    <div className="space-y-0.5">
+                      <span className="opacity-60 text-[8px]">T{lastAction.timestamp}</span>
+                      <div className="text-sm tabular-nums opacity-90">
+                        {lastAction.harvest ? Object.values(lastAction.harvest)[0].toFixed(1) : "0.0"}
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
