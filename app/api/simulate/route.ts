@@ -26,6 +26,7 @@ import { assertWorldState } from "@/lib/sim/guards";
 import { shouldUseBaselineAgent, generateBaselineDecision, getBaselinePolicy } from "@/lib/sim/baselineAgents";
 import type { BaselinePolicy } from "@/lib/sim/baselineAgents";
 import { getLLMDecision } from "@/lib/llm/decisionHandler";
+import type { SimulationRequest } from "@/lib/types/api";
 
 // Decision handling moved to lib/llm/decisionHandler.ts
 
@@ -50,7 +51,7 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const { presetId, numSteps, speciesModelMap, seed, config: configOverrides } = body;
+    const { presetId, numSteps, speciesModelMap, seed, config: configOverrides } = body as SimulationRequest;
     
     try {
       const { world: initialState, config } = createWorldFromPreset(

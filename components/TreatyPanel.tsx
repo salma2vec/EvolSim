@@ -38,9 +38,9 @@ export default function TreatyPanel() {
   
   if (activeTreaties.length === 0) {
     return (
-      <div className="border border-border p-4 bg-surface/5">
-        <div className="font-serif text-xs uppercase tracking-wide mb-4 opacity-60">Institutional Overlays</div>
-        <div className="text-xs font-serif italic opacity-40 leading-relaxed">
+      <div className="card">
+        <div className="font-serif text-xs uppercase tracking-wide mb-6 opacity-65">Institutional Overlays</div>
+        <div className="text-xs font-serif italic opacity-45 leading-relaxed">
           No formal agreements present. Coordination must emerge purely from policy heuristics.
         </div>
       </div>
@@ -48,18 +48,18 @@ export default function TreatyPanel() {
   }
   
   return (
-    <div className="border border-border p-4 bg-surface/5">
-      <div className="font-serif text-xs uppercase tracking-wide mb-6 opacity-60">Institutional Overlays</div>
+    <div className="card">
+      <div className="font-serif text-xs uppercase tracking-wide mb-8 opacity-65">Institutional Overlays</div>
       
-      <div className="space-y-6">
+      <div className="space-y-8">
         {activeTreaties.map((treaty) => {
           const violation = violations[treaty.id];
           const isViolated = treaty.violated || !!violation;
           
           return (
-            <div key={treaty.id} className="space-y-3 p-3 border border-border/20 bg-background">
+            <div key={treaty.id} className="space-y-4 p-4 border border-border/20 bg-surface/30 hover:bg-surface/40 transition-colors">
               {/* Treaty identifier */}
-              <div className="flex justify-between items-baseline border-b border-border/10 pb-2">
+              <div className="flex justify-between items-baseline border-b border-border/10 pb-3">
                 <span className="text-[10px] font-mono uppercase tracking-wider opacity-60">{treaty.id}</span>
                 {isViolated && (
                   <span className="text-[10px] font-mono text-[var(--signal-collapse)] font-bold">BREACHED</span>

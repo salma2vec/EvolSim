@@ -38,11 +38,11 @@ export default function Home() {
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-background text-foreground font-mono">
-        <div className="max-w-[1800px] mx-auto p-6 space-y-12">
+        <div className="max-w-[1800px] mx-auto p-8 space-y-16">
           
           {/* Layer 1: Interpretive Summary (The "So What?") */}
-          <section className="space-y-6">
-            <header className="flex justify-between items-start border-b border-border pb-4 mb-8">
+          <section className="space-y-8">
+            <header className="flex justify-between items-start border-b border-border pb-6 mb-10">
               <div className="space-y-1">
                 <h1 className="text-sm font-mono uppercase tracking-[0.3em] opacity-50">Scientific Instrument</h1>
                 <div className="text-4xl font-serif uppercase tracking-wider">The Third Pillar</div>
@@ -90,7 +90,7 @@ export default function Home() {
 
           {/* Layer 2: Causal Panels (The "Why?") */}
           {viewMode === "causal" ? (
-            <section className="grid grid-cols-12 gap-8 items-start">
+            <section className="grid grid-cols-12 gap-10 items-start">
               {/* Left: Institutions */}
               <div className="col-span-3 space-y-4">
                 <div className="font-serif text-xs uppercase tracking-widest opacity-40 mb-2">Institutional Overlays</div>

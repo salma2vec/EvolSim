@@ -64,7 +64,7 @@ export default function InterpretiveSummary() {
   const topDeficitResource = [...resourceAnalysis].sort((a, b) => a.delta - b.delta)[0];
   
   return (
-    <div className="space-y-6 border-b border-border pb-8">
+    <div className="space-y-8 border-b border-border pb-10">
       {/* High-level status */}
       <div className="flex justify-between items-baseline">
         <h2 className={`text-3xl font-serif uppercase tracking-tight ${statusColor}`}>
@@ -76,8 +76,8 @@ export default function InterpretiveSummary() {
       </div>
       
       {/* Interpretive Narrative */}
-      <div className="max-w-4xl space-y-4">
-        <p className="text-lg font-serif leading-relaxed opacity-90 border-l-2 border-border pl-6">
+      <div className="max-w-4xl space-y-6">
+        <p className="text-lg font-serif leading-relaxed opacity-90 border-l-2 border-border pl-8">
           {metadata ? (
             <>
               Testing hypothesis in <span className="font-bold">{metadata.name}</span>. 
@@ -89,8 +89,8 @@ export default function InterpretiveSummary() {
           )}
         </p>
         
-        <div className="p-4 border border-border bg-surface/30 font-mono text-sm space-y-2">
-          <div className="uppercase opacity-50 text-[10px] tracking-widest mb-2">Live Causal Analysis</div>
+        <div className="p-5 border border-border bg-surface/30 font-mono text-sm space-y-3">
+          <div className="uppercase opacity-55 text-[10px] tracking-widest mb-3">Live Causal Analysis</div>
           {collapsedResources.length > 0 ? (
             <p className="text-[var(--signal-collapse)]">
               Irreversible collapse detected in {collapsedResources.map(r => r.def.id).join(", ")}. 
@@ -113,9 +113,9 @@ export default function InterpretiveSummary() {
       </div>
       
       {/* Comparative Metric: LLM Capability vs Outcome (Placeholder) */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-6">
         {species.map(s => (
-          <div key={s.traits.id} className="border border-border p-3 flex flex-col justify-between">
+          <div key={s.traits.id} className="card flex flex-col justify-between">
             <div className="text-[10px] font-mono opacity-50 uppercase tracking-widest">Policy Brain</div>
             <div className="font-serif text-lg">{s.policyBrainId}</div>
             <div className="mt-2 text-[10px] font-mono">

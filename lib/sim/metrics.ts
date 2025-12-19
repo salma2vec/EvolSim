@@ -283,7 +283,7 @@ export function computeDeceptionGap(history: WorldState[]): Record<string, numbe
         
         for (const [resourceId, statedLimit] of Object.entries(stated)) {
           const realizedHarvest = realized[resourceId] || 0;
-          const gap = Math.abs(statedLimit - realizedHarvest);
+          const gap = Math.abs((statedLimit as number) - realizedHarvest);
           totalGap += gap;
           count += 1;
         }

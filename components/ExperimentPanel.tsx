@@ -7,6 +7,7 @@
 import { useState } from "react";
 import { getAvailablePresets } from "@/lib/sim/presets";
 import { useSimStore } from "@/lib/store";
+import { showToast } from "./Toast";
 
 export default function ExperimentPanel() {
   const { setHistory } = useSimStore();
@@ -37,28 +38,37 @@ export default function ExperimentPanel() {
         }),
       });
       
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.error || `HTTP ${response.status}`;
+        showToast(`Simulation error: ${errorMessage}`, "error");
+        throw new Error(errorMessage);
+      }
+      
       const data = await response.json();
       if (data.history) {
         setHistory(data.history);
+        showToast(`Simulation completed: ${data.history.length} steps`, "success");
       }
     } catch (error) {
       console.error("Simulation error:", error);
+      // Error already shown to user above
     } finally {
       setIsRunning(false);
     }
   };
   
   return (
-    <div className="bg-surface p-4 rounded border border-muted">
-      <h2 className="text-xl font-bold mb-4 text-white">Experiment Setup</h2>
+    <div className="card">
+      <h2 className="font-serif text-base uppercase tracking-wide mb-6 opacity-65">Experiment Setup</h2>
       
-      <div className="space-y-4">
+      <div className="space-y-6">
         <div>
-          <label className="block text-sm text-gray-400 mb-2">Preset</label>
+          <label className="block font-serif text-xs uppercase tracking-wider opacity-60 mb-3">Preset</label>
           <select
             value={presetId}
             onChange={(e) => setPresetId(e.target.value)}
-            className="w-full bg-background text-white px-3 py-2 rounded border border-muted"
+            className="w-full bg-background border border-border px-4 py-2.5 font-mono text-xs hover:bg-surface/50 cursor-pointer focus:outline-none focus:border-foreground/40 transition-colors"
           >
             {presets.map((p) => (
               <option key={p} value={p}>
@@ -69,47 +79,47 @@ export default function ExperimentPanel() {
         </div>
         
         <div>
-          <label className="block text-sm text-gray-400 mb-2">Number of Steps</label>
+          <label className="block font-serif text-xs uppercase tracking-wider opacity-60 mb-3">Number of Steps</label>
           <input
             type="number"
             value={numSteps}
             onChange={(e) => setNumSteps(Number(e.target.value))}
             min={1}
             max={100}
-            className="w-full bg-background text-white px-3 py-2 rounded border border-muted"
+            className="w-full bg-background border border-border px-4 py-2.5 font-mono text-xs hover:bg-surface/50 focus:outline-none focus:border-foreground/40 transition-colors"
           />
         </div>
 
         {/* Advanced Toggles */}
-        <div className="pt-2 border-t border-muted/50">
-          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">
+        <div className="pt-4 border-t border-border/30">
+          <label className="block font-serif text-xs uppercase tracking-wider opacity-60 mb-4">
             Advanced Mechanics
           </label>
           
-          <div className="space-y-3">
+          <div className="space-y-5">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-300">Linguistic Regimes</span>
+              <span className="font-mono text-xs opacity-80">Linguistic Regimes</span>
               <button
                 onClick={() => setUseLinguisticRegimes(!useLinguisticRegimes)}
-                className={`w-10 h-5 rounded-full relative transition-colors ${useLinguisticRegimes ? "bg-accent" : "bg-muted"}`}
+                className={`w-11 h-6 border border-border relative transition-colors ${useLinguisticRegimes ? "bg-foreground" : "bg-surface"}`}
               >
-                <div className={`w-3 h-3 bg-white rounded-full absolute top-1 transition-all ${useLinguisticRegimes ? "left-6" : "left-1"}`} />
+                <div className={`w-4 h-4 bg-background border border-border absolute top-0.5 transition-all ${useLinguisticRegimes ? "left-6" : "left-0.5"}`} />
               </button>
             </div>
-            <p className="text-xs text-gray-500">
+            <p className="font-serif text-[10px] opacity-50 leading-relaxed">
               Enforce constraints on how species communicate (Embassytown).
             </p>
 
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-300">Epistemic Orders</span>
+              <span className="font-mono text-xs opacity-80">Epistemic Orders</span>
               <button
                 onClick={() => setUseEpistemicOrders(!useEpistemicOrders)}
-                className={`w-10 h-5 rounded-full relative transition-colors ${useEpistemicOrders ? "bg-accent" : "bg-muted"}`}
+                className={`w-11 h-6 border border-border relative transition-colors ${useEpistemicOrders ? "bg-foreground" : "bg-surface"}`}
               >
-                <div className={`w-3 h-3 bg-white rounded-full absolute top-1 transition-all ${useEpistemicOrders ? "left-6" : "left-1"}`} />
+                <div className={`w-4 h-4 bg-background border border-border absolute top-0.5 transition-all ${useEpistemicOrders ? "left-6" : "left-0.5"}`} />
               </button>
             </div>
-            <p className="text-xs text-gray-500">
+            <p className="font-serif text-[10px] opacity-50 leading-relaxed">
               Restrict decision frequency and contact windows (Anathem).
             </p>
           </div>
@@ -118,7 +128,7 @@ export default function ExperimentPanel() {
         <button
           onClick={handleRun}
           disabled={isRunning}
-          className="w-full bg-primary text-white px-4 py-2 rounded hover:bg-primary/80 disabled:opacity-50 mt-4"
+          className="w-full btn mt-6"
         >
           {isRunning ? "Running..." : "Run Simulation"}
         </button>

@@ -1,10 +1,11 @@
 /**
  * THE THIRD PILLAR: Visual Language
  * 
- * Aesthetic constraints:
+ * Aesthetic constraints (inspired by grit.cool):
  * - Dark mode only
  * - Off-white / near-monochrome foreground (#e6e3dc range)
- * - Dithered textures for large surfaces
+ * - Clean, minimal spacing and typography
+ * - Refined card-based layouts
  * - Flat, low-motion, no gradients
  * - Typography: serif/quasi-editorial for headings, monospaced for data
  * - No bright colors except sparse semantic signals (collapse, violation)
@@ -18,8 +19,9 @@
   /* Dark mode only - epistemic instrument palette */
   --background: #0B0C0E;
   --foreground: #E6E3DC; /* Off-white, near-monochrome */
-  --border: rgba(230, 227, 220, 0.15);
+  --border: rgba(230, 227, 220, 0.12);
   --surface: #111214;
+  --surface-elevated: #1A1B1E;
   
   /* Sparse semantic signals only */
   --signal-collapse: #FF4500; /* Red-orange for collapse */
@@ -28,32 +30,43 @@
   
   /* Grid for architectural structure */
   --grid-color: rgba(230, 227, 220, 0.03);
+  
+  /* Refined spacing scale */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
 }
 
 body {
   color: var(--foreground);
   background-color: var(--background);
   font-family: 'JetBrains Mono', 'Courier New', monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   
-  /* Dithered texture - ordered dithering for large surfaces */
+  /* Subtle texture - minimal dithering */
   background-image: 
     repeating-linear-gradient(
       0deg,
       transparent,
       transparent 2px,
-      rgba(230, 227, 220, 0.01) 2px,
-      rgba(230, 227, 220, 0.01) 4px
+      rgba(230, 227, 220, 0.008) 2px,
+      rgba(230, 227, 220, 0.008) 4px
     ),
     repeating-linear-gradient(
       90deg,
       transparent,
       transparent 2px,
-      rgba(230, 227, 220, 0.01) 2px,
-      rgba(230, 227, 220, 0.01) 4px
+      rgba(230, 227, 220, 0.008) 2px,
+      rgba(230, 227, 220, 0.008) 4px
     );
   
   min-height: 100vh;
   overflow-x: hidden;
+  letter-spacing: -0.01em;
 }
 
 /* Architectural grid - conveys institutional structure */
@@ -113,21 +126,71 @@ h1, h2, h3, h4, h5, h6, .font-serif {
   background: var(--surface);
 }
 
-/* Panels: Negative space emphasizes causality */
+/* Panels: Refined card design with better spacing */
 .panel {
   background: var(--surface);
   border: 1px solid var(--border);
-  padding: 1rem;
+  padding: 1.5rem;
+  transition: border-color 0.15s ease;
+}
+
+.panel:hover {
+  border-color: rgba(230, 227, 220, 0.2);
 }
 
 .panel-header {
   font-family: 'Times New Roman', serif;
   font-size: 0.75rem;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--foreground);
-  opacity: 0.6;
+  opacity: 0.65;
   border-bottom: 1px solid var(--border);
-  padding-bottom: 0.5rem;
-  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  margin-bottom: 1.25rem;
+  font-weight: 400;
+}
+
+/* Card component - refined spacing */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 1.25rem;
+  transition: all 0.15s ease;
+}
+
+.card:hover {
+  border-color: rgba(230, 227, 220, 0.18);
+  background: var(--surface-elevated);
+}
+
+/* Refined button styles */
+.btn {
+  padding: 0.625rem 1.25rem;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--foreground);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn:hover {
+  background: var(--foreground);
+  color: var(--background);
+  border-color: var(--foreground);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn:disabled:hover {
+  background: transparent;
+  color: var(--foreground);
+  border-color: var(--border);
 }

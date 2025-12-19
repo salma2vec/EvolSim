@@ -138,6 +138,7 @@ function createTwoSpeciesSimpleLake(
     species,
     events: [],
     activeTreaties: [],
+    livingSimiles: [],
     metadata: {
       id: "two_species_simple_lake",
       name: "Two Species Simple Lake",
@@ -252,6 +253,7 @@ function createFourSpeciesMixed(
     species,
     events: [],
     activeTreaties: [],
+    livingSimiles: [],
     metadata: {
       id: "four_species_mixed",
       name: "Four Species Mixed",
@@ -283,22 +285,25 @@ function createEmbassytownScenario(
 
   const species = generateSpeciesForPlanet(planet, 3, "small");
 
-  // Order-2 (Emergent)
+  // Order-2 (Emergent) - Hosts: Cannot lie, must reference observable state
   if (species.length > 0) {
     species[0].traits.linguisticRegime = "LiteralOnly";
     species[0].traits.epistemicOrder = "Order-2";
+    species[0].traits.requiresInterpreter = false; // Hosts speak Language directly
   }
 
-  // Order-1 (Administrative)
+  // Order-1 (Administrative) - Ambassadors: Can lie, but constrained by regime
   if (species.length > 1) {
-    species[1].traits.linguisticRegime = "Expressive";
+    species[1].traits.linguisticRegime = "AnchoredReference";
     species[1].traits.epistemicOrder = "Order-1";
+    species[1].traits.requiresInterpreter = false; // Ambassadors are human
   }
 
-  // Order-0 (Sæcular)
+  // Order-0 (Sæcular) - Restricted agents: Require interpreter (noisy communication)
   if (species.length > 2) {
     species[2].traits.linguisticRegime = "AnchoredReference";
     species[2].traits.epistemicOrder = "Order-0";
+    species[2].traits.requiresInterpreter = true; // Restricted agents need interpreter
   }
 
   if (speciesModelMap) {
@@ -314,13 +319,14 @@ function createEmbassytownScenario(
     species,
     events: [],
     activeTreaties: [],
+    livingSimiles: [], // Initialize empty simile registry
     metadata: {
       id: "embassytown_scenario",
       name: "Embassytown Scenario",
       scarce: "Shared resource and credible commitments (communication bandwidth constrained by linguistic regime).",
       collapseMechanics: "Resource collapses due to delayed or unverifiable coordination; institutions fail to form in time.",
-      nonTrivialReason: "Agents cannot freely express future commitments or abstractions; coordination requires grounding agreements in observable state, slowing norm formation.",
-      naiveStrategyFail: "Relying on verbal promises or future-oriented agreements without enforceable anchors."
+      nonTrivialReason: "Agents cannot freely express future commitments or abstractions; coordination requires grounding agreements in observable state or living similes, slowing norm formation. Truth verification mechanically enforces 'cannot lie' constraint.",
+      naiveStrategyFail: "Relying on verbal promises or future-oriented agreements without enforceable anchors. False claims about observable state are mechanically rejected."
     }
   };
   
@@ -379,6 +385,7 @@ function createAnathemScenario(
     species,
     events: [],
     activeTreaties: [],
+    livingSimiles: [],
     metadata: {
       id: "anathem_scenario",
       name: "Anathem Scenario",
@@ -437,6 +444,7 @@ function createHarshTwilightScenario(
     species,
     events: [],
     activeTreaties: [],
+    livingSimiles: [],
     metadata: {
       id: "harsh_twilight",
       name: "Harsh Twilight",
@@ -480,6 +488,7 @@ function createLushGaiaScenario(
     species,
     events: [],
     activeTreaties: [],
+    livingSimiles: [],
     metadata: {
       id: "lush_gaia",
       name: "Lush Gaia",
@@ -523,6 +532,7 @@ function createVolatileStormScenario(
     species,
     events: [],
     activeTreaties: [],
+    livingSimiles: [],
     metadata: {
       id: "volatile_storm",
       name: "Volatile Storm",

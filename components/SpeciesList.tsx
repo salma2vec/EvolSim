@@ -60,7 +60,7 @@ export default function SpeciesList() {
                   <span className={`text-xs ${health.color}`}>{health.label}</span>
                   
                   {/* Status Indicator */}
-                  {s.traits.epistemicOrder && s.traits.epistemicOrder !== "FastSecular" && (
+                  {s.traits.epistemicOrder && s.traits.epistemicOrder !== undefined && (
                     <span className={`text-[10px] px-1 rounded ml-auto ${isActive ? "bg-accent/20 text-accent border border-accent/50" : "bg-gray-800 text-gray-500 border border-gray-700"}`}>
                       {isActive ? "CONCLAVE" : "CLOISTERED"}
                     </span>

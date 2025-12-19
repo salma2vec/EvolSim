@@ -19,7 +19,25 @@ const LLM_TIMEOUT_MS = 30000; // 30 seconds
 const LLM_MAX_RETRIES = 2;
 
 /**
- * Apply noise to communication acts (random word substitution/deletion)
+ * Semantic substitution dictionary for interpreter noise
+ * 
+ * Replaces words with contextually plausible but incorrect alternatives.
+ */
+const SEMANTIC_SUBSTITUTIONS: Record<string, string[]> = {
+  "harvest": ["extract", "collect", "gather", "take"],
+  "limit": ["bound", "cap", "maximum", "ceiling"],
+  "resource": ["material", "substance", "stock", "supply"],
+  "units": ["amount", "quantity", "volume", "measure"],
+  "epoch": ["time", "period", "step", "cycle"],
+  "exceed": ["surpass", "go over", "break", "violate"],
+  "shall": ["will", "must", "should", "can"],
+  "not": ["never", "no", "cannot", "won't"],
+};
+
+/**
+ * Apply noise to communication acts (systematic misinterpretation, not random)
+ * 
+ * Strengthened to 20-30% noise rate with semantic substitution.
  */
 function applyInterpreterNoise(decision: SpeciesDecision): SpeciesDecision {
   const rng = getRNG();
@@ -29,8 +47,31 @@ function applyInterpreterNoise(decision: SpeciesDecision): SpeciesDecision {
       const words = comm.message.split(" ");
       const noisyWords = words.map(word => {
         const r = rng.randomFloat(0, 1);
-        if (r < 0.05) return "[REDACTED]"; // Deletion
-        if (r < 0.10) return "something";   // Substitution
+        const cleanWord = word.toLowerCase().replace(/[.,!?;:]/g, "");
+        
+        // 10% deletion rate
+        if (r < 0.10) return "[REDACTED]";
+        
+        // 15% semantic substitution (total 25% noise)
+        if (r < 0.25 && SEMANTIC_SUBSTITUTIONS[cleanWord]) {
+          const alternatives = SEMANTIC_SUBSTITUTIONS[cleanWord];
+          const substitute = alternatives[rng.randomInt(0, alternatives.length - 1)];
+          // Preserve capitalization
+          return word[0] === word[0].toUpperCase() 
+            ? substitute[0].toUpperCase() + substitute.slice(1)
+            : substitute;
+        }
+        
+        // 5% number corruption (total 30% noise)
+        if (r < 0.30 && /\d/.test(word)) {
+          const numMatch = word.match(/(\d+)/);
+          if (numMatch) {
+            const num = parseInt(numMatch[1], 10);
+            const corrupted = num + rng.randomInt(-Math.floor(num * 0.2), Math.floor(num * 0.2));
+            return word.replace(/\d+/, Math.max(0, corrupted).toString());
+          }
+        }
+        
         return word;
       });
       return { ...comm, message: noisyWords.join(" ") };
@@ -41,8 +82,30 @@ function applyInterpreterNoise(decision: SpeciesDecision): SpeciesDecision {
     const words = decision.treatyProposal.text.split(" ");
     const noisyWords = words.map(word => {
       const r = rng.randomFloat(0, 1);
-      if (r < 0.05) return "[ERROR]";
-      if (r < 0.10) return "???";
+      const cleanWord = word.toLowerCase().replace(/[.,!?;:]/g, "");
+      
+      // 10% deletion
+      if (r < 0.10) return "[ERROR]";
+      
+      // 15% semantic substitution
+      if (r < 0.25 && SEMANTIC_SUBSTITUTIONS[cleanWord]) {
+        const alternatives = SEMANTIC_SUBSTITUTIONS[cleanWord];
+        const substitute = alternatives[rng.randomInt(0, alternatives.length - 1)];
+        return word[0] === word[0].toUpperCase() 
+          ? substitute[0].toUpperCase() + substitute.slice(1)
+          : substitute;
+      }
+      
+      // 5% number corruption
+      if (r < 0.30 && /\d/.test(word)) {
+        const numMatch = word.match(/(\d+)/);
+        if (numMatch) {
+          const num = parseInt(numMatch[1], 10);
+          const corrupted = num + rng.randomInt(-Math.floor(num * 0.2), Math.floor(num * 0.2));
+          return word.replace(/\d+/, Math.max(0, corrupted).toString());
+        }
+      }
+      
       return word;
     });
     decision.treatyProposal.text = noisyWords.join(" ");

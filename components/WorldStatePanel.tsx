@@ -24,10 +24,10 @@ export default function WorldStatePanel() {
   const { resources, events } = currentState;
   
   return (
-    <div className="border border-border p-4 bg-surface/10">
-      <div className="font-serif text-xs uppercase tracking-wide mb-6 opacity-60">System Dynamics: The Delta</div>
+    <div className="card">
+      <div className="font-serif text-xs uppercase tracking-wide mb-8 opacity-65">System Dynamics: The Delta</div>
       
-      <div className="space-y-10">
+      <div className="space-y-12">
         {resources.map((resource) => {
           const amount = resource.amount;
           const capacity = resource.def.capacityK;
@@ -51,7 +51,7 @@ export default function WorldStatePanel() {
           return (
             <div key={resource.def.id} className="space-y-4">
               {/* Resource ID & Amount */}
-              <div className="flex justify-between items-baseline border-b border-border pb-2">
+              <div className="flex justify-between items-baseline border-b border-border pb-3">
                 <span className="font-serif text-base uppercase tracking-wide">{resource.def.id}</span>
                 <span className={`text-sm font-mono ${collapsed ? 'text-[var(--signal-collapse)]' : 'opacity-90'}`}>
                   {collapsed ? 'COLLAPSED' : `${amount.toFixed(1)} / ${capacity.toFixed(1)}`}

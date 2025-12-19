@@ -212,7 +212,7 @@ export function generateSpeciesForPlanet(
       policyBrainId: defaultPolicyBrainId,
       alive: true,
       lexBudget: LEX_CONSTANTS.INITIAL_BUDGET,
-      lexRegenRate: config?.lexRegenRate ?? LEX_CONSTANTS.REGEN_RATE,
+      lexRegenRate: LEX_CONSTANTS.REGEN_RATE,
       relations: {},
       lastDecisionStep: -1, // Initialize as never having decided
     });

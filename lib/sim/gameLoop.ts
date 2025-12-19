@@ -11,6 +11,7 @@ import {
   ResourceState,
   Treaty,
   SpeciesState,
+  LivingSimile,
 } from "./types";
 import { updateResources, updateSpeciesPopulation, computePerCapitaResource, computeStress, applyGovernanceEffects, resolveHarvests } from "./dynamics";
 import { getRNG } from "./random";
@@ -91,6 +92,16 @@ export function buildObservation(
       };
     });
   
+  // Living similes available for reference (Embassytown mechanic)
+  const availableSimiles = (world.livingSimiles || []).filter(simile => {
+    // Only show similes from epochs the agent could observe
+    if (species.traits.epistemicOrder) {
+      const memoryLength = getMemoryLength(species.traits.epistemicOrder);
+      return world.timeStep - simile.createdAt <= memoryLength;
+    }
+    return true;
+  });
+  
   // Recent events (filtered by memory length and summarization)
   const recentEvents: SimEvent[] = [];
   const startStep = Math.max(0, world.timeStep - historyLength);
@@ -135,6 +146,7 @@ export function buildObservation(
     activeTreaties,
     informationState,
     memorySummary: informationState.memorySummary,
+    availableSimiles,
   };
 }
 
@@ -261,7 +273,7 @@ export async function stepWorld(
       observations.push(obs);
 
       // Emit CONCLAVE event if it's a rare window
-      if (config.useEpistemicOrders && species.traits.epistemicOrder && species.traits.epistemicOrder === "CloisteredOrder") {
+      if (config.useEpistemicOrders && species.traits.epistemicOrder && isContactWindow(species.traits.epistemicOrder, state.timeStep)) {
         events.push({
           timeStep: state.timeStep,
           type: "CONCLAVE",
@@ -380,10 +392,25 @@ export async function stepWorld(
           const targetOpen = !config.useEpistemicOrders || isContactWindow(target.traits.epistemicOrder, state.timeStep);
           
           if (targetOpen) {
-            // Validate Linguistic Regime (parse-time rejection)
-            const availableResources = state.resources.map(r => ({ id: r.def.id, name: r.def.name }));
+            // Validate Linguistic Regime (parse-time rejection with truth verification)
+            const availableResources = state.resources.map(r => ({ 
+              id: r.def.id, 
+              name: r.def.name,
+              amount: r.amount 
+            }));
+            const availableSimiles = state.livingSimiles || [];
             const validation = config.useLinguisticRegimes 
-              ? validateTreatyText(decision.treatyProposal.text, proposer.traits.linguisticRegime, availableResources)
+              ? validateTreatyText(
+                  decision.treatyProposal.text, 
+                  proposer.traits.linguisticRegime, 
+                  availableResources,
+                  history.map(h => ({
+                    timeStep: h.timeStep,
+                    resources: h.resources.map(r => ({ def: { id: r.def.id }, amount: r.amount }))
+                  })),
+                  proposer.traits.epistemicOrder,
+                  availableSimiles
+                )
               : { valid: true, parsedConstraints: {} };
             
             if (validation.valid && validation.parsedConstraints) {
@@ -531,9 +558,10 @@ export async function stepWorld(
     const updatedSpecies = updateSpeciesPopulation(species, perCapitaResource, stress, state.planet);
     
     // Update state from decision
-    if (decision) {
-      updatedSpecies.governance = decision.governance;
-      updatedSpecies.relations = { ...updatedSpecies.relations, ...decision.relations };
+    const speciesDecision = sanitizedDecisions.find(d => d.speciesId === species.traits.id);
+    if (speciesDecision) {
+      updatedSpecies.governance = speciesDecision.governance;
+      updatedSpecies.relations = { ...updatedSpecies.relations, ...speciesDecision.relations };
     }
     
     // Update epistemic state
@@ -542,7 +570,7 @@ export async function stepWorld(
     }
     
     // Update Lex budget: deduct and regenerate
-    const lexCost = (decision as any)?._lexCost || 0;
+    const lexCost = (speciesDecision as any)?._lexCost || 0;
     const lexRegen = config.lexRegenRate || 5;
     updatedSpecies.lexBudget = Math.max(0, species.lexBudget - lexCost + lexRegen);
     updatedSpecies.lexRegenRate = lexRegen;
@@ -554,6 +582,45 @@ export async function stepWorld(
   
   const detectedEvents = detectEvents(state, { ...state, resources: newResources, species: newSpecies }, allDecisions);
   
+  // 6. Track Living Similes (Embassytown mechanic: actions become referents)
+  const existingSimiles = state.livingSimiles || [];
+  const newSimiles: LivingSimile[] = [];
+  
+  // Create living similes from significant actions this epoch
+  for (const [speciesId, harvests] of Object.entries(realizedHarvestsBySpecies)) {
+    const species = state.species.find(s => s.traits.id === speciesId);
+    if (!species || !species.alive) continue;
+    
+    // Create simile for each resource harvest (if significant)
+    for (const [resId, amount] of Object.entries(harvests)) {
+      if (amount > 0) {
+        const resource = state.resources.find(r => r.def.id === resId);
+        if (resource) {
+          // Only create similes for moderate-to-high harvests (above 10% of capacity)
+          const threshold = resource.def.capacityK * 0.1;
+          if (amount >= threshold) {
+            const actionHash = `${speciesId}-${resId}-${Math.round(amount)}`;
+            const simile: LivingSimile = {
+              id: `simile-${state.timeStep}-${actionHash}`,
+              speciesId,
+              epoch: state.timeStep,
+              action: `harvested ${amount.toFixed(1)} units of ${resource.def.name}`,
+              referent: `the agent who harvested ${Math.round(amount)} units of ${resource.def.name}`,
+              createdAt: state.timeStep,
+            };
+            newSimiles.push(simile);
+          }
+        }
+      }
+    }
+  }
+  
+  // Keep similes from last 20 epochs (they can be referenced)
+  const maxSimileAge = 20;
+  const allSimiles = [...existingSimiles, ...newSimiles].filter(
+    s => state.timeStep - s.createdAt <= maxSimileAge
+  );
+  
   const newState: WorldState = {
     timeStep: state.timeStep + 1,
     planet: state.planet,
@@ -561,6 +628,7 @@ export async function stepWorld(
     species: newSpecies,
     events: [...events, ...detectedEvents],
     activeTreaties: activeTreaties.filter(t => !t.violated), // Keep only valid treaties
+    livingSimiles: allSimiles,
   };
   
   // CRITICAL: Assert state is valid before returning

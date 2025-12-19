@@ -48,10 +48,10 @@ export default function AgentPanel() {
   }
   
   return (
-    <div className="border border-border p-4 bg-surface/5">
-      <div className="font-serif text-xs uppercase tracking-wide mb-6 opacity-60">Agent Policy Outcomes</div>
+    <div className="card">
+      <div className="font-serif text-xs uppercase tracking-wide mb-8 opacity-65">Agent Policy Outcomes</div>
       
-      <div className="space-y-8">
+      <div className="space-y-10">
         {species.map((s) => {
           const isActive = isContactWindow(s.traits.epistemicOrder, currentState.timeStep);
           const lastAction = lastActions[s.traits.id];
@@ -60,7 +60,7 @@ export default function AgentPanel() {
           return (
             <div key={s.traits.id} className="space-y-3">
               {/* Agent ID & Status */}
-              <div className="flex justify-between items-baseline border-b border-border/30 pb-2">
+              <div className="flex justify-between items-baseline border-b border-border/30 pb-3">
                 <span className="font-serif text-base">{s.traits.name}</span>
                 <span className={`text-[10px] font-mono px-2 py-0.5 border ${s.alive ? 'border-foreground/20 opacity-60' : 'border-[var(--signal-collapse)] text-[var(--signal-collapse)]'}`}>
                   {s.alive ? 'ACTIVE' : 'EXTINCT'}
@@ -85,7 +85,7 @@ export default function AgentPanel() {
                   <span>Regime: {s.traits.linguisticRegime || 'N/A'}</span>
                   <span>Order: {s.traits.epistemicOrder || 'N/A'}</span>
                 </div>
-                {!isActive && s.traits.epistemicOrder === "CloisteredOrder" && (
+                {!isActive && s.traits.epistemicOrder && s.traits.epistemicOrder !== undefined && (
                   <div className="text-[8px] font-mono text-amber-500 uppercase tracking-tighter text-center pt-1 border-t border-border/10">
                     Cloistered: Observation Suppressed
                   </div>

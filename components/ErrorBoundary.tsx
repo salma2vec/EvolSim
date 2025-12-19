@@ -50,17 +50,17 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="border border-red-500 bg-red-500/10 p-4 m-4">
-          <h2 className="text-red-500 font-bold mb-2">Something went wrong</h2>
+        <div className="card border-[var(--signal-collapse)] m-6">
+          <h2 className="font-serif text-lg uppercase tracking-wide mb-4 text-[var(--signal-collapse)]">System Error</h2>
           {this.state.error && (
-            <p className="text-sm text-gray-300 mb-2">
+            <p className="font-mono text-sm opacity-80 mb-4 leading-relaxed">
               {this.state.error.message}
             </p>
           )}
           {process.env.NODE_ENV === "development" && this.state.errorInfo && (
-            <details className="text-xs font-mono mt-2">
-              <summary className="cursor-pointer text-gray-400">Stack trace</summary>
-              <pre className="mt-2 overflow-auto text-gray-500">
+            <details className="text-xs font-mono mt-4 border-t border-border pt-4">
+              <summary className="cursor-pointer opacity-60 uppercase tracking-wider mb-2">Stack Trace</summary>
+              <pre className="mt-3 overflow-auto opacity-50 text-[10px] leading-tight">
                 {this.state.errorInfo.componentStack}
               </pre>
             </details>
@@ -70,7 +70,7 @@ export class ErrorBoundary extends Component<Props, State> {
               this.setState({ hasError: false, error: null, errorInfo: null });
               window.location.reload();
             }}
-            className="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+            className="mt-6 btn border-[var(--signal-collapse)] hover:bg-[var(--signal-collapse)] hover:text-background"
           >
             Reload Page
           </button>

@@ -125,6 +125,11 @@ ${observation.activeTreaties.length > 0
   ? observation.activeTreaties.map(t => `- Treaty [${t.id}] with ${t.signatories.filter(s => s !== species.traits.id).join(", ")}: "${t.text}"`).join("\n") 
   : "- No active treaties"}
 
+LIVING SIMILES (Available for reference in AnchoredReference regime)
+${observation.availableSimiles && observation.availableSimiles.length > 0
+  ? observation.availableSimiles.map(s => `- "${s.referent}" (from Epoch ${s.epoch}: ${s.action})`).join("\n")
+  : "- No living similes available yet. Perform actions to create referents for future abstractions."}
+
 RECENT HISTORY (last ${observation.recentEvents.length} events)
 ${observation.recentEvents.length > 0
   ? observation.recentEvents
@@ -140,8 +145,8 @@ Decide your actions for this epoch. Consider:
 3. Diplomatic relations and treaty adherence.
 4. Internal governance.
 
-${species.traits.linguisticRegime === "LiteralOnly" ? "REMINDER: You cannot make abstract promises. Stick to facts." : ""}
-${species.traits.linguisticRegime === "AnchoredReference" ? "REMINDER: You must reference specific past events (Epoch X) to make any commitment." : ""}
+${species.traits.linguisticRegime === "LiteralOnly" ? "REMINDER: You cannot make abstract promises. Stick to facts. Any claims about current state will be mechanically verified against observable reality." : ""}
+${species.traits.linguisticRegime === "AnchoredReference" ? "REMINDER: You must reference specific past events (Epoch X) or living similes to make any commitment. Referenced epochs will be verified to exist and match your claims." : ""}
 
 Return a STRICT JSON object with the following schema:
 {

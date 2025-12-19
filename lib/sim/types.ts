@@ -231,6 +231,21 @@ export interface ScenarioMetadata {
 }
 
 /**
+ * Living simile: an agent action that becomes a referent for future abstractions
+ * 
+ * In Embassytown, agents perform actions that can be referenced in Language.
+ * Example: "the agent who harvested 50 units" becomes a simile for "moderate extraction".
+ */
+export interface LivingSimile {
+  id: string; // Unique identifier: "simile-{speciesId}-{epoch}-{actionHash}"
+  speciesId: string;
+  epoch: number;
+  action: string; // Human-readable description: "harvested 50 units of exotic_matter"
+  referent: string; // How it's referenced in Language: "the agent who harvested 50 units"
+  createdAt: number; // timeStep when created
+}
+
+/**
  * World state (complete snapshot at one time step)
  */
 export interface WorldState {
@@ -241,6 +256,8 @@ export interface WorldState {
   events: SimEvent[];
   activeTreaties: Treaty[];
   metadata?: ScenarioMetadata;
+  // Living simile registry (Embassytown mechanic)
+  livingSimiles?: LivingSimile[];
 }
 
 /**
@@ -307,4 +324,6 @@ export interface SpeciesObservation {
   activeTreaties: Treaty[];
   // Information state
   informationState: InformationState;
+  // Living similes available for reference (Embassytown mechanic)
+  availableSimiles?: LivingSimile[];
 }

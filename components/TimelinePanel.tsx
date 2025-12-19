@@ -71,13 +71,13 @@ export default function TimelinePanel({ compact = false }: TimelinePanelProps) {
   }
   
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between border-b border-border pb-2">
-        <div className="font-serif text-xs uppercase tracking-widest opacity-60">Epoch Execution Log</div>
-        <div className="font-mono text-[10px] opacity-40 uppercase">Click any epoch to inspect details</div>
+    <div className="space-y-8">
+      <div className="flex items-center justify-between border-b border-border pb-4">
+        <div className="font-serif text-xs uppercase tracking-widest opacity-65">Epoch Execution Log</div>
+        <div className="font-mono text-[10px] opacity-45 uppercase">Click any epoch to inspect details</div>
       </div>
       
-      <div className="space-y-1 max-h-[600px] overflow-y-auto pr-4">
+      <div className="space-y-2 max-h-[600px] overflow-y-auto pr-4">
         {steps.map((step) => {
           const events = eventsByStep[step] || [];
           const isSelected = selectedStep === step;
@@ -87,9 +87,9 @@ export default function TimelinePanel({ compact = false }: TimelinePanelProps) {
             <div
               key={step}
               onClick={() => handleStepClick(step)}
-              className={`border-b border-border/20 py-3 cursor-pointer group ${isSelected ? 'bg-surface/30' : 'hover:bg-surface/10'}`}
+              className={`border-b border-border/20 py-4 cursor-pointer group transition-colors ${isSelected ? 'bg-surface/30' : 'hover:bg-surface/10'}`}
             >
-              <div className="flex justify-between items-baseline mb-2 px-2">
+              <div className="flex justify-between items-baseline mb-3 px-3">
                 <span className={`font-mono text-xs uppercase tracking-wider ${isSelected ? 'text-foreground' : 'opacity-50 group-hover:opacity-80'}`}>
                   Epoch T-{String(step).padStart(3, '0')}
                 </span>
@@ -114,7 +114,7 @@ export default function TimelinePanel({ compact = false }: TimelinePanelProps) {
               </div>
               
               {isSelected && events.length > 0 && (
-                <div className="mt-4 mx-2 p-3 bg-background border border-border space-y-2">
+                <div className="mt-5 mx-3 p-4 bg-surface/40 border border-border space-y-3">
                   {events.map((event, idx) => (
                     <div key={idx} className="text-[10px] font-mono opacity-80 leading-relaxed border-l border-border/30 pl-3">
                       <div className="flex gap-2 items-center mb-0.5">

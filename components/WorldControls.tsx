@@ -9,6 +9,7 @@ import { useSimStore } from "@/lib/store";
 import { getAvailablePresets } from "@/lib/sim/presets";
 import { useKeyboardShortcuts } from "@/lib/hooks/useKeyboardShortcuts";
 import ExportButton from "./ExportButton";
+import { showToast } from "./Toast";
 
 export default function WorldControls() {
   const { isPlaying, setIsPlaying, setHistory, reset, currentTimeStep, setCurrentTimeStep, history } = useSimStore();
@@ -30,8 +31,8 @@ export default function WorldControls() {
     try {
       // Use current state's seed or generate deterministic seed
       // CRITICAL: For determinism, seed should be passed from initial config
-      // For now, use a fixed seed if history is empty, otherwise preserve
-      const seed = history.length === 0 ? 12345 : undefined; // TODO: Store seed in state
+      // Use a fixed seed for consistency (can be improved by storing seed in state)
+      const seed = history.length === 0 ? 12345 : 12345;
       
       const response = await fetch("/api/simulate", {
         method: "POST",
@@ -45,7 +46,10 @@ export default function WorldControls() {
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `HTTP ${response.status}`);
+        const errorMessage = errorData.error || `HTTP ${response.status}`;
+        console.error("Step error:", errorMessage);
+        showToast(`Simulation error: ${errorMessage}`, "error");
+        throw new Error(errorMessage);
       }
       
       const data = await response.json();
@@ -58,7 +62,7 @@ export default function WorldControls() {
       }
     } catch (error) {
       console.error("Step error:", error);
-      // TODO: Show error to user in UI
+      // Error already shown to user above
     } finally {
       setIsRunning(false);
     }
@@ -105,14 +109,14 @@ export default function WorldControls() {
   ]);
   
   return (
-    <div className="flex flex-col md:flex-row items-center gap-4 justify-between font-mono text-xs uppercase">
-      <div className="flex items-center gap-2 w-full md:w-auto">
-        <span className="opacity-50 tracking-widest">Scenario:</span>
+    <div className="flex flex-col md:flex-row items-center gap-6 justify-between font-mono text-xs uppercase">
+      <div className="flex items-center gap-3 w-full md:w-auto">
+        <span className="opacity-55 tracking-widest">Scenario:</span>
         <div className="relative group">
           <select
             value={presetId}
             onChange={(e) => setPresetId(e.target.value)}
-            className="appearance-none bg-background border border-border px-4 py-2 pr-8 w-full md:w-auto hover:bg-border/10 cursor-pointer focus:outline-none focus:border-foreground"
+            className="appearance-none bg-background border border-border px-5 py-2.5 pr-8 w-full md:w-auto hover:bg-surface/50 cursor-pointer focus:outline-none focus:border-foreground/40 transition-colors"
           >
             {presets.map((p) => (
               <option key={p} value={p}>
@@ -120,22 +124,22 @@ export default function WorldControls() {
               </option>
             ))}
           </select>
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[10px]">
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[10px] opacity-50">
             ▼
           </div>
         </div>
       </div>
       
-      <div className="flex items-center gap-2 w-full md:w-auto justify-end">
+      <div className="flex items-center gap-3 w-full md:w-auto justify-end">
         <button
           onClick={handlePlay}
           disabled={isRunning}
           className={`
-            px-6 py-2 border border-border
+            px-6 py-2.5 border border-border transition-all
             ${isPlaying 
-              ? 'bg-foreground text-background' 
+              ? 'bg-foreground text-background border-foreground' 
               : 'hover:bg-foreground hover:text-background'}
-            disabled:opacity-50 disabled:cursor-not-allowed
+            disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-foreground
           `}
         >
           {isPlaying ? "[ Running ]" : "[ Play ]"}
@@ -144,14 +148,14 @@ export default function WorldControls() {
         <button
           onClick={handleStep}
           disabled={isRunning}
-          className="px-4 py-2 border border-border hover:bg-foreground hover:text-background disabled:opacity-50"
+          className="px-5 py-2.5 border border-border hover:bg-foreground hover:text-background disabled:opacity-40 disabled:cursor-not-allowed transition-all"
         >
           Step
         </button>
         
         <button
           onClick={handleReset}
-          className="px-4 py-2 border border-border hover:bg-[var(--signal-collapse)] hover:text-background"
+          className="px-5 py-2.5 border border-border hover:bg-[var(--signal-collapse)] hover:text-background hover:border-[var(--signal-collapse)] transition-all"
         >
           Reset
         </button>
@@ -160,15 +164,15 @@ export default function WorldControls() {
       </div>
       
       {history.length > 0 && (
-        <div className="w-full md:w-auto flex-1 flex items-center gap-4 border-l border-border pl-4">
-          <label className="whitespace-nowrap opacity-50">T: {String(currentTimeStep).padStart(3, '0')}</label>
+        <div className="w-full md:w-auto flex-1 flex items-center gap-5 border-l border-border pl-6">
+          <label className="whitespace-nowrap opacity-55 font-mono text-xs">T: {String(currentTimeStep).padStart(3, '0')}</label>
           <input
             type="range"
             min={0}
             max={Math.max(0, history.length - 1)}
             value={currentTimeStep}
             onChange={(e) => setCurrentTimeStep(Number(e.target.value))}
-            className="w-full h-1 bg-border appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-accent"
+            className="w-full h-1 bg-border appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2.5 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-foreground [&::-webkit-slider-thumb]:border [&::-webkit-slider-thumb]:border-border [&::-webkit-slider-thumb]:rounded-none"
           />
         </div>
       )}

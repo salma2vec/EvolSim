@@ -45,7 +45,7 @@ export default function ExportButton() {
     <button
       onClick={handleExport}
       disabled={isExporting}
-      className="px-4 py-2 border border-border hover:bg-foreground hover:text-background disabled:opacity-50 transition-colors text-xs uppercase font-mono"
+      className="px-5 py-2.5 border border-border hover:bg-foreground hover:text-background disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-foreground transition-all text-xs uppercase font-mono"
     >
       {isExporting ? <LoadingSpinner size="sm" /> : "Export"}
     </button>

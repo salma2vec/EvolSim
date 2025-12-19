@@ -79,15 +79,16 @@ export function parseLLMResponse(
     }
   }
   
+  const governanceObj = parsed.governance as Record<string, unknown> | undefined;
   const governance = {
     punishmentStrength: clampNumber(
-      parsed.governance?.punishment_strength ?? parsed.governance?.punishmentStrength,
+      (governanceObj?.punishment_strength ?? governanceObj?.punishmentStrength) as number | undefined,
       0,
       1,
       0.3
     ),
     monitoringInvestment: clampNumber(
-      parsed.governance?.monitoring_investment ?? parsed.governance?.monitoringInvestment,
+      (governanceObj?.monitoring_investment ?? governanceObj?.monitoringInvestment) as number | undefined,
       0,
       1,
       0.2
@@ -109,15 +110,16 @@ export function parseLLMResponse(
 
   let treatyProposal: { text: string; targetSpeciesId: string; } | undefined;
   
+  const treatyProposalObj = parsed.treatyProposal as Record<string, unknown> | undefined;
   if (
-    parsed.treatyProposal &&
-    typeof parsed.treatyProposal === "object" &&
-    typeof parsed.treatyProposal.text === "string" &&
-    typeof parsed.treatyProposal.targetSpeciesId === "string"
+    treatyProposalObj &&
+    typeof treatyProposalObj === "object" &&
+    typeof treatyProposalObj.text === "string" &&
+    typeof treatyProposalObj.targetSpeciesId === "string"
   ) {
     treatyProposal = {
-      text: parsed.treatyProposal.text.slice(0, 500), // Limit length
-      targetSpeciesId: parsed.treatyProposal.targetSpeciesId,
+      text: treatyProposalObj.text.slice(0, 500), // Limit length
+      targetSpeciesId: treatyProposalObj.targetSpeciesId,
     };
   }
   
