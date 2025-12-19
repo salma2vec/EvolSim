@@ -8,6 +8,7 @@ import { useSimStore } from "@/lib/store";
 import { exportSimulation, downloadSimulation } from "@/lib/utils/export";
 import { useState } from "react";
 import LoadingSpinner from "./LoadingSpinner";
+import { showToast } from "./Toast";
 
 export default function ExportButton() {
   const { history, currentState } = useSimStore();
@@ -30,8 +31,10 @@ export default function ExportButton() {
 
       const filename = `evolsim-${Date.now()}.json`;
       downloadSimulation(exported, filename);
+      showToast(`Exported ${filename}`, "success", 3000);
     } catch (error) {
       console.error("Export failed:", error);
+      showToast(`Export failed: ${error instanceof Error ? error.message : 'Unknown error'}`, "error");
     } finally {
       setIsExporting(false);
     }
