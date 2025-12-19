@@ -164,15 +164,18 @@ export default function WorldControls() {
       </div>
       
       {history.length > 0 && (
-        <div className="w-full md:w-auto flex-1 flex items-center gap-5 border-l border-border pl-6">
-          <label className="whitespace-nowrap opacity-55 font-mono text-xs">T: {String(currentTimeStep).padStart(3, '0')}</label>
+        <div className="w-full md:w-auto flex-1 flex items-center gap-4 md:gap-5 border-l border-border/40 pl-4 md:pl-6">
+          <label className="whitespace-nowrap opacity-50 font-mono text-[10px] uppercase tracking-wider text-foreground/60">
+            T: <span className="tabular-nums">{String(currentTimeStep).padStart(3, '0')}</span>
+          </label>
           <input
             type="range"
             min={0}
             max={Math.max(0, history.length - 1)}
             value={currentTimeStep}
             onChange={(e) => setCurrentTimeStep(Number(e.target.value))}
-            className="w-full h-1 bg-border appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2.5 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-foreground [&::-webkit-slider-thumb]:border [&::-webkit-slider-thumb]:border-border [&::-webkit-slider-thumb]:rounded-none"
+            className="w-full h-1.5 bg-border/40 appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-foreground [&::-webkit-slider-thumb]:border [&::-webkit-slider-thumb]:border-border/40 [&::-webkit-slider-thumb]:rounded-none hover:[&::-webkit-slider-thumb]:bg-foreground/80 transition-colors"
+            aria-label="Timeline scrubber"
           />
         </div>
       )}
