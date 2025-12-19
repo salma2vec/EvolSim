@@ -95,8 +95,8 @@ export default function SpatialMap() {
         </div>
       </div>
       
-      <div className="relative h-[600px] bg-background border border-border/20 overflow-hidden mt-6">
-        <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+      <div className="relative h-[600px] bg-background border border-border/20 overflow-hidden mt-6" role="img" aria-label="Spatial map showing resource and species locations">
+        <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
           {/* Vertical Causal Links */}
           <line x1="50%" y1="10%" x2="50%" y2="90%" stroke="var(--foreground)" strokeWidth="0.05" strokeDasharray="1,2" opacity="0.1" />
 
