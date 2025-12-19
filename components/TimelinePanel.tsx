@@ -43,8 +43,8 @@ export default function TimelinePanel({ compact = false }: TimelinePanelProps) {
   
   if (compact) {
     return (
-      <div className="flex gap-1 overflow-x-auto h-full items-center no-scrollbar pb-1">
-        <div className="text-[9px] font-mono opacity-40 uppercase tracking-[0.2em] mr-4 whitespace-nowrap">Execution Trace:</div>
+      <div className="flex gap-1.5 overflow-x-auto h-full items-center no-scrollbar pb-1 px-2">
+        <div className="text-[9px] font-mono opacity-45 uppercase tracking-[0.2em] mr-4 whitespace-nowrap">Execution Trace:</div>
         {steps.map((step) => {
           const events = eventsByStep[step] || [];
           const isSelected = currentTimeStep === step;
@@ -55,14 +55,23 @@ export default function TimelinePanel({ compact = false }: TimelinePanelProps) {
               key={step}
               onClick={() => handleStepClick(step)}
               className={`
-                min-w-[32px] h-8 border border-border flex flex-col items-center justify-center transition-none
-                ${isSelected ? 'bg-foreground text-background border-foreground' : 'bg-surface/50 hover:bg-surface'}
-                ${hasCritical && !isSelected ? 'border-[var(--signal-collapse)] text-[var(--signal-collapse)]' : ''}
+                min-w-[36px] h-9 border flex flex-col items-center justify-center transition-all duration-150
+                ${isSelected 
+                  ? 'bg-foreground text-background border-foreground shadow-sm' 
+                  : 'bg-surface/50 hover:bg-surface/70 border-border hover:border-foreground/30'}
+                ${hasCritical && !isSelected ? 'border-[var(--signal-collapse)]/50 text-[var(--signal-collapse)] hover:border-[var(--signal-collapse)]' : ''}
               `}
               title={`T-${step}: ${events.length} events`}
+              aria-label={`Go to epoch ${step}`}
             >
-              <span className="text-[9px] font-mono leading-none">{step}</span>
-              {events.length > 0 && <span className="text-[7px] font-mono opacity-50 leading-none mt-0.5">{events.length}</span>}
+              <span className="text-[9px] font-mono leading-none tabular-nums">{step}</span>
+              {events.length > 0 && (
+                <span className={`text-[7px] font-mono leading-none mt-0.5 ${
+                  isSelected ? 'opacity-70' : 'opacity-50'
+                }`}>
+                  {events.length}
+                </span>
+              )}
             </button>
           );
         })}
