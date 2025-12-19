@@ -127,6 +127,23 @@ h1, h2, h3, h4, h5, h6, .font-serif {
   font-weight: 600;
 }
 
+/* Focus styles for accessibility */
+*:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 2px;
+}
+
+/* Selection styles */
+::selection {
+  background: var(--foreground);
+  color: var(--background);
+}
+
+::-moz-selection {
+  background: var(--foreground);
+  color: var(--background);
+}
+
 /* Borders: Flat, architectural */
 .border-instrument {
   border: 1px solid var(--border);
