@@ -109,26 +109,26 @@ export default function VoxelMap() {
   const { resources, species, activeTreaties } = currentState;
 
   return (
-    <div className="w-full">
-      <div className="mb-6 flex items-center justify-between border-b border-border/30 pb-4">
-        <h2 className="font-serif text-sm uppercase tracking-wider opacity-70">Voxel Lattice</h2>
-        <div className="flex gap-4 text-[10px] font-mono uppercase tracking-wider opacity-50">
-          <span className="flex items-center gap-2">
-            <div className="w-3 h-3 border border-foreground/50 bg-foreground/10"></div>
+    <div className="w-full bg-surface border border-border/40 p-6">
+      <div className="mb-8 flex items-center justify-between border-b border-border/30 pb-5">
+        <h2 className="font-serif text-sm uppercase tracking-wider opacity-60 text-foreground/70">Voxel Lattice</h2>
+        <div className="flex gap-5 text-[10px] font-mono uppercase tracking-wider opacity-40">
+          <span className="flex items-center gap-2.5">
+            <div className="w-3.5 h-3.5 border border-foreground/50 bg-foreground/10"></div>
             Order-0
           </span>
-          <span className="flex items-center gap-2">
-            <div className="w-3 h-3 border border-foreground/30 bg-foreground/5"></div>
+          <span className="flex items-center gap-2.5">
+            <div className="w-3.5 h-3.5 border border-foreground/30 bg-foreground/5"></div>
             Order-1
           </span>
-          <span className="flex items-center gap-2">
-            <div className="w-3 h-3 border border-foreground/10 bg-foreground/2"></div>
+          <span className="flex items-center gap-2.5">
+            <div className="w-3.5 h-3.5 border border-foreground/10 bg-foreground/2"></div>
             Order-2
           </span>
         </div>
       </div>
       
-      <div className="relative w-full h-[600px] bg-background border border-border/20 overflow-hidden">
+      <div className="relative w-full h-[600px] bg-background border border-border/30 overflow-hidden rounded-sm">
         <svg 
           width="100%" 
           height="100%" 
