@@ -48,8 +48,8 @@ export default function AgentPanel() {
   }
   
   return (
-    <div className="card">
-      <div className="font-serif text-xs uppercase tracking-wide mb-8 opacity-65">Agent Policy Outcomes</div>
+    <div className="bg-surface border border-border/40 p-6">
+      <div className="font-serif text-xs uppercase tracking-wider mb-8 opacity-50 text-foreground/70">Agent Policy Outcomes</div>
       
       <div className="space-y-10">
         {species.map((s) => {

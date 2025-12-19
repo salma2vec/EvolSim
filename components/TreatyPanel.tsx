@@ -38,9 +38,9 @@ export default function TreatyPanel() {
   
   if (activeTreaties.length === 0) {
     return (
-      <div className="card">
-        <div className="font-serif text-xs uppercase tracking-wide mb-6 opacity-65">Institutional Overlays</div>
-        <div className="text-xs font-serif italic opacity-45 leading-relaxed">
+      <div className="bg-surface border border-border/40 p-6">
+        <div className="font-serif text-xs uppercase tracking-wider mb-6 opacity-50 text-foreground/70">Institutional Overlays</div>
+        <div className="text-xs font-serif italic opacity-40 leading-relaxed text-foreground/60">
           No formal agreements present. Coordination must emerge purely from policy heuristics.
         </div>
       </div>
@@ -48,8 +48,8 @@ export default function TreatyPanel() {
   }
   
   return (
-    <div className="card">
-      <div className="font-serif text-xs uppercase tracking-wide mb-8 opacity-65">Institutional Overlays</div>
+    <div className="bg-surface border border-border/40 p-6">
+      <div className="font-serif text-xs uppercase tracking-wider mb-8 opacity-50 text-foreground/70">Institutional Overlays</div>
       
       <div className="space-y-8">
         {activeTreaties.map((treaty) => {

@@ -24,8 +24,8 @@ export default function WorldStatePanel() {
   const { resources, events } = currentState;
   
   return (
-    <div className="card">
-      <div className="font-serif text-xs uppercase tracking-wide mb-8 opacity-65">System Dynamics: The Delta</div>
+    <div className="bg-surface border border-border/40 p-6">
+      <div className="font-serif text-xs uppercase tracking-wider mb-8 opacity-50 text-foreground/70">System Dynamics: The Delta</div>
       
       <div className="space-y-12">
         {resources.map((resource) => {
