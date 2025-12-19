@@ -90,21 +90,21 @@ export default function Home() {
 
           {/* Layer 2: Causal Panels (The "Why?") */}
           {viewMode === "causal" ? (
-            <section className="grid grid-cols-12 gap-10 items-start">
+            <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8 lg:gap-10 items-start">
               {/* Left: Institutions */}
-              <div className="col-span-3 space-y-4">
+              <div className="lg:col-span-3 space-y-4">
                 <div className="font-serif text-xs uppercase tracking-widest opacity-40 mb-2">Institutional Overlays</div>
                 <TreatyPanel />
               </div>
 
               {/* Center: Load-bearing Variable (Delta & Resources) */}
-              <div className="col-span-6 space-y-4">
+              <div className="lg:col-span-6 space-y-4">
                 <div className="font-serif text-xs uppercase tracking-widest opacity-40 mb-2">Primary Causal Chain: Extraction vs Regen</div>
                 <WorldStatePanel />
               </div>
 
               {/* Right: Agent Policies */}
-              <div className="col-span-3 space-y-4">
+              <div className="lg:col-span-3 space-y-4">
                 <div className="font-serif text-xs uppercase tracking-widest opacity-40 mb-2">Agent-Policy Outcomes</div>
                 <AgentPanel />
               </div>
