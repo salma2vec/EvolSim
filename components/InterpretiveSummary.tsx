@@ -112,20 +112,67 @@ export default function InterpretiveSummary() {
         </div>
       </div>
       
-      {/* Comparative Metric: LLM Capability vs Outcome (Placeholder) */}
-      <div className="grid grid-cols-3 gap-6">
-        {species.map(s => (
-          <div key={s.traits.id} className="card flex flex-col justify-between">
-            <div className="text-[10px] font-mono opacity-50 uppercase tracking-widest">Policy Brain</div>
-            <div className="font-serif text-lg">{s.policyBrainId}</div>
-            <div className="mt-2 text-[10px] font-mono">
-              <span className="opacity-50 uppercase">Cumulative Bias: </span>
-              <span className={s.population > 1000000 ? "text-foreground" : "text-[var(--signal-collapse)]"}>
-                {s.alive ? "Active" : "Extinct"}
-              </span>
-            </div>
-          </div>
-        ))}
+      {/* Comparative Metric: LLM Capability vs Outcome */}
+      <div className="space-y-4">
+        <div className="font-serif text-xs uppercase tracking-widest opacity-60 mb-4">
+          Model Capability vs Strategic Outcome
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {species.map(s => {
+            // Calculate performance metrics
+            const populationChange = history.length > 1 
+              ? s.population - (history[0]?.species.find(sp => sp.traits.id === s.traits.id)?.population || s.population)
+              : 0;
+            const populationTrend = populationChange > 0 ? "growing" : populationChange < 0 ? "declining" : "stable";
+            
+            // Determine capability tier
+            const capabilityTier = s.policyBrainId.includes("gpt-4") || s.policyBrainId.includes("frontier") 
+              ? "high" 
+              : s.policyBrainId.includes("gpt-3.5") || s.policyBrainId.includes("medium")
+              ? "medium"
+              : "baseline";
+            
+            const outcomeStatus = s.alive && s.population > 1000000 ? "success" : s.alive ? "marginal" : "failure";
+            
+            return (
+              <div key={s.traits.id} className="card flex flex-col justify-between">
+                <div className="space-y-3">
+                  <div className="flex justify-between items-baseline border-b border-border/30 pb-2">
+                    <div className="text-[10px] font-mono opacity-50 uppercase tracking-widest">Policy Brain</div>
+                    <div className={`text-[8px] font-mono uppercase px-2 py-0.5 border ${
+                      capabilityTier === "high" ? "border-foreground/40 opacity-60" :
+                      capabilityTier === "medium" ? "border-foreground/30 opacity-50" :
+                      "border-foreground/20 opacity-40"
+                    }`}>
+                      {capabilityTier}
+                    </div>
+                  </div>
+                  <div className="font-serif text-lg tracking-tight">{s.policyBrainId}</div>
+                  <div className="space-y-2 text-[10px] font-mono">
+                    <div className="flex justify-between">
+                      <span className="opacity-50 uppercase">Population:</span>
+                      <span className={outcomeStatus === "success" ? "text-foreground" : outcomeStatus === "marginal" ? "text-[var(--signal-violation)]" : "text-[var(--signal-collapse)]"}>
+                        {(s.population / 1000000).toFixed(2)}M
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="opacity-50 uppercase">Trend:</span>
+                      <span className={populationTrend === "growing" ? "text-foreground" : populationTrend === "declining" ? "text-[var(--signal-collapse)]" : "opacity-60"}>
+                        {populationTrend.toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="opacity-50 uppercase">Status:</span>
+                      <span className={s.alive ? "text-foreground" : "text-[var(--signal-collapse)]"}>
+                        {s.alive ? "ACTIVE" : "EXTINCT"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
