@@ -63,3 +63,4 @@ docs/superpowers/
 *.key
 *.p12
 *.pfx
+.gstack/

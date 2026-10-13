@@ -81,7 +81,7 @@ export default function InterpretiveSummary() {
         <p className="text-lg font-serif leading-relaxed opacity-90 border-l-2 border-border pl-8">
           {metadata ? (
             <>
-              Scenario: <span className="font-bold">{metadata.name}</span>.
+              Scenario: <span className="font-bold">{metadata.name}</span>.{" "}
               {metadata.scarce} {metadata.collapseMechanics} 
               <span className="block mt-2 text-sm opacity-60 italic">{metadata.nonTrivialReason} {metadata.naiveStrategyFail}</span>
             </>
@@ -166,4 +166,3 @@ export default function InterpretiveSummary() {
     </div>
   );
 }
-

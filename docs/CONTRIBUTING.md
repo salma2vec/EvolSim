@@ -1,40 +1,23 @@
-# Contributing to EvolSim
+# Contributing
 
-## Development Setup
+Use Node.js 20.9 or later and the committed npm lockfile:
 
-1. Clone the repository
-2. Install dependencies: `npm install`
-3. Set up environment variables (see `.env.local.example`)
-4. Run development server: `npm run dev`
+```sh
+npm ci
+npm test -- --runInBand
+npm run typecheck
+npm run build
+```
 
-## Code Style
+For local development, install [portless](https://github.com/vercel-labs/portless), then run:
 
-- Use TypeScript for all new code
-- Follow existing code patterns
-- Use meaningful variable names
-- Add JSDoc comments for public functions
-- Run `npm run lint` before committing
+```sh
+portless proxy start
+portless evolsim npm run dev
+```
 
-## Testing
+The default browser simulation uses seeded baseline policies and requires no API credentials. Optional provider configuration is documented in the [README](../README.md). Keep credentials outside Git and use mocked provider responses in automated tests; do not make paid calls as part of the test suite.
 
-- Write tests for new features
-- Run tests: `npm test`
-- Aim for >80% code coverage
+Include regression tests for changes to resource allocation, random-number isolation, observations, decision validation, or API limits. Reproduce policy experiments with `npm run benchmark -- /tmp/evolsim-baseline.json` and report the configuration, seed panel, source digest, and limitations alongside any results. Changed dynamics require regenerated results, not retained claims from an earlier protocol.
 
-## Commit Messages
-
-Follow conventional commits:
-- `feat:` for new features
-- `fix:` for bug fixes
-- `refactor:` for code refactoring
-- `test:` for test additions
-- `docs:` for documentation
-
-## Pull Request Process
-
-1. Create a feature branch
-2. Make your changes
-3. Add tests if applicable
-4. Update documentation
-5. Submit PR with clear description
-
+Keep TypeScript types and method documentation consistent with the implementation. In a pull request, describe the concrete behavior changed and the checks performed. For UI changes, verify Step, Play, Pause, Reset, preset selection, and narrow-screen layouts. Experimental prompts are part of the published method; private development notes and credentials are not.

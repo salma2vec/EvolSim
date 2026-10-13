@@ -138,7 +138,7 @@ export default function WorldControls() {
         </div>
       </div>
       
-      <div className="flex items-center gap-3 w-full md:w-auto justify-end">
+      <div className="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">
         <button
           onClick={handlePlay}
           disabled={isRunning && !isPlaying}
@@ -190,4 +190,3 @@ export default function WorldControls() {
     </div>
   );
 }
-
