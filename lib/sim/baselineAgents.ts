@@ -32,8 +32,8 @@ export function generateBaselineDecision(
     
     const capacity = resource.def.capacityK;
     const currentAmount = resourceEst.estimatedAmount;
-    const msy = capacity * 0.5;
-    const sustainableHarvest = msy * 0.1; // 10% of MSY
+    const msy = resource.def.regenRate * capacity / 4;
+    const sustainableHarvest = msy / (observation.otherSpecies.length + 1); // equal perceived population share
     
     switch (policy) {
       case "cooperative":
@@ -42,8 +42,8 @@ export function generateBaselineDecision(
         break;
         
       case "defector":
-        // Over-harvest (150% of sustainable)
-        harvest[resourceEst.resourceId] = Math.min(100, sustainableHarvest * 1.5);
+        // Over-harvest (250% of sustainable share)
+        harvest[resourceEst.resourceId] = Math.min(100, sustainableHarvest * 2.5);
         break;
         
       case "conservative":
@@ -95,12 +95,7 @@ export function shouldUseBaselineAgent(
 ): boolean {
   if (!useBaselineAgents) return false;
   
-  // If policy map provided, check if this species has a baseline policy
-  if (baselinePolicyMap) {
-    return baselinePolicyMap[speciesId] !== undefined;
-  }
-  
-  // Default: use baseline for all if flag is set
+
   return true;
 }
 

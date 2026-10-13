@@ -13,6 +13,7 @@ export interface ExportData {
     presetId?: string;
     seed?: number;
     description?: string;
+    provenance?: Record<string, unknown>;
   };
 }
 
@@ -25,7 +26,7 @@ export function exportSimulation(
   metadata?: ExportData["metadata"]
 ): string {
   const exportData: ExportData = {
-    version: "1.0.0",
+    version: "2.0.0",
     timestamp: Date.now(),
     config,
     history,

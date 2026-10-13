@@ -53,8 +53,8 @@ class Logger {
   error(message: string, error?: Error | unknown, data?: unknown): void {
     if (this.shouldLog(LogLevel.ERROR)) {
       const errorDetails = error instanceof Error 
-        ? { message: error.message, stack: error.stack, ...data }
-        : { error, ...data };
+        ? { message: error.message, stack: error.stack, ...(data && typeof data === "object" ? data : { data }) }
+        : { error, ...(data && typeof data === "object" ? data : { data }) };
       console.error(this.formatMessage("ERROR", message, errorDetails));
     }
   }

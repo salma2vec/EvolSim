@@ -279,6 +279,7 @@ export interface SimConfig {
   useLinguisticRegimes?: boolean; // If false, all agents can express freely
   useEpistemicOrders?: boolean;  // If false, all agents act every step with full information
   useTreaties?: boolean;          // If false, agents cannot form agreements
+  baselinePolicyMap?: Record<string, "cooperative" | "defector" | "conservative" | "opportunistic">;
   useBaselineAgents?: boolean;    // If true, use fixed-policy heuristics instead of LLMs
 }
 

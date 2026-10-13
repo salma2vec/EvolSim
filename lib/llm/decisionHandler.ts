@@ -1,7 +1,7 @@
 /**
- * Robust LLM decision handler with timeout, retry, and fallback
+ * Decision handler for explicit baseline or live-provider runs
  * 
- * Handles all LLM failures gracefully with logged fallback decisions.
+ * Provider failures abort the experiment; they never become baseline decisions.
  */
 
 import { SpeciesObservation, SpeciesDecision, SimEvent } from "../sim/types";
@@ -10,13 +10,12 @@ import { buildSpeciesPrompt } from "./promptBuilder";
 import { parseLLMResponse } from "./parseActions";
 import { sanitizeDecision } from "../sim/guards";
 import { logger } from "../utils/logger";
-import { withTimeout } from "../utils/async";
+import { callLLM } from "./client";
 import { shouldUseBaselineAgent, generateBaselineDecision, getBaselinePolicy } from "../sim/baselineAgents";
 import type { BaselinePolicy } from "../sim/baselineAgents";
 import { getRNG } from "../sim/random";
 
-const LLM_TIMEOUT_MS = 30000; // 30 seconds
-const LLM_MAX_RETRIES = 2;
+
 
 /**
  * Semantic substitution dictionary for interpreter noise
@@ -122,7 +121,8 @@ async function getDecisionForSpecies(
   world: WorldState,
   speciesModelMap: Record<string, string>,
   baselinePolicyMap?: Record<string, BaselinePolicy>,
-  useBaselineAgents?: boolean
+  useBaselineAgents?: boolean,
+  mechanics = {useLinguisticRegimes:true, useEpistemicOrders:true}
 ): Promise<{ decision: SpeciesDecision; error?: string; usedFallback: boolean }> {
   const species = world.species.find((s) => s.traits.id === observation.speciesId);
   if (!species || !species.alive) {
@@ -151,71 +151,14 @@ async function getDecisionForSpecies(
   
   // Use LLM
   const modelId = speciesModelMap[observation.speciesId] || species.policyBrainId || "small";
-  const prompt = buildSpeciesPrompt(species, world, observation);
+  const prompt = buildSpeciesPrompt(species, world, observation, mechanics);
   
-  let lastError: Error | unknown;
-  
-  for (let attempt = 1; attempt <= LLM_MAX_RETRIES; attempt++) {
-    try {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-      
-      const response = await withTimeout(
-        fetch(`${baseUrl}/api/llm`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ modelId, prompt }),
-        }),
-        LLM_TIMEOUT_MS,
-        `LLM API timeout after ${LLM_TIMEOUT_MS}ms`
-      );
-      
-      if (!response.ok) {
-        throw new Error(`LLM API returned status ${response.status}`);
-      }
-      
-      const data = await response.json();
-      if (!data.output) {
-        throw new Error("LLM API response missing output field");
-      }
-      
-      const parsed = parseLLMResponse(data.output, observation.speciesId);
-      let decision = sanitizeDecision(parsed);
-      
-      // Apply interpreter noise if required
-      if (species.traits.requiresInterpreter) {
-        decision = applyInterpreterNoise(decision);
-      }
+  const output = await callLLM(modelId, prompt);
+  const parsed = parseLLMResponse(output, observation.speciesId, true);
+  let decision = sanitizeDecision(parsed);
+  if (species.traits.requiresInterpreter) decision = applyInterpreterNoise(decision);
+  return { decision, usedFallback: false };
 
-      return {
-        decision,
-        usedFallback: false,
-      };
-    } catch (error) {
-      lastError = error;
-      logger.warn(`LLM attempt ${attempt}/${LLM_MAX_RETRIES} failed for ${observation.speciesId}`, error);
-      
-      if (attempt < LLM_MAX_RETRIES) {
-        // Wait before retry (exponential backoff)
-        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
-      }
-    }
-  }
-  
-  // All retries failed - use fallback
-  logger.error(`All LLM attempts failed for ${observation.speciesId}, using fallback`, lastError);
-  
-  const fallbackDecision: SpeciesDecision = {
-    speciesId: observation.speciesId,
-    harvest: {},
-    relations: species.relations || {},
-    governance: species.governance || { punishmentStrength: 0.3, monitoringInvestment: 0.2 },
-  };
-  
-  return {
-    decision: sanitizeDecision(fallbackDecision),
-    error: lastError instanceof Error ? lastError.message : String(lastError),
-    usedFallback: true,
-  };
 }
 
 /**
@@ -225,7 +168,7 @@ export async function getLLMDecision(
   observations: SpeciesObservation[],
   world: WorldState,
   speciesModelMap: Record<string, string>,
-  config: { useBaselineAgents?: boolean; baselinePolicyMap?: Record<string, BaselinePolicy> }
+  config: { useBaselineAgents?: boolean; baselinePolicyMap?: Record<string, BaselinePolicy>; useLinguisticRegimes?: boolean; useEpistemicOrders?: boolean }
 ): Promise<{ decisions: SpeciesDecision[]; errors: SimEvent[] }> {
   const decisions: SpeciesDecision[] = [];
   const errors: SimEvent[] = [];
@@ -236,7 +179,8 @@ export async function getLLMDecision(
       world,
       speciesModelMap,
       config.baselinePolicyMap,
-      config.useBaselineAgents
+      config.useBaselineAgents,
+      {useLinguisticRegimes:!!config.useLinguisticRegimes, useEpistemicOrders:!!config.useEpistemicOrders}
     );
     
     decisions.push(result.decision);

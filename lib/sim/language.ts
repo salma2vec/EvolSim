@@ -1,3 +1,4 @@
+import { getRNG } from "./random";
 /**
  * Language mechanics (Embassytown-inspired)
  * 
@@ -400,7 +401,7 @@ export function interpretTreatyText(
           
           // Expressive regime: apply ambiguity penalty (30% variance)
           if (regime === "Expressive") {
-            const noiseFactor = 0.85 + Math.random() * 0.3; // 0.85 to 1.15 (30% variance)
+            const noiseFactor = 0.85 + getRNG().random() * 0.3; // 0.85 to 1.15 (30% variance)
             value *= noiseFactor;
           }
           
@@ -419,7 +420,7 @@ export function interpretTreatyText(
         let value = numbers[0];
         
         if (regime === "Expressive") {
-          const noiseFactor = 0.85 + Math.random() * 0.3;
+          const noiseFactor = 0.85 + getRNG().random() * 0.3;
           value *= noiseFactor;
         }
         
@@ -446,7 +447,7 @@ export function interpretTreatyText(
           let value = firstNumber;
           
           if (regime === "Expressive") {
-            const noiseFactor = 0.85 + Math.random() * 0.3;
+            const noiseFactor = 0.85 + getRNG().random() * 0.3;
             value *= noiseFactor;
           }
           

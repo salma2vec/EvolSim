@@ -18,7 +18,7 @@ export default function InterpretiveSummary() {
   const { resources, species, metadata, timeStep } = currentState;
   
   // 1. Derive High-Level Status
-  let status = "STABLE EQUILIBRIUM";
+  let status = timeStep === 0 ? "INITIAL STATE" : "NO OVERSHOOT DETECTED";
   let statusColor = "text-foreground";
   
   const collapsedResources = resources.filter(r => r.collapsed);
@@ -33,7 +33,8 @@ export default function InterpretiveSummary() {
       .reduce((sum, e) => sum + (e.data?.harvestAmount || 0), 0);
     
     // Logistic growth estimate: g * R * (1 - R/K)
-    const regen = resource.def.regenRate * resource.amount * (1 - resource.amount / resource.def.capacityK);
+    const previous = history.find(state => state.timeStep === timeStep - 1)?.resources.find(r => r.def.id === resource.def.id);
+    const regen = previous && !previous.collapsed ? previous.def.regenRate * previous.amount * (1 - previous.amount / previous.def.capacityK) : 0;
     const delta = regen - harvests;
     
     return {
@@ -50,10 +51,10 @@ export default function InterpretiveSummary() {
   const isOvershoot = resourceAnalysis.some(a => a.delta < 0);
   
   if (collapsedResources.length > 0) {
-    status = "TERMINAL COLLAPSE";
+    status = "RESOURCE COLLAPSE";
     statusColor = "text-[var(--signal-collapse)]";
   } else if (criticalResources.length > 0) {
-    status = "CRITICAL INSTABILITY";
+    status = "LOW RESOURCE STOCK";
     statusColor = "text-[var(--signal-collapse)]";
   } else if (isOvershoot) {
     status = "RESOURCE OVERSHOOT";
@@ -80,7 +81,7 @@ export default function InterpretiveSummary() {
         <p className="text-lg font-serif leading-relaxed opacity-90 border-l-2 border-border pl-8">
           {metadata ? (
             <>
-              Testing hypothesis in <span className="font-bold">{metadata.name}</span>. 
+              Scenario: <span className="font-bold">{metadata.name}</span>.
               {metadata.scarce} {metadata.collapseMechanics} 
               <span className="block mt-2 text-sm opacity-60 italic">{metadata.nonTrivialReason} {metadata.naiveStrategyFail}</span>
             </>
@@ -90,23 +91,22 @@ export default function InterpretiveSummary() {
         </p>
         
         <div className="p-5 border border-border bg-surface/30 font-mono text-sm space-y-3">
-          <div className="uppercase opacity-55 text-[10px] tracking-widest mb-3">Live Causal Analysis</div>
+          <div className="uppercase opacity-55 text-[10px] tracking-widest mb-3">Dynamics Summary</div>
           {collapsedResources.length > 0 ? (
             <p className="text-[var(--signal-collapse)]">
               Irreversible collapse detected in {collapsedResources.map(r => r.def.id).join(", ")}. 
-              Regeneration has halted. Extinction is inevitable without external intervention.
+              Regeneration has halted for those resources. Population outcomes depend on the remaining dynamics.
             </p>
           ) : topDeficitResource && topDeficitResource.delta < 0 ? (
             <p>
               Aggregate extraction ({topDeficitResource.harvests.toFixed(1)}) exceeds 
-              regeneration ({topDeficitResource.regen.toFixed(1)}) for <span className="text-foreground font-bold">{topDeficitResource.id}</span>. 
+              estimated growth ({topDeficitResource.regen.toFixed(1)}) for <span className="text-foreground font-bold">{topDeficitResource.id}</span>.
               Net deficit: <span className="text-[var(--signal-collapse)]">{Math.abs(topDeficitResource.delta).toFixed(1)} units/epoch</span>. 
-              {topDeficitResource.critical ? " System is in critical state." : " Stability is deteriorating."}
+              {topDeficitResource.critical ? " System is in critical state." : " Noise and environmental shocks are excluded from this comparison."}
             </p>
           ) : (
             <p className="text-foreground/70">
-              Current extraction levels are within sustainable regeneration bounds. 
-              Equilibrium maintained at current population densities.
+              No allocation overshoot is recorded for this step. This does not establish equilibrium or future sustainability.
             </p>
           )}
         </div>
@@ -115,7 +115,7 @@ export default function InterpretiveSummary() {
       {/* Comparative Metric: LLM Capability vs Outcome */}
       <div className="space-y-4">
         <div className="font-serif text-xs uppercase tracking-widest opacity-60 mb-4">
-          Model Capability vs Strategic Outcome
+          Policy and Population
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {species.map(s => {
@@ -125,13 +125,8 @@ export default function InterpretiveSummary() {
               : 0;
             const populationTrend = populationChange > 0 ? "growing" : populationChange < 0 ? "declining" : "stable";
             
-            // Determine capability tier
-            const capabilityTier = s.policyBrainId.includes("gpt-4") || s.policyBrainId.includes("frontier") 
-              ? "high" 
-              : s.policyBrainId.includes("gpt-3.5") || s.policyBrainId.includes("medium")
-              ? "medium"
-              : "baseline";
-            
+            const policyMode = s.policyBrainId.startsWith("baseline:") ? "baseline" : "model";
+
             const outcomeStatus = s.alive && s.population > 1000000 ? "success" : s.alive ? "marginal" : "failure";
             
             return (
@@ -139,13 +134,7 @@ export default function InterpretiveSummary() {
                 <div className="space-y-4">
                   <div className="flex justify-between items-baseline border-b border-border/20 pb-3">
                     <div className="text-[10px] font-mono opacity-40 uppercase tracking-wider text-foreground/50">Policy Brain</div>
-                    <div className={`text-[8px] font-mono uppercase px-2.5 py-1 border ${
-                      capabilityTier === "high" ? "border-foreground/50 bg-foreground/5 opacity-70" :
-                      capabilityTier === "medium" ? "border-foreground/30 bg-foreground/3 opacity-60" :
-                      "border-foreground/20 bg-foreground/2 opacity-50"
-                    }`}>
-                      {capabilityTier}
-                    </div>
+                    <div className="text-[8px] font-mono uppercase px-2.5 py-1 border opacity-60">{policyMode}</div>
                   </div>
                   <div className="font-serif text-xl tracking-tight text-foreground/90">{s.policyBrainId}</div>
                   <div className="space-y-2 text-[10px] font-mono">

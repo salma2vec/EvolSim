@@ -1,3 +1,4 @@
+import { getAvailablePresets } from "../sim/presets";
 /**
  * Validation utilities for input validation and data integrity checks
  */
@@ -9,29 +10,22 @@ import { WorldState, SpeciesDecision, SpeciesObservation, SimConfig, ResourceSta
  */
 export function validateSimConfig(config: Partial<SimConfig>): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
-
-  if (config.maxTimeSteps !== undefined) {
-    if (typeof config.maxTimeSteps !== "number" || config.maxTimeSteps < 1) {
-      errors.push("maxTimeSteps must be a positive number");
-    }
+  if (!config || typeof config !== "object" || Array.isArray(config)) return { valid: false, errors: ["config must be an object"] };
+  const allowed = new Set(["maxTimeSteps", "harvestNoise", "historyLength", "useLinguisticRegimes", "useEpistemicOrders", "useTreaties", "useBaselineAgents", "baselinePolicyMap", "rngSeed"]);
+  for (const key of Object.keys(config)) if (!allowed.has(key)) errors.push(`Unknown config key: ${key}`);
+  for (const key of ["maxTimeSteps", "historyLength"] as const) {
+    const x = config[key];
+    if (x !== undefined && (!Number.isInteger(x) || x < (key === "maxTimeSteps" ? 1 : 0) || x > 200)) errors.push(`${key} must be an integer within 0/1 and 200`);
   }
-
-  if (config.harvestNoise !== undefined) {
-    if (typeof config.harvestNoise !== "number" || config.harvestNoise < 0 || config.harvestNoise > 1) {
-      errors.push("harvestNoise must be a number between 0 and 1");
-    }
+  if (config.harvestNoise !== undefined && (!Number.isFinite(config.harvestNoise) || config.harvestNoise < 0 || config.harvestNoise > 1)) errors.push("harvestNoise must be within 0 and 1");
+  for (const key of ["useLinguisticRegimes", "useEpistemicOrders", "useTreaties", "useBaselineAgents"] as const) {
+    if (config[key] !== undefined && typeof config[key] !== "boolean") errors.push(`${key} must be boolean`);
   }
+  if (config.rngSeed !== undefined && !Number.isSafeInteger(config.rngSeed)) errors.push("rngSeed must be a safe integer");
+  if (config.baselinePolicyMap !== undefined && (!config.baselinePolicyMap || Array.isArray(config.baselinePolicyMap) || typeof config.baselinePolicyMap !== "object" ||
+      Object.values(config.baselinePolicyMap).some(x => !["cooperative", "defector", "conservative", "opportunistic"].includes(x)))) errors.push("Invalid baseline policy map");
+  return { valid: errors.length === 0, errors };
 
-  if (config.historyLength !== undefined) {
-    if (typeof config.historyLength !== "number" || config.historyLength < 0) {
-      errors.push("historyLength must be a non-negative number");
-    }
-  }
-
-  return {
-    valid: errors.length === 0,
-    errors,
-  };
 }
 
 /**
@@ -175,7 +169,7 @@ export function validateSpeciesState(species: Partial<SpeciesState>): { valid: b
 export function validateSimulationRequest(body: unknown): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
 
-  if (!body || typeof body !== "object") {
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
     errors.push("Request body must be an object");
     return { valid: false, errors };
   }
@@ -186,9 +180,11 @@ export function validateSimulationRequest(body: unknown): { valid: boolean; erro
     errors.push("presetId is required and must be a string");
   }
 
+  if (typeof req.presetId === "string" && !getAvailablePresets().includes(req.presetId)) errors.push("Unknown presetId");
+
   if (req.numSteps !== undefined) {
-    if (typeof req.numSteps !== "number" || req.numSteps < 1 || req.numSteps > 1000) {
-      errors.push("numSteps must be a number between 1 and 1000");
+    if (typeof req.numSteps !== "number" || !Number.isInteger(req.numSteps) || req.numSteps < 1 || req.numSteps > 200) {
+      errors.push("numSteps must be an integer between 1 and 200");
     }
   } else {
     errors.push("numSteps is required");
@@ -200,12 +196,14 @@ export function validateSimulationRequest(body: unknown): { valid: boolean; erro
     }
   }
 
-  if (req.seed !== undefined && typeof req.seed !== "number") {
+  if (req.speciesModelMap && typeof req.speciesModelMap === "object" && Object.values(req.speciesModelMap).some(x => typeof x !== "string" || x.length > 100)) errors.push("Invalid model identifier");
+
+  if (req.seed !== undefined && !Number.isSafeInteger(req.seed)) {
     errors.push("seed must be a number");
   }
 
   if (req.config !== undefined) {
-    const configValidation = validateSimConfig(req.config);
+    const configValidation = validateSimConfig(req.config as Partial<SimConfig>);
     errors.push(...configValidation.errors);
   }
 

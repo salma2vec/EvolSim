@@ -10,7 +10,7 @@ import { useSimStore } from "@/lib/store";
 import { showToast } from "./Toast";
 
 export default function ExperimentPanel() {
-  const { setHistory } = useSimStore();
+  const { setHistory, setRunMetadata } = useSimStore();
   const [presetId, setPresetId] = useState("two_species_simple_lake");
   const [numSteps, setNumSteps] = useState(10);
   const [isRunning, setIsRunning] = useState(false);
@@ -30,8 +30,9 @@ export default function ExperimentPanel() {
         body: JSON.stringify({
           presetId,
           numSteps,
-          seed: Date.now(),
+          seed: 42,
           config: {
+            useBaselineAgents: true,
             useLinguisticRegimes,
             useEpistemicOrders,
           }
@@ -47,6 +48,7 @@ export default function ExperimentPanel() {
       
       const data = await response.json();
       if (data.history) {
+        setRunMetadata(data.config, data.provenance);
         setHistory(data.history);
         showToast(`Simulation completed: ${data.history.length} steps`, "success");
       }
@@ -61,6 +63,7 @@ export default function ExperimentPanel() {
   return (
     <div className="card">
       <h2 className="font-serif text-base uppercase tracking-wide mb-6 opacity-65">Experiment Setup</h2>
+      <p className="text-xs mb-4 opacity-60">Seed 42 · fixed baseline policies · no model calls</p>
       
       <div className="space-y-6">
         <div>

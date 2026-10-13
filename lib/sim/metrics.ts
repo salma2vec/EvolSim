@@ -143,45 +143,19 @@ export function computeCooperationIndex(history: WorldState[]): Record<string, n
     treatyViolations: number;
   }> = {};
   
-  // Track harvest behavior
-  for (let i = 1; i < history.length; i++) {
-    const prevState = history[i - 1];
-    const currState = history[i];
-    
-    // Estimate harvest from resource changes
-    for (const resource of currState.resources) {
-      const prevResource = prevState.resources.find(r => r.def.id === resource.def.id);
-      if (!prevResource) continue;
-      
-      // Expected regeneration
-      const expectedRegen = prevResource.def.regenRate * prevResource.amount * 
-        (1 - prevResource.amount / prevResource.def.capacityK);
-      const actualChange = resource.amount - prevResource.amount;
-      const estimatedHarvest = expectedRegen - actualChange;
-      
-      // Sustainable harvest (MSY * 0.1)
-      const msy = prevResource.def.capacityK * 0.5;
-      const sustainableHarvest = msy * 0.1;
-      
-      // Distribute deviation to all species (simplified - in reality would track per-species)
-      for (const species of currState.species) {
-        if (!speciesIndices[species.traits.id]) {
-          speciesIndices[species.traits.id] = {
-            totalDeviation: 0,
-            count: 0,
-            treatyViolations: 0,
-          };
-        }
-        
-        if (estimatedHarvest > sustainableHarvest) {
-          const deviation = (estimatedHarvest - sustainableHarvest) / sustainableHarvest;
-          speciesIndices[species.traits.id].totalDeviation += deviation / currState.species.length;
-          speciesIndices[species.traits.id].count += 1;
-        }
-      }
+  for (const state of history) {
+    for (const event of state.events) {
+      if (event.type !== "HARVEST" || typeof event.data?.speciesId !== "string") continue;
+      const resource = state.resources.find(r => r.def.id === event.data?.resourceId);
+      if (!resource) continue;
+      const sustainableShare = resource.def.regenRate * resource.def.capacityK / 4 / Math.max(1, state.species.filter(s => s.alive).length);
+      const actual = Number(event.data?.harvestAmount ?? 0);
+      const item = speciesIndices[event.data.speciesId] ??= { totalDeviation: 0, count: 0, treatyViolations: 0 };
+      item.totalDeviation += sustainableShare > 0 ? Math.max(0, actual / sustainableShare - 1) : (actual > 0 ? 1 : 0);
+      item.count++;
     }
   }
-  
+
   // Track treaty violations
   for (const state of history) {
     for (const event of state.events) {
@@ -207,7 +181,7 @@ export function computeCooperationIndex(history: WorldState[]): Record<string, n
   // Initialize all species with default
   if (history.length > 0) {
     for (const species of history[history.length - 1].species) {
-      if (!result[species.traits.id]) {
+      if (result[species.traits.id] === undefined) {
         result[species.traits.id] = 1.0; // Default: fully cooperative
       }
     }
@@ -470,4 +444,13 @@ export function computeSurvivalCurves(history: WorldState[]): Record<string, num
   }
 
   return curves;
+}
+
+/** Fraction of carrying capacity at each step (collapsed stocks score zero). */
+export function computeResourceHealth(history: WorldState[]): Record<string, number[]> {
+  const result: Record<string, number[]> = {};
+  for (const state of history) for (const resource of state.resources) {
+    (result[resource.def.id] ??= []).push(resource.collapsed ? 0 : resource.amount / resource.def.capacityK);
+  }
+  return result;
 }

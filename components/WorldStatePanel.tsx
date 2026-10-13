@@ -10,7 +10,7 @@
 import { useSimStore } from "@/lib/store";
 
 export default function WorldStatePanel() {
-  const { currentState } = useSimStore();
+  const { currentState, history } = useSimStore();
   
   if (!currentState) {
     return (
@@ -25,7 +25,7 @@ export default function WorldStatePanel() {
   
   return (
     <div className="bg-surface border border-border/40 p-6">
-      <div className="font-serif text-xs uppercase tracking-wider mb-8 opacity-50 text-foreground/70">System Dynamics: The Delta</div>
+      <div className="font-serif text-xs uppercase tracking-wider mb-8 opacity-50 text-foreground/70">Growth minus allocation (before noise)</div>
       
       <div className="space-y-12">
         {resources.map((resource) => {
@@ -41,7 +41,8 @@ export default function WorldStatePanel() {
             .reduce((sum, e) => sum + (e.data?.harvestAmount || 0), 0);
           
           // Logistic regen: g * R * (1 - R/K)
-          const currentRegen = resource.def.regenRate * amount * (1 - amount / resource.def.capacityK);
+          const previous = history.find(state => state.timeStep === currentState.timeStep - 1)?.resources.find(r => r.def.id === resource.def.id);
+          const currentRegen = previous && !previous.collapsed ? previous.def.regenRate * previous.amount * (1 - previous.amount / capacity) : 0;
           const delta = currentRegen - totalHarvest;
           const isDeficit = delta < 0;
           
@@ -51,8 +52,8 @@ export default function WorldStatePanel() {
           return (
             <div key={resource.def.id} className="space-y-4">
               {/* Resource ID & Amount */}
-              <div className="flex justify-between items-baseline border-b border-border pb-3">
-                <span className="font-serif text-base uppercase tracking-wide">{resource.def.id}</span>
+              <div className="flex gap-3 justify-between items-baseline border-b border-border pb-3">
+                <span className="font-serif text-base uppercase tracking-wide break-all min-w-0">{resource.def.id}</span>
                 <span className={`text-sm font-mono ${collapsed ? 'text-[var(--signal-collapse)]' : 'opacity-90'}`}>
                   {collapsed ? 'COLLAPSED' : `${amount.toFixed(1)} / ${capacity.toFixed(1)}`}
                 </span>
@@ -69,7 +70,7 @@ export default function WorldStatePanel() {
                   <span>{currentRegen.toFixed(1)}</span>
                 </div>
                 <div className="flex flex-col text-right">
-                  <span className="opacity-50 uppercase text-[10px]">Net Delta</span>
+                  <span className="opacity-50 uppercase text-[10px]">Difference</span>
                   <span className={isDeficit ? "text-[var(--signal-collapse)] font-bold" : "text-emerald-500"}>
                     {isDeficit ? "" : "+"}{delta.toFixed(1)}
                   </span>

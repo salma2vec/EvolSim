@@ -7,7 +7,7 @@ import { WorldState } from "../sim/types";
 /**
  * Optimize world state for rendering (remove unnecessary data)
  */
-export function optimizeForRendering(state: WorldState): Partial<WorldState> {
+export function optimizeForRendering(state: WorldState) {
   return {
     timeStep: state.timeStep,
     planet: state.planet,

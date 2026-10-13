@@ -31,7 +31,7 @@ export const DEFAULT_SIM_CONFIG = {
   useLinguisticRegimes: false,  // If false, all agents can express freely
   useEpistemicOrders: false,     // If false, all agents act every step with full information
   useTreaties: true,              // If false, agents cannot form agreements
-  useBaselineAgents: false,       // If true, use fixed-policy heuristics instead of LLMs
+  useBaselineAgents: true,       // If true, use fixed-policy heuristics instead of LLMs
 } as const;
 
 /**

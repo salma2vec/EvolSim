@@ -3,10 +3,13 @@
  */
 
 import { create } from "zustand";
-import { WorldState } from "./sim/types";
+import { WorldState, SimConfig } from "./sim/types";
 
 interface SimStore {
   currentState: WorldState | null;
+  config: SimConfig | null;
+  provenance: Record<string, unknown> | null;
+  setRunMetadata: (config: SimConfig, provenance: Record<string, unknown>) => void;
   history: WorldState[];
   isPlaying: boolean;
   currentTimeStep: number;
@@ -19,6 +22,9 @@ interface SimStore {
 
 export const useSimStore = create<SimStore>((set) => ({
   currentState: null,
+  config: null,
+  provenance: null,
+  setRunMetadata: (config, provenance) => set({config, provenance}),
   history: [],
   isPlaying: false,
   currentTimeStep: 0,
@@ -31,6 +37,6 @@ export const useSimStore = create<SimStore>((set) => ({
       return { currentTimeStep: step, currentState: newState };
     });
   },
-  reset: () => set({ currentState: null, history: [], isPlaying: false, currentTimeStep: 0 }),
+  reset: () => set({ config: null, provenance: null, currentState: null, history: [], isPlaying: false, currentTimeStep: 0 }),
 }));
 

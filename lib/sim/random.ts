@@ -6,7 +6,8 @@ export class SeededRNG {
   private seed: number;
 
   constructor(seed: number = Date.now()) {
-    this.seed = seed;
+    if (!Number.isSafeInteger(seed)) throw new Error("seed must be a safe integer");
+    this.seed = ((seed % 233280) + 233280) % 233280;
   }
 
   /**
@@ -35,7 +36,7 @@ export class SeededRNG {
    * Sample from a normal distribution using Box-Muller transform
    */
   normal(mean: number = 0, stdDev: number = 1): number {
-    const u1 = this.random();
+    const u1 = Math.max(Number.EPSILON, this.random());
     const u2 = this.random();
     const z0 = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
     return z0 * stdDev + mean;
@@ -71,15 +72,26 @@ export class SeededRNG {
    * Set seed
    */
   setSeed(seed: number): void {
-    this.seed = seed;
+    if (!Number.isSafeInteger(seed)) throw new Error("seed must be a safe integer");
+    this.seed = ((seed % 233280) + 233280) % 233280;
   }
 }
 
-// Global RNG instance (can be seeded via SimConfig)
+let contextProvider: (() => SeededRNG | undefined) | undefined;
+export function setRandomContextProvider(provider: () => SeededRNG | undefined): void {
+  contextProvider = provider;
+}
+
+// Browser fallback; server experiments install an AsyncLocalStorage provider.
 let globalRNG: SeededRNG | null = null;
 let currentSeed: number | null = null;
 
 export function getRNG(seed?: number): SeededRNG {
+  const contextual = contextProvider?.();
+  if (contextual) {
+    if (seed !== undefined) contextual.setSeed(seed);
+    return contextual;
+  }
   // If seed is provided, always create a new RNG
   if (seed !== undefined) {
     globalRNG = new SeededRNG(seed);
@@ -98,6 +110,8 @@ export function getRNG(seed?: number): SeededRNG {
 }
 
 export function setRNGSeed(seed: number): void {
+  const contextual = contextProvider?.();
+  if (contextual) { contextual.setSeed(seed); return; }
   globalRNG = new SeededRNG(seed);
   currentSeed = seed;
 }

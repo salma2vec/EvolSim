@@ -34,11 +34,12 @@ export function buildObservation(
   config: SimConfig
 ): SpeciesObservation {
   const rng = getRNG();
+  const effectiveOrder = config.useEpistemicOrders ? species.traits.epistemicOrder : "Order-0";
   
   // Build information state based on epistemic order
-  const memoryLength = getMemoryLength(species.traits.epistemicOrder);
+  const memoryLength = getMemoryLength(effectiveOrder);
   const informationState = buildInformationState(
-    species.traits.epistemicOrder,
+    effectiveOrder,
     world.timeStep,
     history,
     memoryLength
@@ -49,7 +50,7 @@ export function buildObservation(
   
   // Noisy resource estimates (filtered by asymmetric visibility and bandwidth)
   const resourceEstimates = world.resources
-    .filter((resource) => canSeeResource(species.traits.epistemicOrder, resource.def.location?.z || 0))
+    .filter((resource) => canSeeResource(effectiveOrder, resource.def.location?.z || 0))
     .map((resource) => {
       let noise = rng.normal(0, species.traits.perceptionNoise * resource.def.capacityK);
       
@@ -71,7 +72,7 @@ export function buildObservation(
   // Other species (noisy summaries, filtered by asymmetric visibility and bandwidth)
   const otherSpecies = world.species
     .filter((s) => s.traits.id !== species.traits.id && s.alive)
-    .filter((s) => canSeeSpecies(species.traits.epistemicOrder, s.traits.epistemicOrder))
+    .filter((s) => canSeeSpecies(effectiveOrder, s.traits.epistemicOrder))
     .map((s) => {
       let popNoise = rng.normal(0, s.population * 0.1);
       
@@ -95,8 +96,8 @@ export function buildObservation(
   // Living similes available for reference (Embassytown mechanic)
   const availableSimiles = (world.livingSimiles || []).filter(simile => {
     // Only show similes from epochs the agent could observe
-    if (species.traits.epistemicOrder) {
-      const memoryLength = getMemoryLength(species.traits.epistemicOrder);
+    if (effectiveOrder) {
+      const memoryLength = getMemoryLength(effectiveOrder);
       return world.timeStep - simile.createdAt <= memoryLength;
     }
     return true;
@@ -351,21 +352,7 @@ export async function stepWorld(
     if (newDecision) {
       allDecisions.push(newDecision);
       
-      // Emit HARVEST events for transparency
-      for (const [resId, amount] of Object.entries(newDecision.harvest)) {
-        if (amount > 0) {
-          events.push({
-            timeStep: state.timeStep,
-            type: "HARVEST",
-            message: `${species.traits.name} harvested ${amount.toFixed(1)} units of ${resId}`,
-            data: {
-              speciesId: species.traits.id,
-              resourceId: resId,
-              harvestAmount: amount
-            }
-          });
-        }
-      }
+
     } else {
       // Non-acting species: idle (harvest 0) to avoid "zombie overharvest"
       // This is deterministic and explicit
@@ -382,7 +369,7 @@ export async function stepWorld(
   const newTreaties: Treaty[] = [];
   
   if (config.useTreaties !== false) {
-    for (const decision of newDecisions) {
+    for (const decision of sanitizedDecisions) {
       if (decision.treatyProposal) {
         const proposer = state.species.find(s => s.traits.id === decision.speciesId);
         const target = state.species.find(s => s.traits.id === decision.treatyProposal?.targetSpeciesId);
@@ -459,7 +446,7 @@ export async function stepWorld(
   }
 
   // 4. Enforce Active Treaties (Check for violations and deception gaps)
-  const activeTreaties = [...state.activeTreaties, ...newTreaties].filter(t => !t.expiresAt || t.expiresAt > state.timeStep);
+  const activeTreaties = [...state.activeTreaties.map(t => ({ ...t })), ...newTreaties].filter(t => !t.expiresAt || t.expiresAt > state.timeStep);
   
   if (config.useTreaties !== false) {
     for (const treaty of activeTreaties) {
@@ -510,8 +497,16 @@ export async function stepWorld(
 
   // 5. Resolve harvests (strict conservation and voxel access)
   const governanceAdjustedHarvests = applyGovernanceEffects(allDecisions, state.species);
-  const realizedHarvestsBySpecies = resolveHarvests(governanceAdjustedHarvests, state.resources, state.species);
+  const realizedHarvestsBySpecies = resolveHarvests(governanceAdjustedHarvests, state.resources, state.species, config.useEpistemicOrders === true);
   
+  for (const [speciesId, harvests] of Object.entries(realizedHarvestsBySpecies)) {
+    for (const [resourceId, harvestAmount] of Object.entries(harvests)) {
+      events.push({ timeStep: state.timeStep, type: "HARVEST",
+        message: `${speciesId} harvested ${harvestAmount.toFixed(1)} units of ${resourceId}`,
+        data: { speciesId, resourceId, harvestAmount } });
+    }
+  }
+
   // CRITICAL: Assert resource conservation before applying dynamics
   assertConservation(realizedHarvestsBySpecies, state.resources);
 
@@ -622,6 +617,7 @@ export async function stepWorld(
   );
   
   const newState: WorldState = {
+    ...state,
     timeStep: state.timeStep + 1,
     planet: state.planet,
     resources: newResources,

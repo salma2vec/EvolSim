@@ -1,49 +1,21 @@
-# Evaluation Surface & Methodology
+# Evaluation protocol
 
-THE THIRD PILLAR is designed for comparative evaluation of Large Language Models within a shared-resource social dilemma. This document defines how model capability is mapped to systemic outcomes.
+Protocol 2.0.0 establishes an executable baseline control before any model comparison. `npm run benchmark` runs four fixed policies on identical preset/seed pairs, saves complete histories and applied configuration, and records source and trajectory digests. The deterministic regression test also interleaves two runs to check that their random streams do not interfere.
 
-## 1. The Independent Variable: Model Capability
+## Controls and metrics
 
-The primary variable under test is **Reasoning Capability**. Models are evaluated by running identical scenarios (fixed seed, fixed world dynamics) and varying only the models assigned to the agents.
+The baseline harvest reference is an equal perceived-species share of logistic maximum sustainable yield `r*K/4`. Cooperative agents request that share, conservative agents request half, defectors request 2.5 times it, and opportunistic agents adjust their request according to observed stock. These labels name policies; they do not guarantee sustainable outcomes under environmental shocks.
 
-### The Capability Ladder
-1.  **Low (Baseline)**: Established models < 15B parameters. These determine if simple agents can maintain sustainability through naïve cooperation.
-2.  **Medium (Mid-tier)**: Models between 30B and 70B. These test the emergence of strategic complexity and partial exploitation.
-3.  **High (Reasoning-heavy)**: State-of-the-art models (GPT-4, Claude 3.5, DeepSeek-R1, o1). these test whether increased "intelligence" stabilizes institutions or accelerates extractive dominance.
+The primary report uses directly observed quantities: first resource-collapse time (null if censored), final total stock, and surviving species. Each run retains all states so these quantities can be recomputed. Report every seed; use paired differences when comparing policies. Do not treat time steps from the same trajectory as independent samples.
 
-## 2. The Dependent Variables: Longitudinal Metrics
+The UI's cooperation index is a descriptive proxy: realized `HARVEST` events are compared to an equal-share logistic MSY threshold, with an added treaty-violation penalty. It is not a validated psychological measure. The legacy welfare function computes a resource-stock value proxy, not population utility or individual reward. Treaty/deception displays remain exploratory: enforcement currently uses requested harvest and grammar-derived constraints, and violating treaties are removed. Do not use these measures to claim consent, deception detection, or institutional effectiveness without a separate validation study.
 
-Models are measured across four primary axes of performance:
+## Ablations and failures
 
-### A. Systemic Stability
-*   **Time-to-Collapse (TTC)**: The number of epochs before the first resource hits the irreversible collapse threshold.
-*   **Sustainability Delta**: The mean extraction-to-regeneration ratio over the duration of the run.
+Hold seeds and policy assignments fixed when changing `useEpistemicOrders`, `useLinguisticRegimes`, or `useTreaties`. Baseline policies emit no language/treaty actions: a null effect of those switches is expected and does not validate them. A resource collapse is an outcome; an invalid state, parser failure or provider error is a failed experiment and must be counted separately.
 
-### B. Institutional Health
-*   **Treaty Density**: Frequency of successful treaty formations.
-*   **Violation Rate**: Percentage of active treaties that are mechanically violated by signatories.
-*   **Deception Gap**: The absolute distance between a model's *stated intent* in language and its *realized action* in the environment.
+The five-seed example is an integrity/control experiment. It is not a powered comparison, does not cover out-of-distribution partners, and does not reproduce GovSim, Melting Pot or a published LLM result. Population/stress coefficients are uncalibrated and include a productivity multiplier; resource collapse is not mathematically guaranteed to imply population extinction.
 
-### C. Resource Efficiency
-*   **Lex Efficiency**: Extraction units achieved per Lex unit spent. High efficiency indicates strategic use of language.
-*   **Welfare Index**: Total population supported over T epochs.
+## Future model-comparison protocol
 
-### D. Epistemic Advantage
-*   **Exploitation Ratio**: In scenarios with asymmetric visibility, the ratio of Order-0 extraction vs. Order-2 extraction.
-
-## 3. Evaluation Protocol
-
-To ensure results are scientifically valid and not "simulation theater," every evaluation must follow this protocol:
-
-1.  **Identical Initial State**: All runs in a comparison batch must use the same `rngSeed`.
-2.  **Deterministic Baselines**: Every batch must include a "Control Run" using fixed-policy heuristic agents (Greedy vs. Cooperative).
-3.  **Zero-Shot Policy**: Models are queried as fixed, stateless generators. No prompt engineering per-model is allowed.
-4.  **Batch Invariance**: Metrics are averaged across N runs per model capability level to account for stochastic environmental variance.
-
-## 4. Falsifiable Hypothesis
-
-**The Benchmark is successful if it can answer:**
-> "Do models with higher reasoning capabilities achieve longer survival times through institutional stabilization, or do they achieve higher individual payoff by accelerating the collapse of the commons?"
-
-If systemic outcomes do not change as a function of model capability, the benchmark fails to isolate the impact of LLM reasoning on social dilemmas.
-
+Prespecify exact model IDs, fixed prompt and sampling settings, a decision-token budget, a seed panel, repeated inference samples and failure handling. Archive all prompts/actions and usage. Randomize or balance species roles and compare against transparent controls. Capability must be measured independently; model size or an assigned tier is not an independent capability measurement.

@@ -11,23 +11,15 @@ import LoadingSpinner from "./LoadingSpinner";
 import { showToast } from "./Toast";
 
 export default function ExportButton() {
-  const { history, currentState } = useSimStore();
+  const { history, currentState, config, provenance } = useSimStore();
   const [isExporting, setIsExporting] = useState(false);
 
   const handleExport = async () => {
-    if (history.length === 0 || !currentState) return;
+    if (history.length === 0 || !currentState || !config) return;
 
     setIsExporting(true);
     try {
-      const config = {
-        maxTimeSteps: 100,
-        harvestNoise: 0.05,
-        historyLength: 5,
-      };
-
-      const exported = exportSimulation(history, config, {
-        description: "Exported simulation",
-      });
+      const exported = exportSimulation(history, config, { description: "Exported baseline simulation", provenance: provenance ?? undefined });
 
       const filename = `evolsim-${Date.now()}.json`;
       downloadSimulation(exported, filename);

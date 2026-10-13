@@ -33,7 +33,7 @@ function validateIntent(value: unknown): IntentType {
 }
 
 function clampNumber(value: unknown, min: number, max: number, defaultValue: number): number {
-  if (typeof value !== "number" || isNaN(value)) {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
     return defaultValue;
   }
   return Math.max(min, Math.min(max, value));
@@ -49,11 +49,17 @@ function validateStance(value: unknown): DiplomaticStance {
 
 export function parseLLMResponse(
   output: string,
-  speciesId: string
+  speciesId: string,
+  strict = false
 ): SpeciesDecision {
   const parsed = extractJSON(output);
   
-  if (!parsed || typeof parsed !== "object") {
+  if (strict && (!parsed || Array.isArray(parsed) || typeof parsed !== "object" ||
+      !parsed.harvest || Array.isArray(parsed.harvest) || typeof parsed.harvest !== "object" ||
+      Object.values(parsed.harvest).some(x => typeof x !== "number" || !Number.isFinite(x)))) {
+    throw new Error("Invalid structured model decision");
+  }
+  if (!parsed || Array.isArray(parsed) || typeof parsed !== "object") {
     return {
       speciesId,
       harvest: {},
@@ -98,7 +104,7 @@ export function parseLLMResponse(
   const communication: Array<{ targetSpeciesId: string; intent: IntentType; message: string }> = [];
   if (Array.isArray(parsed.communication)) {
     for (const msg of parsed.communication) {
-      if (typeof msg === "object" && typeof msg.targetSpeciesId === "string" && typeof msg.message === "string") {
+      if (msg && typeof msg === "object" && typeof msg.targetSpeciesId === "string" && typeof msg.message === "string") {
         communication.push({
           targetSpeciesId: msg.targetSpeciesId,
           intent: validateIntent(msg.intent),

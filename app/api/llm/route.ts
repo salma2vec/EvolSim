@@ -1,101 +1,16 @@
-/**
- * API route for LLM calls
- * 
- * POST /api/llm
- * 
- * Request body:
- * - modelId: string (required) - LLM model identifier
- * - prompt: string (required) - Prompt text (max 50000 chars)
- * - temperature?: number (0-2) - Sampling temperature
- * 
- * Response:
- * - output: string - LLM response text
- */
-
 import { NextRequest, NextResponse } from "next/server";
 import { callLLM } from "@/lib/llm/client";
-import { LLMRequest } from "@/lib/types/api";
-import { logger } from "@/lib/utils/logger";
-
+import { authorize, readJSON, apiFailure, APIError } from "@/lib/server/api";
+let activeCalls = 0;
 export async function POST(request: NextRequest) {
   try {
-    let body: unknown;
-    try {
-      body = await request.json();
-    } catch (error) {
-      return NextResponse.json(
-        { error: "Invalid JSON in request body", details: String(error) },
-        { status: 400 }
-      );
-    }
-    
-    if (!body || typeof body !== "object") {
-      return NextResponse.json(
-        { error: "Request body must be an object" },
-        { status: 400 }
-      );
-    }
-    
-    const req = body as LLMRequest;
-    const { modelId, prompt, temperature } = req;
-    
-    if (!modelId || typeof modelId !== "string") {
-      return NextResponse.json(
-        { error: "modelId is required and must be a string" },
-        { status: 400 }
-      );
-    }
-    
-    if (!prompt || typeof prompt !== "string") {
-      return NextResponse.json(
-        { error: "prompt is required and must be a string" },
-        { status: 400 }
-      );
-    }
-    
-    if (prompt.length > 50000) {
-      return NextResponse.json(
-        { error: "prompt is too long (max 50000 characters)" },
-        { status: 400 }
-      );
-    }
-    
-    if (temperature !== undefined) {
-      if (typeof temperature !== "number" || temperature < 0 || temperature > 2) {
-        return NextResponse.json(
-          { error: "temperature must be a number between 0 and 2" },
-          { status: 400 }
-        );
-      }
-    }
-    
-    try {
-      const output = await callLLM(modelId, prompt, { temperature });
-      
-      if (!output || typeof output !== "string") {
-        throw new Error("LLM returned invalid output");
-      }
-      
-      return NextResponse.json({ output });
-    } catch (error) {
-      logger.error("LLM call error", error);
-      return NextResponse.json(
-        { 
-          error: "Failed to call LLM", 
-          details: error instanceof Error ? error.message : String(error) 
-        },
-        { status: 500 }
-      );
-    }
-  } catch (error) {
-    logger.error("LLM API route error", error);
-    return NextResponse.json(
-      { 
-        error: "Internal server error", 
-        details: error instanceof Error ? error.message : String(error) 
-      },
-      { status: 500 }
-    );
-  }
+    authorize(request, true);
+    const body = await readJSON(request) as Record<string, unknown>;
+    if (!body || typeof body.modelId !== "string" || typeof body.prompt !== "string" || !body.prompt || body.prompt.length > 50000 ||
+        (body.temperature !== undefined && (typeof body.temperature !== "number" || !Number.isFinite(body.temperature) || body.temperature < 0 || body.temperature > 2))) throw new APIError("Invalid model, prompt or temperature");
+    if (activeCalls >= 2) throw new APIError("Provider capacity reached", 429);
+    activeCalls++;
+    try { return NextResponse.json({ output: await callLLM(body.modelId, body.prompt, { temperature: body.temperature as number | undefined }), modelId: body.modelId, mode: "live" }); }
+    finally { activeCalls--; }
+  } catch (error) { return apiFailure(error); }
 }
-

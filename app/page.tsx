@@ -22,14 +22,15 @@ import { createWorldFromPreset } from "@/lib/sim/presets";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export default function Home() {
-  const { setState, setHistory, currentState } = useSimStore();
+  const { setState, setHistory, setRunMetadata, currentState } = useSimStore();
   const [technicalMode, setTechnicalMode] = useState(false);
   const [viewMode, setViewMode] = useState<"causal" | "spatial">("causal");
 
   useEffect(() => {
     // Initialize with a default scenario if empty
     if (!currentState) {
-      const { world } = createWorldFromPreset("two_species_simple_lake", undefined, 12345);
+      const { world, config } = createWorldFromPreset("two_species_simple_lake", undefined, 12345);
+      setRunMetadata(config, {seed:12345, presetId:"two_species_simple_lake", mode:"baseline"});
       setState(world);
       setHistory([world]);
     }
@@ -46,6 +47,7 @@ export default function Home() {
               <div className="space-y-3">
                 <h1 className="text-xs font-mono uppercase tracking-[0.2em] opacity-40 text-foreground/60">Scientific Instrument</h1>
                 <h2 className="text-4xl md:text-6xl font-serif uppercase tracking-tight leading-none">The Third Pillar</h2>
+                <p className="text-xs opacity-60">Seeded baseline simulation · no model calls</p>
               </div>
               <div className="flex flex-col items-end gap-4 w-full md:w-auto">
                 <div className="flex items-center gap-3 flex-wrap">

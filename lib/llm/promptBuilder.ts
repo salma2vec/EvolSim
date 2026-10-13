@@ -70,11 +70,12 @@ function describeSpeciesTraits(species: SpeciesState): string {
 export function buildSpeciesPrompt(
   species: SpeciesState,
   world: WorldState,
-  observation: SpeciesObservation
+  observation: SpeciesObservation,
+  mechanics = {useLinguisticRegimes:true, useEpistemicOrders:true}
 ): string {
   // Inject new mechanics sections
-  const linguisticSection = getLinguisticConstraintPrompt(species.traits.linguisticRegime);
-  const epistemicSection = getEpistemicPrompt(species.traits.epistemicOrder, world.timeStep, observation.informationState);
+  const linguisticSection = mechanics.useLinguisticRegimes ? getLinguisticConstraintPrompt(species.traits.linguisticRegime) : "";
+  const epistemicSection = mechanics.useEpistemicOrders ? getEpistemicPrompt(species.traits.epistemicOrder, world.timeStep, observation.informationState) : "";
 
   const prompt = `You are the collective strategic mind of Species "${species.traits.name}" in an alien world.
 
@@ -106,7 +107,7 @@ ${observation.resourceEstimates
     const percent = (est.estimatedAmount / capacity) * 100;
     const threshold = (resource.def.collapseThreshold / capacity) * 100;
     const warning = est.estimatedAmount < resource.def.collapseThreshold ? " ⚠️ APPROACHING COLLAPSE" : "";
-    return `- Resource "${resource.def.name}": estimated ${est.estimatedAmount.toFixed(1)}/${capacity} (${percent.toFixed(1)}% capacity, ±${est.uncertainty.toFixed(1)} uncertainty)${warning}`;
+    return `- Resource "${resource.def.name}" [${resource.def.id}]: estimated ${est.estimatedAmount.toFixed(1)}/${capacity} (${percent.toFixed(1)}% capacity, ±${est.uncertainty.toFixed(1)} uncertainty)${warning}`;
   })
   .join("\n")}
 
@@ -116,7 +117,7 @@ ${observation.otherSpecies
     const otherSpecies = world.species.find((s) => s.traits.id === other.speciesId);
     if (!otherSpecies) return "";
     const relation = species.relations[other.speciesId] || "neutral";
-    return `- Species "${otherSpecies.traits.name}": estimated population ~${Math.round(other.estimatedPopulation / 1000000)} million, aggression proxy ${other.aggressionProxy.toFixed(2)}, current relation: ${relation}`;
+    return `- Species "${otherSpecies.traits.name}" [${other.speciesId}]: estimated population ~${Math.round(other.estimatedPopulation / 1000000)} million, aggression proxy ${other.aggressionProxy.toFixed(2)}, current relation: ${relation}`;
   })
   .join("\n")}
 
@@ -145,8 +146,8 @@ Decide your actions for this epoch. Consider:
 3. Diplomatic relations and treaty adherence.
 4. Internal governance.
 
-${species.traits.linguisticRegime === "LiteralOnly" ? "REMINDER: You cannot make abstract promises. Stick to facts. Any claims about current state will be mechanically verified against observable reality." : ""}
-${species.traits.linguisticRegime === "AnchoredReference" ? "REMINDER: You must reference specific past events (Epoch X) or living similes to make any commitment. Referenced epochs will be verified to exist and match your claims." : ""}
+${mechanics.useLinguisticRegimes && species.traits.linguisticRegime === "LiteralOnly" ? "REMINDER: You cannot make abstract promises. Stick to facts. Any claims about current state will be mechanically verified against observable reality." : ""}
+${mechanics.useLinguisticRegimes && species.traits.linguisticRegime === "AnchoredReference" ? "REMINDER: You must reference specific past events (Epoch X) or living similes to make any commitment. Referenced epochs will be verified to exist and match your claims." : ""}
 
 Return a STRICT JSON object with the following schema:
 {
@@ -178,7 +179,7 @@ Return a STRICT JSON object with the following schema:
 }
 
 IMPORTANT: 
-- Harvest values are 0-100 scale (0 = no harvest, 100 = maximum harvest)
+- Harvest requests are absolute resource units in [0,100]; scarcity may reduce the realized allocation
 - "treatyProposal" is optional. If proposing, ensure 'text' follows your Linguistic Constraints strictly.
 - Return ONLY valid JSON, no additional text or markdown formatting`;
 

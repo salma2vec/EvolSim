@@ -1,0 +1,521 @@
+{
+  "protocol": "2.0.0",
+  "mode": "baseline",
+  "sourceSha256": "6ef874404814f99099b39fee5b7dc752a816b75dc794d5e8a5a8980d674b1d79",
+  "node": "v25.9.0",
+  "seeds": [
+    11,
+    23,
+    42,
+    71,
+    101
+  ],
+  "summary": [
+    {
+      "policy": "cooperative",
+      "seeds": 5,
+      "collapses": 1,
+      "meanFinalStock": 47.388584082725224
+    },
+    {
+      "policy": "defector",
+      "seeds": 5,
+      "collapses": 5,
+      "meanFinalStock": 0
+    },
+    {
+      "policy": "conservative",
+      "seeds": 5,
+      "collapses": 0,
+      "meanFinalStock": 86.01905619034994
+    },
+    {
+      "policy": "opportunistic",
+      "seeds": 5,
+      "collapses": 0,
+      "meanFinalStock": 55.20919705609174
+    }
+  ],
+  "runs": [
+    {
+      "policy": "cooperative",
+      "protocolVersion": "2.0.0",
+      "seed": 11,
+      "presetId": "two_species_simple_lake",
+      "requestedSteps": 100,
+      "mode": "baseline",
+      "speciesModelMap": {},
+      "trajectorySha256": "083da316e25b5acb3581e4f07c0c9b4329187a00507ace2f73199d228ec43850",
+      "config": {
+        "maxTimeSteps": 100,
+        "harvestNoise": 0,
+        "historyLength": 5,
+        "useBaselineAgents": true,
+        "baselinePolicyMap": {
+          "species_0": "cooperative",
+          "species_1": "cooperative"
+        },
+        "rngSeed": 11
+      },
+      "timeToFirstCollapse": null,
+      "finalResourceStock": 59.395411954745015,
+      "survivors": 2
+    },
+    {
+      "policy": "cooperative",
+      "protocolVersion": "2.0.0",
+      "seed": 23,
+      "presetId": "two_species_simple_lake",
+      "requestedSteps": 100,
+      "mode": "baseline",
+      "speciesModelMap": {},
+      "trajectorySha256": "4d0f4257ad0a6aefe5c86bf0f9d8d46d10b3b5dcdc0e6cab7a8126e73fd7d60e",
+      "config": {
+        "maxTimeSteps": 100,
+        "harvestNoise": 0,
+        "historyLength": 5,
+        "useBaselineAgents": true,
+        "baselinePolicyMap": {
+          "species_0": "cooperative",
+          "species_1": "cooperative"
+        },
+        "rngSeed": 23
+      },
+      "timeToFirstCollapse": 88,
+      "finalResourceStock": 0,
+      "survivors": 2
+    },
+    {
+      "policy": "cooperative",
+      "protocolVersion": "2.0.0",
+      "seed": 42,
+      "presetId": "two_species_simple_lake",
+      "requestedSteps": 100,
+      "mode": "baseline",
+      "speciesModelMap": {},
+      "trajectorySha256": "de5b190c2d188a941dc2e411a9f7338520bf076ed6beaf3e7575023b7760629d",
+      "config": {
+        "maxTimeSteps": 100,
+        "harvestNoise": 0,
+        "historyLength": 5,
+        "useBaselineAgents": true,
+        "baselinePolicyMap": {
+          "species_0": "cooperative",
+          "species_1": "cooperative"
+        },
+        "rngSeed": 42
+      },
+      "timeToFirstCollapse": null,
+      "finalResourceStock": 59.938465956518826,
+      "survivors": 2
+    },
+    {
+      "policy": "cooperative",
+      "protocolVersion": "2.0.0",
+      "seed": 71,
+      "presetId": "two_species_simple_lake",
+      "requestedSteps": 100,
+      "mode": "baseline",
+      "speciesModelMap": {},
+      "trajectorySha256": "3b8b8de52226bfe0e34dca2b5a4eb64278b921e08f32cd9b18698f7d2257f905",
+      "config": {
+        "maxTimeSteps": 100,
+        "harvestNoise": 0,
+        "historyLength": 5,
+        "useBaselineAgents": true,
+        "baselinePolicyMap": {
+          "species_0": "cooperative",
+          "species_1": "cooperative"
+        },
+        "rngSeed": 71
+      },
+      "timeToFirstCollapse": null,
+      "finalResourceStock": 68.75739279503895,
+      "survivors": 2
+    },
+    {
+      "policy": "cooperative",
+      "protocolVersion": "2.0.0",
+      "seed": 101,
+      "presetId": "two_species_simple_lake",
+      "requestedSteps": 100,
+      "mode": "baseline",
+      "speciesModelMap": {},
+      "trajectorySha256": "0692e73eb421105ad512c4a383733025d0c451299135d2c70631b1c87ec77553",
+      "config": {
+        "maxTimeSteps": 100,
+        "harvestNoise": 0,
+        "historyLength": 5,
+        "useBaselineAgents": true,
+        "baselinePolicyMap": {
+          "species_0": "cooperative",
+          "species_1": "cooperative"
+        },
+        "rngSeed": 101
+      },
+      "timeToFirstCollapse": null,
+      "finalResourceStock": 48.85164970732333,
+      "survivors": 2
+    },
+    {
+      "policy": "defector",
+      "protocolVersion": "2.0.0",
+      "seed": 11,
+      "presetId": "two_species_simple_lake",
+      "requestedSteps": 100,
+      "mode": "baseline",
+      "speciesModelMap": {},
+      "trajectorySha256": "8522bb8bffe034cc2b084bd25ab25696086ca6e57189137022f93277056e63a4",
+      "config": {
+        "maxTimeSteps": 100,
+        "harvestNoise": 0,
+        "historyLength": 5,
+        "useBaselineAgents": true,
+        "baselinePolicyMap": {
+          "species_0": "defector",
+          "species_1": "defector"
+        },
+        "rngSeed": 11
+      },
+      "timeToFirstCollapse": 9,
+      "finalResourceStock": 0,
+      "survivors": 0
+    },
+    {
+      "policy": "defector",
+      "protocolVersion": "2.0.0",
+      "seed": 23,
+      "presetId": "two_species_simple_lake",
+      "requestedSteps": 100,
+      "mode": "baseline",
+      "speciesModelMap": {},
+      "trajectorySha256": "375b3bac92faab72589979256f968d3bb4813901193de98eb339d84f3e750483",
+      "config": {
+        "maxTimeSteps": 100,
+        "harvestNoise": 0,
+        "historyLength": 5,
+        "useBaselineAgents": true,
+        "baselinePolicyMap": {
+          "species_0": "defector",
+          "species_1": "defector"
+        },
+        "rngSeed": 23
+      },
+      "timeToFirstCollapse": 10,
+      "finalResourceStock": 0,
+      "survivors": 0
+    },
+    {
+      "policy": "defector",
+      "protocolVersion": "2.0.0",
+      "seed": 42,
+      "presetId": "two_species_simple_lake",
+      "requestedSteps": 100,
+      "mode": "baseline",
+      "speciesModelMap": {},
+      "trajectorySha256": "69614347cff4f55a96f6404fb4d8d3c5e816d357dfadcdf06b44b4bb4e337411",
+      "config": {
+        "maxTimeSteps": 100,
+        "harvestNoise": 0,
+        "historyLength": 5,
+        "useBaselineAgents": true,
+        "baselinePolicyMap": {
+          "species_0": "defector",
+          "species_1": "defector"
+        },
+        "rngSeed": 42
+      },
+      "timeToFirstCollapse": 10,
+      "finalResourceStock": 0,
+      "survivors": 0
+    },
+    {
+      "policy": "defector",
+      "protocolVersion": "2.0.0",
+      "seed": 71,
+      "presetId": "two_species_simple_lake",
+      "requestedSteps": 100,
+      "mode": "baseline",
+      "speciesModelMap": {},
+      "trajectorySha256": "d45ac15af3dde1e4ef36d5e8b99bf3f427344527ab6b3f53b631ef3f3705e028",
+      "config": {
+        "maxTimeSteps": 100,
+        "harvestNoise": 0,
+        "historyLength": 5,
+        "useBaselineAgents": true,
+        "baselinePolicyMap": {
+          "species_0": "defector",
+          "species_1": "defector"
+        },
+        "rngSeed": 71
+      },
+      "timeToFirstCollapse": 10,
+      "finalResourceStock": 0,
+      "survivors": 0
+    },
+    {
+      "policy": "defector",
+      "protocolVersion": "2.0.0",
+      "seed": 101,
+      "presetId": "two_species_simple_lake",
+      "requestedSteps": 100,
+      "mode": "baseline",
+      "speciesModelMap": {},
+      "trajectorySha256": "cbadbfa1e01431970d0f21e3fea4a77b5396615d134ae7f369b6e5140569c214",
+      "config": {
+        "maxTimeSteps": 100,
+        "harvestNoise": 0,
+        "historyLength": 5,
+        "useBaselineAgents": true,
+        "baselinePolicyMap": {
+          "species_0": "defector",
+          "species_1": "defector"
+        },
+        "rngSeed": 101
+      },
+      "timeToFirstCollapse": 11,
+      "finalResourceStock": 0,
+      "survivors": 0
+    },
+    {
+      "policy": "conservative",
+      "protocolVersion": "2.0.0",
+      "seed": 11,
+      "presetId": "two_species_simple_lake",
+      "requestedSteps": 100,
+      "mode": "baseline",
+      "speciesModelMap": {},
+      "trajectorySha256": "097a7e0259244268a28f4fc80351c5592015f1eaf919d5007494668083ec718d",
+      "config": {
+        "maxTimeSteps": 100,
+        "harvestNoise": 0,
+        "historyLength": 5,
+        "useBaselineAgents": true,
+        "baselinePolicyMap": {
+          "species_0": "conservative",
+          "species_1": "conservative"
+        },
+        "rngSeed": 11
+      },
+      "timeToFirstCollapse": null,
+      "finalResourceStock": 87.15395281067956,
+      "survivors": 2
+    },
+    {
+      "policy": "conservative",
+      "protocolVersion": "2.0.0",
+      "seed": 23,
+      "presetId": "two_species_simple_lake",
+      "requestedSteps": 100,
+      "mode": "baseline",
+      "speciesModelMap": {},
+      "trajectorySha256": "a6d1e35116cad4d48a30e6b6546c58b749ac406142db7ddeac2fd33c8943ca9f",
+      "config": {
+        "maxTimeSteps": 100,
+        "harvestNoise": 0,
+        "historyLength": 5,
+        "useBaselineAgents": true,
+        "baselinePolicyMap": {
+          "species_0": "conservative",
+          "species_1": "conservative"
+        },
+        "rngSeed": 23
+      },
+      "timeToFirstCollapse": null,
+      "finalResourceStock": 83.54363703618519,
+      "survivors": 2
+    },
+    {
+      "policy": "conservative",
+      "protocolVersion": "2.0.0",
+      "seed": 42,
+      "presetId": "two_species_simple_lake",
+      "requestedSteps": 100,
+      "mode": "baseline",
+      "speciesModelMap": {},
+      "trajectorySha256": "f6ff520c40aad78aa1a311899816de93f82227f1c326ecb8885c7f8dc8785d65",
+      "config": {
+        "maxTimeSteps": 100,
+        "harvestNoise": 0,
+        "historyLength": 5,
+        "useBaselineAgents": true,
+        "baselinePolicyMap": {
+          "species_0": "conservative",
+          "species_1": "conservative"
+        },
+        "rngSeed": 42
+      },
+      "timeToFirstCollapse": null,
+      "finalResourceStock": 84.93845449144244,
+      "survivors": 2
+    },
+    {
+      "policy": "conservative",
+      "protocolVersion": "2.0.0",
+      "seed": 71,
+      "presetId": "two_species_simple_lake",
+      "requestedSteps": 100,
+      "mode": "baseline",
+      "speciesModelMap": {},
+      "trajectorySha256": "fad951147c1539b2f2f588a26ab515d6c79b5b109e4d02c2fa0822356e7f926e",
+      "config": {
+        "maxTimeSteps": 100,
+        "harvestNoise": 0,
+        "historyLength": 5,
+        "useBaselineAgents": true,
+        "baselinePolicyMap": {
+          "species_0": "conservative",
+          "species_1": "conservative"
+        },
+        "rngSeed": 71
+      },
+      "timeToFirstCollapse": null,
+      "finalResourceStock": 93.98835862987578,
+      "survivors": 2
+    },
+    {
+      "policy": "conservative",
+      "protocolVersion": "2.0.0",
+      "seed": 101,
+      "presetId": "two_species_simple_lake",
+      "requestedSteps": 100,
+      "mode": "baseline",
+      "speciesModelMap": {},
+      "trajectorySha256": "d9b8c2c35633ec0ec0d1dac271c5c7004e7ab4c0798b86971fd0d654ba32920b",
+      "config": {
+        "maxTimeSteps": 100,
+        "harvestNoise": 0,
+        "historyLength": 5,
+        "useBaselineAgents": true,
+        "baselinePolicyMap": {
+          "species_0": "conservative",
+          "species_1": "conservative"
+        },
+        "rngSeed": 101
+      },
+      "timeToFirstCollapse": null,
+      "finalResourceStock": 80.4708779835668,
+      "survivors": 2
+    },
+    {
+      "policy": "opportunistic",
+      "protocolVersion": "2.0.0",
+      "seed": 11,
+      "presetId": "two_species_simple_lake",
+      "requestedSteps": 100,
+      "mode": "baseline",
+      "speciesModelMap": {},
+      "trajectorySha256": "a1ac083712e4710f46be9bf82d9e99ac511fe3333ffa784092c81e618efba4cc",
+      "config": {
+        "maxTimeSteps": 100,
+        "harvestNoise": 0,
+        "historyLength": 5,
+        "useBaselineAgents": true,
+        "baselinePolicyMap": {
+          "species_0": "opportunistic",
+          "species_1": "opportunistic"
+        },
+        "rngSeed": 11
+      },
+      "timeToFirstCollapse": null,
+      "finalResourceStock": 58.71881144626191,
+      "survivors": 2
+    },
+    {
+      "policy": "opportunistic",
+      "protocolVersion": "2.0.0",
+      "seed": 23,
+      "presetId": "two_species_simple_lake",
+      "requestedSteps": 100,
+      "mode": "baseline",
+      "speciesModelMap": {},
+      "trajectorySha256": "99787d7100d5b3f83a4e8b8446f4a8e593db559facbe728bb59a760fb174e0bf",
+      "config": {
+        "maxTimeSteps": 100,
+        "harvestNoise": 0,
+        "historyLength": 5,
+        "useBaselineAgents": true,
+        "baselinePolicyMap": {
+          "species_0": "opportunistic",
+          "species_1": "opportunistic"
+        },
+        "rngSeed": 23
+      },
+      "timeToFirstCollapse": null,
+      "finalResourceStock": 40.40083294926465,
+      "survivors": 2
+    },
+    {
+      "policy": "opportunistic",
+      "protocolVersion": "2.0.0",
+      "seed": 42,
+      "presetId": "two_species_simple_lake",
+      "requestedSteps": 100,
+      "mode": "baseline",
+      "speciesModelMap": {},
+      "trajectorySha256": "0c7045e157caaee69eafb2005c980472a076b83882275d3fb0dee51c556c30ad",
+      "config": {
+        "maxTimeSteps": 100,
+        "harvestNoise": 0,
+        "historyLength": 5,
+        "useBaselineAgents": true,
+        "baselinePolicyMap": {
+          "species_0": "opportunistic",
+          "species_1": "opportunistic"
+        },
+        "rngSeed": 42
+      },
+      "timeToFirstCollapse": null,
+      "finalResourceStock": 59.02593011213771,
+      "survivors": 2
+    },
+    {
+      "policy": "opportunistic",
+      "protocolVersion": "2.0.0",
+      "seed": 71,
+      "presetId": "two_species_simple_lake",
+      "requestedSteps": 100,
+      "mode": "baseline",
+      "speciesModelMap": {},
+      "trajectorySha256": "97695e1c9164504df4f646b93bfb9d6ffb203112ae1565ce130e1152cc00bfc7",
+      "config": {
+        "maxTimeSteps": 100,
+        "harvestNoise": 0,
+        "historyLength": 5,
+        "useBaselineAgents": true,
+        "baselinePolicyMap": {
+          "species_0": "opportunistic",
+          "species_1": "opportunistic"
+        },
+        "rngSeed": 71
+      },
+      "timeToFirstCollapse": null,
+      "finalResourceStock": 68.72292491912086,
+      "survivors": 2
+    },
+    {
+      "policy": "opportunistic",
+      "protocolVersion": "2.0.0",
+      "seed": 101,
+      "presetId": "two_species_simple_lake",
+      "requestedSteps": 100,
+      "mode": "baseline",
+      "speciesModelMap": {},
+      "trajectorySha256": "47db96892779f5d1f806169aeae86a6331a1edcb031b1d18e30015d0c1e2e8eb",
+      "config": {
+        "maxTimeSteps": 100,
+        "harvestNoise": 0,
+        "historyLength": 5,
+        "useBaselineAgents": true,
+        "baselinePolicyMap": {
+          "species_0": "opportunistic",
+          "species_1": "opportunistic"
+        },
+        "rngSeed": 101
+      },
+      "timeToFirstCollapse": null,
+      "finalResourceStock": 49.17748585367356,
+      "survivors": 2
+    }
+  ]
+}

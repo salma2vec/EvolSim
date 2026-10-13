@@ -59,7 +59,9 @@ export async function runGreedyConflictTest() {
       techLevel: 0.5,
       governance: { punishmentStrength: 0, monitoringInvestment: 0 },
       policyBrainId: "baseline-greedy",
-      alive: true,
+      lexBudget: 100,
+      lexRegenRate: 5,
+    alive: true,
       relations: {}
     })),
     events: [],

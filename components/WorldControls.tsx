@@ -4,42 +4,49 @@
 
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useSimStore } from "@/lib/store";
-import { getAvailablePresets } from "@/lib/sim/presets";
+import { createWorldFromPreset, getAvailablePresets } from "@/lib/sim/presets";
 import { useKeyboardShortcuts } from "@/lib/hooks/useKeyboardShortcuts";
 import ExportButton from "./ExportButton";
 import { showToast } from "./Toast";
 
 export default function WorldControls() {
-  const { isPlaying, setIsPlaying, setHistory, reset, currentTimeStep, setCurrentTimeStep, history } = useSimStore();
+  const { isPlaying, setIsPlaying, setHistory, setRunMetadata, reset, currentTimeStep, setCurrentTimeStep, history } = useSimStore();
   const [presetId, setPresetId] = useState("two_species_simple_lake");
   const [isRunning, setIsRunning] = useState(false);
   
+  const inFlight = useRef(false);
+  const generation = useRef(0);
   const presets = getAvailablePresets();
 
   // Define handlers first (before useKeyboardShortcuts)
-  const handleReset = async () => {
+  const resetToPreset = (nextPreset: string) => {
+    generation.current++;
     reset();
-    setIsRunning(false);
+    const initial = createWorldFromPreset(nextPreset, {}, 12345);
+    setRunMetadata(initial.config, {seed:12345, presetId:nextPreset, mode:"baseline"});
+    setHistory([initial.world]);
   };
+  const handleReset = () => resetToPreset(presetId);
   
   const handleStep = async () => {
-    if (isRunning) return;
+    if (inFlight.current) return;
+    const requestGeneration = generation.current;
+    inFlight.current = true;
     setIsRunning(true);
     
     try {
-      // Use current state's seed or generate deterministic seed
-      // CRITICAL: For determinism, seed should be passed from initial config
-      // Use a fixed seed for consistency (can be improved by storing seed in state)
-      const seed = history.length === 0 ? 12345 : 12345;
-      
+      const seed = 12345;
+      const numSteps = Math.max(1, useSimStore.getState().history.length);
+      if (numSteps > 200) { setIsPlaying(false); return; }
       const response = await fetch("/api/simulate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           presetId,
-          numSteps: 1,
+          numSteps,
+          config: { useBaselineAgents: true },
           seed, // Use deterministic seed
         }),
       });
@@ -53,17 +60,18 @@ export default function WorldControls() {
       }
       
       const data = await response.json();
-      if (data.history && data.history.length > 0) {
-        // Append only new states
-        const newStates = data.history.slice(history.length);
-        if (newStates.length > 0) {
-          setHistory([...history, ...newStates]);
-        }
+      if (requestGeneration === generation.current && data.history?.length) {
+        const previousLength = useSimStore.getState().history.length;
+        setRunMetadata(data.config, data.provenance);
+        setHistory(data.history);
+        if (data.history.length <= previousLength) setIsPlaying(false);
       }
+
     } catch (error) {
+      setIsPlaying(false);
       console.error("Step error:", error);
-      // Error already shown to user above
     } finally {
+      inFlight.current = false;
       setIsRunning(false);
     }
   };
@@ -78,7 +86,7 @@ export default function WorldControls() {
     
     // Run simulation steps
     const runSteps = async () => {
-      while (useSimStore.getState().isPlaying && !isRunning) {
+      while (useSimStore.getState().isPlaying) {
         await handleStep();
         await new Promise((resolve) => setTimeout(resolve, 1000));
       }
@@ -109,13 +117,13 @@ export default function WorldControls() {
   ]);
   
   return (
-    <div className="flex flex-col md:flex-row items-center gap-6 justify-between font-mono text-xs uppercase">
+    <div className="flex flex-col md:flex-row flex-wrap items-center gap-4 justify-between font-mono text-xs uppercase">
       <div className="flex items-center gap-3 w-full md:w-auto">
         <span className="opacity-55 tracking-widest">Scenario:</span>
         <div className="relative group">
           <select
             value={presetId}
-            onChange={(e) => setPresetId(e.target.value)}
+            onChange={(e) => { resetToPreset(e.target.value); setPresetId(e.target.value); }}
             className="appearance-none bg-background border border-border px-5 py-2.5 pr-8 w-full md:w-auto hover:bg-surface/50 cursor-pointer focus:outline-none focus:border-foreground/40 transition-colors"
           >
             {presets.map((p) => (
@@ -133,9 +141,9 @@ export default function WorldControls() {
       <div className="flex items-center gap-3 w-full md:w-auto justify-end">
         <button
           onClick={handlePlay}
-          disabled={isRunning}
+          disabled={isRunning && !isPlaying}
           className={`
-            px-6 py-2.5 border border-border transition-all
+            shrink-0 whitespace-nowrap px-6 py-2.5 border border-border transition-all
             ${isPlaying 
               ? 'bg-foreground text-background border-foreground' 
               : 'hover:bg-foreground hover:text-background'}

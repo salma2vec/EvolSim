@@ -1,85 +1,82 @@
-# THE THIRD PILLAR
+# The Third Pillar
 
-**Multi-agent simulation measuring LLM strategic behavior in resource competition under asymmetric information and institutional constraints.**
+A reproducible multi-agent commons simulator for investigating resource competition, restricted observations, and language-mediated institutions. Agents choose harvest requests, relations, governance parameters, and optional treaty proposals in a toy ecology.
 
-## Evaluation Surface
+The working release runs four transparent baseline policies without API keys and includes a browser instrument panel, seeded batch runner, raw trajectories, and regression tests. **It does not establish any ranking or scaling law for LLMs.** The live OpenAI adapter is opt-in; no live model evaluation is included in the reported baseline experiment.
 
-The system is used to evaluate how increasing model capability affects strategic outcomes in social dilemmas.
+## Run locally
 
-### Model Capability Ladder
-
-Models are categorized into a tiered capability ladder to establish a baseline and measure scaling effects:
-
-1.  **Baseline / Low-capability**
-    *   LLaMA-3 8B / 13B (chat)
-    *   Mistral 7B
-    *   Qwen 7B
-    *   *Purpose*: Establish naïve cooperation and limited strategic exploitation.
-
-2.  **Mid-capability**
-    *   LLaMA-3 70B
-    *   Mixtral 8x7B
-    *   Qwen 32B
-    *   *Purpose*: Test emergence of strategic defection, treaty gaming, and partial stabilization.
-
-3.  **High-capability / Reasoning-heavy**
-    *   GPT-4 / GPT-4.1
-    *   DeepSeek-R1
-    *   o1 / o1-mini
-    *   Claude 3.5 Sonnet / Opus
-    *   *Purpose*: Test whether increased reasoning stabilizes institutions, accelerates extractive equilibria, or exploits language/institutional loopholes.
-
-### Methodology
-
-*   **Fixed Policies**: Models are used as fixed policy generators. No training or self-modifying prompts are allowed.
-*   **Zero Learning**: Agents have no memory beyond the provided state and cannot learn across runs.
-*   **Identical Prototyping**: Each model is queried once per tick per agent with identical prompts (filtered by asymmetric observation).
-*   **Comparative Analysis**: Models are evaluated by running identical environments with fixed initial seeds and agent roles.
-
-## Core Metrics
-
-Models are compared across the following longitudinal axes:
-- **Time-to-collapse** (TTC)
-- **Inequality** (Gini over extraction)
-- **Treaty Stability** (Violation rate vs formation rate)
-- **Resource Trajectories** (Sustainability delta)
-
-## Research Question
-
-**Does increasing LLM capability expand the space of stable cooperative equilibria, or does it expand the space of exploitative, collapse-inducing strategies?**
-
-## Key Features
-
-- **Derived dilemmas**: Social dilemmas emerge from resource dynamics, not scripted payoffs.
-- **Language constraints**: Linguistic regimes mechanically restrict treaty formation and expression.
-- **Epistemic asymmetry**: Agents operate on different time scales and observation bandwidths (Orders 0, 1, and 2).
-- **Institutional formation**: Machine-readable treaties with automatic enforcement.
-- **Voxel Lattice**: A 3D Orthogon world for access permissions and causal separation.
-
-## Documentation
-
-- [Evaluation Surface & Methodology](docs/EVALUATION_SURFACE.md)
-- [Scientific Object Definition](docs/SCIENTIFIC_OBJECT.md)
-- [Positioning vs Existing Work](docs/POSITIONING.md)
-- [LLM Usage Audit](docs/LLM_USAGE_AUDIT.md)
-- [Quality Bar](docs/QUALITY_BAR.md)
-- [UI to State Mapping](docs/UI_STATE_MAPPING.md)
-
-## Quick Start
+Node.js 20.9+:
 
 ```bash
-npm install
-npm run dev
+npm ci
+npm test -- --runInBand
+npm run typecheck
+npm run build
+portless proxy start -p 1355
+portless evolsim npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000)
+Open the URL printed by portless. Step advances a deterministic baseline trajectory, Play repeats steps, Reset starts over, and Export downloads the state history. The UI uses seed 12345. Since each Step reruns the increasing horizon, it is intended for short exploratory trajectories (maximum 200 steps); use the batch runner for experiments.
 
-## System Requirements
+## Reproduce a baseline comparison
 
-- Node.js 18+
-- API keys for relevant LLM providers (OpenAI, DeepSeek, etc.)
-- Baseline agents work without API keys.
+```bash
+npm run benchmark -- results/baseline.json
+```
 
-## License
+The runner compares cooperative, defector, conservative, and opportunistic policies on the same five seeds (11, 23, 42, 71, 101), with 100 requested steps in `two_species_simple_lake`. Harvest noise is zero; seeded environmental shocks remain enabled. The output contains the complete trajectories, applied configuration, protocol version, source digest, trajectory hashes, per-run collapse times, and a descriptive summary.
 
-ISC
+The checked-in [baseline summary](results/baseline-summary.json) records the following local run (protocol 2.0.0):
+
+| Policy | Resource collapses by 100 steps | Mean final stock |
+| --- | --- | --- |
+| Cooperative | 1/5 | 47.389 |
+| Defector | 5/5 | 0.000 |
+| Conservative | 0/5 | 86.019 |
+| Opportunistic | 0/5 | 55.209 |
+
+The paired-seed design controls initial conditions. Five seeds are a demonstration, not sufficient evidence for a general social-science or model-capability conclusion. A non-collapsing trajectory is right-censored at the evaluation horizon; it must not be recorded as a collapse at step 100. Baselines do not communicate or propose treaties, so this experiment does not validate the institutional mechanisms.
+
+## What is implemented
+
+- Logistic resource growth, irreversible collapse, proportional allocation under scarcity, and population/stress dynamics.
+- Explicit action schedules and visibility rules, with ablation switches.
+- A typed action boundary and a literal/anchored treaty-language parser.
+- Seeded random numbers scoped to individual server experiments, including concurrent runs.
+- A shared runner for single and batch experiments; failures do not become synthetic model decisions.
+
+The simulator is not an ecological model fitted to observations. Population dynamics, permissions, noise scales, and language rules are design choices. The supported interpretation is behavior **inside these specified rules**, not evidence about human societies or real ecosystems.
+
+## API and compute limits
+
+`POST /api/simulate` accepts `presetId`, integer `numSteps` (1–200), `seed`, and optional validated `config`. Baseline policies are the default. `POST /api/batch` supports up to 20 baseline runs and 1,000 aggregate steps, with explicit seeds. Both return raw histories. Missing seeds default to 42 (batch: 42 plus run index).
+
+```json
+{
+  "presetId": "two_species_simple_lake",
+  "numSteps": 100,
+  "seed": 42,
+  "config": {
+    "useBaselineAgents": true,
+    "harvestNoise": 0,
+    "baselinePolicyMap": {"species_0": "cooperative", "species_1": "defector"}
+  }
+}
+```
+
+For live calls set server-only `EVOLSIM_ENABLE_LLM=true`, `OPENAI_API_KEY`, an `EVOLSIM_API_TOKEN` of at least 32 characters, and `EVOLSIM_MODELS` containing an explicit comma-separated allowlist of exact provider model IDs. Send `Authorization: Bearer <token>`, `config.useBaselineAgents=false`, and an exact `speciesModelMap` for every species. There are no capability aliases or automatic substitutions. Provider errors, malformed decisions, and truncated responses fail the experiment. Each call has a 30-second timeout, no automatic retry, and a 1,000-token output default; a live simulation is limited to 100 potential decision calls.
+
+When `EVOLSIM_API_TOKEN` is set, all simulation APIs require it. The baseline browser UI does not store or send credentials; use an authenticated API client for protected runs. The API limits are per process, not a deployment-wide billing quota. Keep development servers local; any public deployment needs a gateway with authentication, rate limits, durable usage budgets, and a provider spending cap. No deployment is supplied here.
+
+## Methods and references
+
+- [Evaluation protocol and metric definitions](docs/EVALUATION_SURFACE.md)
+- [State, dynamics and limitations](docs/SCIENTIFIC_OBJECT.md)
+- [LLM operational protocol](docs/LLM_USAGE_AUDIT.md)
+- [Related work](docs/POSITIONING.md)
+- [Architecture](docs/ARCHITECTURE.md)
+
+The experimental prompt in `lib/llm/promptBuilder.ts` is part of the public method and intentionally versioned. See the method documents for the distinction between verified baseline execution, exploratory metrics, and untested live-model hypotheses.
+
+License: ISC.

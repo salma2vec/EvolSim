@@ -78,7 +78,9 @@ describe("updateSpeciesPopulation", () => {
       techLevel: 0.5,
       governance: { punishmentStrength: 0.3, monitoringInvestment: 0.2 },
       policyBrainId: "small",
-      alive: true,
+      lexBudget: 100,
+      lexRegenRate: 5,
+    alive: true,
       relations: {},
     };
 
@@ -116,7 +118,9 @@ describe("updateSpeciesPopulation", () => {
       techLevel: 0.5,
       governance: { punishmentStrength: 0.3, monitoringInvestment: 0.2 },
       policyBrainId: "small",
-      alive: true,
+      lexBudget: 100,
+      lexRegenRate: 5,
+    alive: true,
       relations: {},
     };
 
@@ -156,7 +160,9 @@ describe("computeStress", () => {
       techLevel: 0.5,
       governance: { punishmentStrength: 0.3, monitoringInvestment: 0.2 },
       policyBrainId: "small",
-      alive: true,
+      lexBudget: 100,
+      lexRegenRate: 5,
+    alive: true,
       relations: {},
     };
 

@@ -14,11 +14,9 @@ export function createWorldFromPreset(
   presetId: string,
   speciesModelMap?: Record<string, string>,
   seed?: number,
-  overrides?: { useLinguisticRegimes?: boolean; useEpistemicOrders?: boolean }
+  overrides?: Partial<SimConfig>
 ): { world: WorldState; config: SimConfig } {
-  if (seed !== undefined) {
-    setRNGSeed(seed);
-  }
+  setRNGSeed(seed ?? 42);
   
   let result: { world: WorldState; config: SimConfig };
 
@@ -52,17 +50,13 @@ export function createWorldFromPreset(
       break;
     
     default:
-      result = createTwoSpeciesSimpleLake(speciesModelMap);
-      break;
+      throw new Error(`Unknown preset: ${presetId}`);
   }
 
-  // Apply overrides
-  if (overrides) {
-    if (overrides.useLinguisticRegimes !== undefined) {
-      result.config.useLinguisticRegimes = overrides.useLinguisticRegimes;
-    }
-    if (overrides.useEpistemicOrders !== undefined) {
-      result.config.useEpistemicOrders = overrides.useEpistemicOrders;
+  result.config = { ...result.config, useBaselineAgents: true, ...overrides, rngSeed: seed ?? 42 };
+  if (result.config.useBaselineAgents) {
+    for (const species of result.world.species) {
+      species.policyBrainId = `baseline:${result.config.baselinePolicyMap?.[species.traits.id] ?? "cooperative"}`;
     }
   }
 
@@ -143,7 +137,7 @@ function createTwoSpeciesSimpleLake(
       id: "two_species_simple_lake",
       name: "Two Species Simple Lake",
       scarce: "Renewable resource stock (fish units).",
-      collapseMechanics: "Resource stock falls below regeneration threshold → regeneration halts → populations crash.",
+      collapseMechanics: "Resource stock below the threshold stops regenerating; population outcomes follow the specified toy dynamics.",
       nonTrivialReason: "Each species maximizes short-term payoff by extracting more than its fair share, but joint over-extraction reduces future availability for both.",
       naiveStrategyFail: "Myopic greedy extraction proportional to current population size."
     }

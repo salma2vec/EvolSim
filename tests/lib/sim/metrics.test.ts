@@ -39,6 +39,8 @@ function createMockWorld(timeStep: number): WorldState {
     techLevel: 0.5,
     governance: { punishmentStrength: 0.3, monitoringInvestment: 0.2 },
     policyBrainId: "small",
+    lexBudget: 100,
+    lexRegenRate: 5,
     alive: true,
     relations: {},
   }];
