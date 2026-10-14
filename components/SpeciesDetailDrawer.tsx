@@ -65,13 +65,13 @@ export default function SpeciesDetailDrawer({ speciesId, onClose }: Props) {
           
           {/* New Mechanics Section */}
           {(traits.linguisticRegime || traits.epistemicOrder) && (
-            <div className="p-3 bg-muted/30 rounded border border-muted border-dashed">
+            <div className="p-3 bg-muted/30 rounded-sm border border-muted border-dashed">
               <h3 className="text-sm font-bold text-accent mb-2 uppercase tracking-wide">Societal Constraints</h3>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 {traits.linguisticRegime && (
                   <div>
                     <span className="text-gray-400 block mb-1">Linguistic Regime</span>
-                    <span className="text-white font-mono bg-background px-2 py-1 rounded inline-block">
+                    <span className="text-white font-mono bg-background px-2 py-1 rounded-sm inline-block">
                       {traits.linguisticRegime}
                     </span>
                   </div>
@@ -79,7 +79,7 @@ export default function SpeciesDetailDrawer({ speciesId, onClose }: Props) {
                 {traits.epistemicOrder && (
                   <div>
                     <span className="text-gray-400 block mb-1">Epistemic Order</span>
-                    <span className="text-white font-mono bg-background px-2 py-1 rounded inline-block">
+                    <span className="text-white font-mono bg-background px-2 py-1 rounded-sm inline-block">
                       {traits.epistemicOrder}
                     </span>
                   </div>
@@ -166,7 +166,7 @@ export default function SpeciesDetailDrawer({ speciesId, onClose }: Props) {
               onChange={(e) => {
                 // Update would go here in full implementation
               }}
-              className="bg-background text-white px-3 py-2 rounded border border-muted"
+              className="bg-background text-white px-3 py-2 rounded-sm border border-muted"
             >
               <option value="small">Small (GPT-3.5)</option>
               <option value="medium">Medium (GPT-4)</option>

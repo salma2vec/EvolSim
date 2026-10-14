@@ -44,7 +44,7 @@ function ToastItem({ toast, onDismiss }: ToastProps) {
     <div
       className={`
         border px-5 py-3 mb-3 font-mono text-xs uppercase tracking-wider
-        backdrop-blur-sm transition-all duration-300
+        backdrop-blur-xs transition-all duration-300
         ${typeStyles[toast.type]}
         animate-in slide-in-from-top-2 fade-in
       `}

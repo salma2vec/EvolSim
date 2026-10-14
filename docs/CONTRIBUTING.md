@@ -1,13 +1,16 @@
 # Contributing
 
-Use Node.js 20.9 or later and the committed npm lockfile:
+Use Node.js 22.12 or later and the committed npm lockfile:
 
 ```sh
 npm ci
-npm test -- --runInBand
+npm test
 npm run typecheck
 npm run build
+npm audit --audit-level=low
 ```
+
+Tests run with Vitest in Node, including mocked provider failures and interleaved seeded simulations. `npm run test:watch` watches the suite; `npm run test:coverage` reports V8 coverage for source files, including files the tests do not exercise. The unused ESLint configuration packages and their nonfunctional lint command have been removed. Type checking, tests, and the complete dependency audit run in CI.
 
 For local development, install [portless](https://github.com/vercel-labs/portless), then run:
 

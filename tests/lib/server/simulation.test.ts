@@ -1,4 +1,4 @@
-/** @jest-environment node */
+import { it, expect, afterEach, vi } from "vitest";
 import { runSimulation } from "@/lib/server/simulation";
 import { getAvailablePresets, createWorldFromPreset } from "@/lib/sim/presets";
 import { authorize, readJSON } from "@/lib/server/api";
@@ -6,9 +6,9 @@ import { validateBatch } from "@/lib/utils/batch";
 import { resolveHarvests } from "@/lib/sim/dynamics";
 import { callLLM } from "@/lib/llm/client";
 import { parseLLMResponse } from "@/lib/llm/parseActions";
-jest.mock("@/lib/llm/client", () => ({ callLLM: jest.fn(() => { throw new Error("provider unavailable"); }) }));
+vi.mock("@/lib/llm/client", () => ({ callLLM: vi.fn(() => { throw new Error("provider unavailable"); }) }));
 
-afterEach(() => { delete process.env.EVOLSIM_API_TOKEN; delete process.env.EVOLSIM_ENABLE_LLM; jest.clearAllMocks(); });
+afterEach(() => { delete process.env.EVOLSIM_API_TOKEN; delete process.env.EVOLSIM_ENABLE_LLM; vi.clearAllMocks(); });
 
 it("replays the same seed and isolates interleaved runs", async () => {
   const a = await runSimulation("two_species_simple_lake", 10, 11);

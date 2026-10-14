@@ -15,7 +15,7 @@ export default function SpeciesList() {
   
   if (!currentState) {
     return (
-      <div className="bg-surface p-4 rounded border border-muted">
+      <div className="bg-surface p-4 rounded-sm border border-muted">
         <p className="text-gray-400">No world loaded</p>
       </div>
     );
@@ -33,7 +33,7 @@ export default function SpeciesList() {
   
   return (
     <>
-      <div className="bg-surface p-4 rounded border border-muted">
+      <div className="bg-surface p-4 rounded-sm border border-muted">
         <h2 className="text-xl font-bold mb-4 text-white">Species</h2>
         <div className="space-y-2">
           {species.map((s, idx) => {
@@ -49,11 +49,11 @@ export default function SpeciesList() {
               <div
                 key={s.traits.id}
                 onClick={() => setSelectedSpeciesId(s.traits.id)}
-                className={`p-3 rounded border hover:border-primary cursor-pointer transition-colors ${isActive ? 'border-muted' : 'border-gray-800 opacity-75'}`}
+                className={`p-3 rounded-sm border hover:border-primary cursor-pointer transition-colors ${isActive ? 'border-muted' : 'border-gray-800 opacity-75'}`}
               >
                 <div className="flex items-center gap-2 mb-2">
                   <div
-                    className="w-4 h-4 rounded"
+                    className="w-4 h-4 rounded-sm"
                     style={{ backgroundColor: color }}
                   />
                   <span className="font-semibold text-white">{s.traits.name}</span>
@@ -61,7 +61,7 @@ export default function SpeciesList() {
                   
                   {/* Status Indicator */}
                   {s.traits.epistemicOrder && s.traits.epistemicOrder !== undefined && (
-                    <span className={`text-[10px] px-1 rounded ml-auto ${isActive ? "bg-accent/20 text-accent border border-accent/50" : "bg-gray-800 text-gray-500 border border-gray-700"}`}>
+                    <span className={`text-[10px] px-1 rounded-sm ml-auto ${isActive ? "bg-accent/20 text-accent border border-accent/50" : "bg-gray-800 text-gray-500 border border-gray-700"}`}>
                       {isActive ? "CONCLAVE" : "CLOISTERED"}
                     </span>
                   )}

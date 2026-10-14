@@ -11,7 +11,7 @@ export default function EventLog() {
   
   if (!currentState || history.length === 0) {
     return (
-      <div className="bg-surface p-4 rounded border border-muted">
+      <div className="bg-surface p-4 rounded-sm border border-muted">
         <p className="text-gray-400">No events</p>
       </div>
     );
@@ -42,7 +42,7 @@ export default function EventLog() {
   };
   
   return (
-    <div className="bg-surface p-4 rounded border border-muted h-96 flex flex-col">
+    <div className="bg-surface p-4 rounded-sm border border-muted h-96 flex flex-col">
       <h2 className="text-xl font-bold mb-4 text-white">Event Log</h2>
       <div className="flex-1 overflow-y-auto space-y-2 pr-2">
         {recentEvents.length === 0 ? (
@@ -51,12 +51,12 @@ export default function EventLog() {
           recentEvents.map((event, idx) => (
             <div
               key={idx}
-              className={`p-3 rounded border text-sm ${getEventStyle(event.type)} transition-all hover:bg-opacity-20`}
+              className={`p-3 rounded-sm border text-sm ${getEventStyle(event.type)} transition-all`}
             >
               <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-xs opacity-70">EPOCH {event.timeStep}</span>
-                  <span className="px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider border border-current bg-background">
+                  <span className="px-2 py-0.5 rounded-sm text-[10px] uppercase font-bold tracking-wider border border-current bg-background">
                     {event.type}
                   </span>
                 </div>

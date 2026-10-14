@@ -71,7 +71,7 @@ export default function ExperimentPanel() {
           <select
             value={presetId}
             onChange={(e) => setPresetId(e.target.value)}
-            className="w-full bg-background border border-border px-4 py-2.5 font-mono text-xs hover:bg-surface/50 cursor-pointer focus:outline-none focus:border-foreground/40 transition-colors"
+            className="w-full bg-background border border-border px-4 py-2.5 font-mono text-xs hover:bg-surface/50 cursor-pointer focus:outline-hidden focus:border-foreground/40 transition-colors"
           >
             {presets.map((p) => (
               <option key={p} value={p}>
@@ -89,7 +89,7 @@ export default function ExperimentPanel() {
             onChange={(e) => setNumSteps(Number(e.target.value))}
             min={1}
             max={100}
-            className="w-full bg-background border border-border px-4 py-2.5 font-mono text-xs hover:bg-surface/50 focus:outline-none focus:border-foreground/40 transition-colors"
+            className="w-full bg-background border border-border px-4 py-2.5 font-mono text-xs hover:bg-surface/50 focus:outline-hidden focus:border-foreground/40 transition-colors"
           />
         </div>
 

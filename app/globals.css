@@ -11,9 +11,18 @@
  * - No bright colors except sparse semantic signals (collapse, violation)
  */
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@config "../tailwind.config.ts";
+
+/* Preserve the previous reset defaults through the Tailwind 4 migration. */
+@layer base {
+  *, ::after, ::before, ::backdrop, ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+  button:not(:disabled), [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
 
 :root {
   /* Dark mode only - epistemic instrument palette */

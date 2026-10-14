@@ -6,11 +6,11 @@ The working release runs four transparent baseline policies without API keys and
 
 ## Run locally
 
-Node.js 20.9+:
+Node.js 22.12+:
 
 ```bash
 npm ci
-npm test -- --runInBand
+npm test
 npm run typecheck
 npm run build
 portless proxy start -p 1355
@@ -18,6 +18,8 @@ portless evolsim npm run dev
 ```
 
 Open the URL printed by portless. Step advances a deterministic baseline trajectory, Play repeats steps, Reset starts over, and Export downloads the state history. The UI uses seed 12345. Since each Step reruns the increasing horizon, it is intended for short exploratory trajectories (maximum 200 steps); use the batch runner for experiments.
+
+The Tailwind 4 interface targets Safari 16.4+, Chrome 111+, and Firefox 128+ ([browser requirements](https://tailwindcss.com/docs/upgrade-guide#browser-requirements)). Run `npm audit --audit-level=low` to check the complete installed dependency tree; CI includes development dependencies in this check.
 
 ## Reproduce a baseline comparison
 

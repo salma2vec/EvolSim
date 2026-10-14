@@ -128,7 +128,7 @@ export default function VoxelMap() {
         </div>
       </div>
       
-      <div className="relative w-full h-[600px] bg-background border border-border/30 overflow-hidden rounded-sm">
+      <div className="relative w-full h-[600px] bg-background border border-border/30 overflow-hidden rounded-xs">
         <svg 
           width="100%" 
           height="100%" 
@@ -221,7 +221,7 @@ export default function VoxelMap() {
 
         {/* Inspection overlay */}
         {inspectedItem && (
-          <div className="absolute top-4 right-4 w-64 bg-surface/98 border border-border p-4 shadow-xl backdrop-blur-sm">
+          <div className="absolute top-4 right-4 w-64 bg-surface/98 border border-border p-4 shadow-xl backdrop-blur-xs">
             <div className="flex justify-between items-baseline border-b border-border/30 pb-2 mb-3">
               <span className="font-serif text-[10px] uppercase tracking-wider opacity-60">Inspection</span>
               <button 
