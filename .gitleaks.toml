@@ -1,0 +1,22 @@
+title = "EvolSim source checks"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "generic-api-key"
+
+  # SHA-256 of public source at c8d5044, verified from Git; not a credential.
+  [[rules.allowlists]]
+  description = "Archived lib/server/api.ts source digest"
+  condition = "AND"
+  regexTarget = "line"
+  paths = ['''^results/interface-pilot(?:-summary)?\.json$''']
+  regexes = ['''^\s*"lib/server/api\.ts": "867e464b1f94f3549080338db7fc6b1cfd827e02ecded0fe50cf3cccefc6361c",?\s*$''']
+
+  [[rules.allowlists]]
+  description = "Archived lib/types/api.ts source digest"
+  condition = "AND"
+  regexTarget = "line"
+  paths = ['''^results/interface-pilot(?:-summary)?\.json$''']
+  regexes = ['''^\s*"lib/types/api\.ts": "aa15eaac7c9da656610b0abd71b657b8c7376762e90e0cc0244fa7ac22f49588",?\s*$''']

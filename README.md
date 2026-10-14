@@ -77,7 +77,7 @@ Replay the saved episode experiment with no model calls:
 npx tsx scripts/replay-episodes.ts results/episode-pilot.json /tmp/evolsim-episode-replay.json
 ```
 
-The replay requires matching simulation/protocol sources, checks request/response hashes, and compares all serialized states and errors. It rejects any unrecorded request.
+Run this replay from the frozen `d751259` checkout or an isolated worktree at that commit. It requires matching simulation/protocol sources, checks request/response hashes, and compares all serialized states and errors. Newer sources deliberately fail the source-hash gate; they cannot silently reinterpret this archived experiment.
 
 ## What is implemented
 
