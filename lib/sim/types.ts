@@ -239,6 +239,7 @@ export interface ScenarioMetadata {
 export interface LivingSimile {
   id: string; // Unique identifier: "simile-{speciesId}-{epoch}-{actionHash}"
   speciesId: string;
+  resourceId?: string; // Explicit visibility provenance; legacy references may omit it
   epoch: number;
   action: string; // Human-readable description: "harvested 50 units of exotic_matter"
   referent: string; // How it's referenced in Language: "the agent who harvested 50 units"

@@ -35,13 +35,24 @@ export function buildObservation(
 ): SpeciesObservation {
   const rng = getRNG();
   const effectiveOrder = config.useEpistemicOrders ? species.traits.epistemicOrder : "Order-0";
+
+  const visibleSpeciesIds = new Set(world.species
+    .filter(s => canSeeSpecies(effectiveOrder, s.traits.epistemicOrder))
+    .map(s => s.traits.id));
+  const visibleResourceIds = new Set(world.resources
+    .filter(resource => canSeeResource(effectiveOrder, resource.def.location?.z || 0))
+    .map(resource => resource.def.id));
+  const visibleEvent = (event: SimEvent) =>
+    (!event.data?.speciesId || visibleSpeciesIds.has(event.data.speciesId)) &&
+    (!event.data?.otherSpeciesId || visibleSpeciesIds.has(event.data.otherSpeciesId)) &&
+    (!event.data?.resourceId || visibleResourceIds.has(event.data.resourceId));
   
   // Build information state based on epistemic order
   const memoryLength = getMemoryLength(effectiveOrder);
   const informationState = buildInformationState(
     effectiveOrder,
     world.timeStep,
-    history,
+    history.map(state => ({ ...state, events: state.events.filter(visibleEvent) })),
     memoryLength
   );
   
@@ -95,6 +106,10 @@ export function buildObservation(
   
   // Living similes available for reference (Embassytown mechanic)
   const availableSimiles = (world.livingSimiles || []).filter(simile => {
+    if (!visibleSpeciesIds.has(simile.speciesId)) return false;
+    // Free-text references cannot establish which resource was observed. Keep
+    // legacy unlabelled references out of restricted observations.
+    if (simile.resourceId ? !visibleResourceIds.has(simile.resourceId) : config.useEpistemicOrders) return false;
     // Only show similes from epochs the agent could observe
     if (effectiveOrder) {
       const memoryLength = getMemoryLength(effectiveOrder);
@@ -111,7 +126,7 @@ export function buildObservation(
     const pastState = history[i];
     if (pastState.timeStep >= startStep) {
       const relevantEvents = pastState.events.filter((e) => {
-        return (
+        return visibleEvent(e) && (
           e.data?.speciesId === species.traits.id ||
           e.data?.otherSpeciesId === species.traits.id ||
           e.type === "COLLAPSE" ||
@@ -124,7 +139,7 @@ export function buildObservation(
   
   // Add current events
   const currentEvents = world.events.filter((e) => {
-    return (
+    return visibleEvent(e) && (
       e.data?.speciesId === species.traits.id ||
       e.data?.otherSpeciesId === species.traits.id ||
       e.type === "COLLAPSE" ||
@@ -380,12 +395,14 @@ export async function stepWorld(
           
           if (targetOpen) {
             // Validate Linguistic Regime (parse-time rejection with truth verification)
-            const availableResources = state.resources.map(r => ({ 
+            const proposerObservation = observations.find(observation => observation.speciesId === proposer.traits.id);
+            const visibleResources = new Set(proposerObservation?.resourceEstimates.map(resource => resource.resourceId));
+            const availableResources = state.resources.filter(r => visibleResources.has(r.def.id)).map(r => ({
               id: r.def.id, 
               name: r.def.name,
               amount: r.amount 
             }));
-            const availableSimiles = state.livingSimiles || [];
+            const availableSimiles = proposerObservation?.availableSimiles || [];
             const validation = config.useLinguisticRegimes 
               ? validateTreatyText(
                   decision.treatyProposal.text, 
@@ -393,7 +410,8 @@ export async function stepWorld(
                   availableResources,
                   history.map(h => ({
                     timeStep: h.timeStep,
-                    resources: h.resources.map(r => ({ def: { id: r.def.id }, amount: r.amount }))
+                    resources: h.resources.filter(r => visibleResources.has(r.def.id))
+                      .map(r => ({ def: { id: r.def.id }, amount: r.amount }))
                   })),
                   proposer.traits.epistemicOrder,
                   availableSimiles
@@ -598,6 +616,7 @@ export async function stepWorld(
             const simile: LivingSimile = {
               id: `simile-${state.timeStep}-${actionHash}`,
               speciesId,
+              resourceId: resId,
               epoch: state.timeStep,
               action: `harvested ${amount.toFixed(1)} units of ${resource.def.name}`,
               referent: `the agent who harvested ${Math.round(amount)} units of ${resource.def.name}`,

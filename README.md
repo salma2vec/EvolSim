@@ -92,6 +92,10 @@ For live calls set server-only `EVOLSIM_ENABLE_LLM=true`, `OPENAI_API_KEY`, an `
 
 When `EVOLSIM_API_TOKEN` is set, all simulation APIs require it. The baseline browser UI does not store or send credentials; use an authenticated API client for protected runs. The API limits are per process, not a deployment-wide billing quota. Keep development servers local; any public deployment needs a gateway with authentication, rate limits, durable usage budgets, and a provider spending cap. No deployment is supplied here.
 
+Browser API requests must originate from the same origin as the application; foreign origins, opaque origins and cross-site requests are rejected before computation. Non-browser API clients continue to use the bearer-token contract above. Portless supplies the public origin through `PORTLESS_URL`; other reverse proxies must set server-only `EVOLSIM_PUBLIC_ORIGIN` to the application's exact public origin. Forwarded request headers cannot select a trusted origin.
+
+Protocol 2.1.1 applies the visibility boundary to event history, memory summaries, living-simile references and treaty validation as well as primary observations. References now record their resource identifier; legacy references without that provenance are excluded from restricted observations. The archived baseline and local-model reports retain their original protocol versions.
+
 ## Methods and references
 
 - [Evaluation protocol and metric definitions](docs/EVALUATION_SURFACE.md)
