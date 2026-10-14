@@ -104,8 +104,10 @@ export function auditV2PretestArtifact(artifact: any, protocol: any) {
   }
   const finished = typeof artifact.finishedAt === "string" && artifact.finishedAt.length > 0;
   const firstPassed = attempts[0]?.passed === 8;
-  const firstFailed = attempts[0]?.records === 8 && !firstPassed;
-  const secondComplete = attempts[1]?.records === 8;
+  const terminal = (attempt: typeof attempts[number] | undefined) => Boolean(attempt && attempt.records === 8
+    && attempt.started === 0 && attempt.passed + attempt.incorrect + attempt.invalid === 8);
+  const firstFailed = terminal(attempts[0]) && !firstPassed;
+  const secondComplete = terminal(attempts[1]);
   if (attempts.length === 1 && finished && firstFailed) issues.push("failed first model illegally skipped frozen fallback");
   if (attempts.length === 2 && firstPassed) issues.push("ladder continued after first model passed");
   if (attempts.length === 2 && finished && !secondComplete) issues.push("finished ladder has incomplete fallback attempt");

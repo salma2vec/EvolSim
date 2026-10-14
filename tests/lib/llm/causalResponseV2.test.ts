@@ -84,6 +84,17 @@ it("rejects skipped fallback, continuation after a pass, and wrong selection", (
   const wrongSelection = structuredClone(allFailed); wrongSelection.selectedModel = V2_MODELS[1];
   expect(auditV2PretestArtifact(wrongSelection, protocol).issues)
     .toContain("selected model does not equal the frozen first pass or null");
+
+  const startedFallback: any = timeoutAttempt(1);
+  startedFallback.records = startedFallback.records.map((record: any) => {
+    const { error: _error, elapsedMs: _elapsedMs, ...started } = record;
+    return { ...started, status: "started" };
+  });
+  const forgedFinish: any = { finishedAt: "done", modelOrder: V2_MODELS, cells,
+    attempts: [timeoutAttempt(0), startedFallback], selectedModel: null };
+  const forgedAudit = auditV2PretestArtifact(forgedFinish, protocol);
+  expect(forgedAudit.complete).toBe(false);
+  expect(forgedAudit.issues).toContain("finished ladder has incomplete fallback attempt");
 });
 
 it("keeps every strategic v2 path explicitly unauthorized", () => {
