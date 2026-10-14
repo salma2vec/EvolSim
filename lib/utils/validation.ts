@@ -11,14 +11,14 @@ import { WorldState, SpeciesDecision, SpeciesObservation, SimConfig, ResourceSta
 export function validateSimConfig(config: Partial<SimConfig>): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
   if (!config || typeof config !== "object" || Array.isArray(config)) return { valid: false, errors: ["config must be an object"] };
-  const allowed = new Set(["maxTimeSteps", "harvestNoise", "historyLength", "useLinguisticRegimes", "useEpistemicOrders", "useTreaties", "useBaselineAgents", "useStructuredDecisions", "llmTemperature", "llmSeed", "baselinePolicyMap", "rngSeed"]);
+  const allowed = new Set(["maxTimeSteps", "harvestNoise", "historyLength", "useLinguisticRegimes", "useEpistemicOrders", "useTreaties", "useBaselineAgents", "useStructuredDecisions", "includeNumericRules", "useIndependentRandomStreams", "llmTemperature", "llmSeed", "baselinePolicyMap", "rngSeed"]);
   for (const key of Object.keys(config)) if (!allowed.has(key)) errors.push(`Unknown config key: ${key}`);
   for (const key of ["maxTimeSteps", "historyLength"] as const) {
     const x = config[key];
     if (x !== undefined && (!Number.isInteger(x) || x < (key === "maxTimeSteps" ? 1 : 0) || x > 200)) errors.push(`${key} must be an integer within 0/1 and 200`);
   }
   if (config.harvestNoise !== undefined && (!Number.isFinite(config.harvestNoise) || config.harvestNoise < 0 || config.harvestNoise > 1)) errors.push("harvestNoise must be within 0 and 1");
-  for (const key of ["useLinguisticRegimes", "useEpistemicOrders", "useTreaties", "useBaselineAgents", "useStructuredDecisions"] as const) {
+  for (const key of ["useLinguisticRegimes", "useEpistemicOrders", "useTreaties", "useBaselineAgents", "useStructuredDecisions", "includeNumericRules", "useIndependentRandomStreams"] as const) {
     if (config[key] !== undefined && typeof config[key] !== "boolean") errors.push(`${key} must be boolean`);
   }
   if (config.rngSeed !== undefined && !Number.isSafeInteger(config.rngSeed)) errors.push("rngSeed must be a safe integer");

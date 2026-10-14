@@ -10,7 +10,7 @@
  */
 
 import { ResourceState, PlanetEnv, SpeciesState, SpeciesDecision } from "./types";
-import { getRNG } from "./random";
+import { getExogenousRNG } from "./random";
 import { GOVERNANCE_CONSTANTS, HARVEST_CONSTANTS, SPECIES_CONSTANTS } from "../config";
 
 /**
@@ -28,9 +28,12 @@ export function updateResources(
   resources: ResourceState[],
   harvests: Record<string, number>, // resourceId -> total harvested
   planet: PlanetEnv,
-  config?: { harvestNoise?: number }
+  config?: { harvestNoise?: number; useIndependentRandomStreams?: boolean; rngSeed?: number },
+  timeStep?: number
 ): ResourceState[] {
-  const rng = getRNG();
+  if (config?.useIndependentRandomStreams && (typeof timeStep !== "number" || !Number.isSafeInteger(timeStep) || timeStep < 0)) {
+    throw new Error("Keyed physical draws require an explicit nonnegative world step");
+  }
   const harvestNoise = config?.harvestNoise ?? 0.05;
 
   return resources.map((resource) => {
@@ -67,10 +70,10 @@ export function updateResources(
 
     // Harvest with noise (ensure non-negative)
     const harvest = Math.max(0, harvests[resource.def.id] || 0);
-    const harvestWithNoise = Math.max(0, harvest * (1 + rng.normal(0, harvestNoise)));
+    const harvestWithNoise = Math.max(0, harvest * (1 + getExogenousRNG(config ?? {}, "physical-harvest", [timeStep ?? 0, resource.def.id]).normal(0, harvestNoise)));
 
     // Environmental shock (volatility)
-    const shock = rng.normal(0, planet.volatility * capacity * 0.1);
+    const shock = getExogenousRNG(config ?? {}, "physical-shock", [timeStep ?? 0, resource.def.id]).normal(0, planet.volatility * capacity * 0.1);
 
     // Update amount (ensure non-negative)
     const newAmount = Math.min(capacity * 1.1, Math.max(0, currentAmount + growth - harvestWithNoise + shock));
@@ -353,4 +356,3 @@ export function resolveHarvests(
 
   return realizedHarvests;
 }
-

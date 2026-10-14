@@ -14,7 +14,7 @@ import {
   LivingSimile,
 } from "./types";
 import { updateResources, updateSpeciesPopulation, computePerCapitaResource, computeStress, applyGovernanceEffects, resolveHarvests } from "./dynamics";
-import { getRNG } from "./random";
+import { getRNG, getExogenousRNG } from "./random";
 import { isContactWindow, buildInformationState, getMemoryLength, getObservationBandwidth, canSeeSpecies, canSeeResource } from "./orders";
 import { validateTreatyText } from "./language";
 import { HARVEST_CONSTANTS } from "../config";
@@ -33,7 +33,6 @@ export function buildObservation(
   history: WorldState[],
   config: SimConfig
 ): SpeciesObservation {
-  const rng = getRNG();
   const effectiveOrder = config.useEpistemicOrders ? species.traits.epistemicOrder : "Order-0";
 
   const visibleSpeciesIds = new Set(world.species
@@ -63,6 +62,7 @@ export function buildObservation(
   const resourceEstimates = world.resources
     .filter((resource) => canSeeResource(effectiveOrder, resource.def.location?.z || 0))
     .map((resource) => {
+      const rng = getExogenousRNG(config, "observation-resource", [world.timeStep, species.traits.id, resource.def.id]);
       let noise = rng.normal(0, species.traits.perceptionNoise * resource.def.capacityK);
       
       // If summarized_global, add more noise
@@ -85,6 +85,7 @@ export function buildObservation(
     .filter((s) => s.traits.id !== species.traits.id && s.alive)
     .filter((s) => canSeeSpecies(effectiveOrder, s.traits.epistemicOrder))
     .map((s) => {
+      const rng = getExogenousRNG(config, "observation-species", [world.timeStep, species.traits.id, s.traits.id]);
       let popNoise = rng.normal(0, s.population * 0.1);
       
       // If summarized_global, more noise
@@ -556,7 +557,8 @@ export async function stepWorld(
     state.resources,
     totalRealizedHarvests,
     state.planet,
-    config
+    config,
+    state.timeStep
   );
   
   const newSpecies = state.species.map((species) => {

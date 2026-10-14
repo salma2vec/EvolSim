@@ -79,6 +79,8 @@ npx tsx scripts/replay-episodes.ts results/episode-pilot.json /tmp/evolsim-episo
 
 Run this replay from the frozen `d751259` checkout or an isolated worktree at that commit. It requires matching simulation/protocol sources, checks request/response hashes, and compares all serialized states and errors. Newer sources deliberately fail the source-hash gate; they cannot silently reinterpret this archived experiment.
 
+Protocol 2.3.0 adds optional [numeric resource rules and keyed exogenous noise](docs/EXPERIMENT_CONTROLS.md) for future controlled experiments. Both default off; neither changes incentives or establishes a causal result. The [prospective response study](docs/CAUSAL_RESPONSE_PROTOCOL.md) specifies remaining gates before inference.
+
 ## What is implemented
 
 - Logistic resource growth, irreversible collapse, proportional allocation under scarcity, and population/stress dynamics.

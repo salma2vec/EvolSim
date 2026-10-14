@@ -77,6 +77,39 @@ export class SeededRNG {
   }
 }
 
+/** Optional experiment-only keyed stream; legacy trajectories keep SeededRNG. */
+class KeyedRNG extends SeededRNG {
+  private word: number;
+  constructor(seed: number) { super(seed); this.word = seed >>> 0; }
+  getSeed(): number { return this.word; }
+  setSeed(seed: number): void {
+    if (!Number.isSafeInteger(seed)) throw new Error("seed must be a safe integer");
+    this.word = seed >>> 0;
+  }
+  random(): number {
+    // Mulberry32: a deterministic 32-bit generator, not cryptographic randomness.
+    this.word = (this.word + 0x6D2B79F5) >>> 0;
+    let value = this.word;
+    value = Math.imul(value ^ (value >>> 15), value | 1);
+    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+  }
+}
+
+/** Stable keys prevent unrelated draws or branch choices from shifting noise. */
+export function getExogenousRNG(
+  config: { useIndependentRandomStreams?: boolean; rngSeed?: number },
+  namespace: "observation-resource" | "observation-species" | "physical-harvest" | "physical-shock",
+  key: readonly (string | number)[]
+): SeededRNG {
+  if (!config.useIndependentRandomStreams) return getRNG();
+  if (!Number.isSafeInteger(config.rngSeed)) throw new Error("Keyed experiment streams require an explicit world seed");
+  const label = JSON.stringify(["exogenous-v1", config.rngSeed, namespace, key]);
+  let hash = 2166136261;
+  for (let i = 0; i < label.length; i++) hash = Math.imul(hash ^ label.charCodeAt(i), 16777619) >>> 0;
+  return new KeyedRNG(hash);
+}
+
 let contextProvider: (() => SeededRNG | undefined) | undefined;
 export function setRandomContextProvider(provider: () => SeededRNG | undefined): void {
   contextProvider = provider;
@@ -124,4 +157,3 @@ export function resetRNG(): void {
   globalRNG = null;
   currentSeed = null;
 }
-

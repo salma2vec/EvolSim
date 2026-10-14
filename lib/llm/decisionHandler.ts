@@ -5,9 +5,10 @@
  */
 
 import { SpeciesObservation, SpeciesDecision, SimEvent } from "../sim/types";
-import { WorldState } from "../sim/types";
+import { WorldState, SimConfig } from "../sim/types";
 import { buildSpeciesPrompt } from "./promptBuilder";
 import { buildDecisionSchema } from "./decisionSchema";
+import { buildNumericResourceRules } from "./numericRules";
 import { parseLLMResponse } from "./parseActions";
 import { sanitizeDecision } from "../sim/guards";
 import { logger } from "../utils/logger";
@@ -124,7 +125,7 @@ async function getDecisionForSpecies(
   baselinePolicyMap?: Record<string, BaselinePolicy>,
   useBaselineAgents?: boolean,
   mechanics = {useLinguisticRegimes:true, useEpistemicOrders:true},
-  outputOptions: { useStructuredDecisions?: boolean; llmTemperature?: number; llmSeed?: number } = {}
+  outputOptions: Partial<SimConfig> = {}
 ): Promise<{ decision: SpeciesDecision; error?: string; usedFallback: boolean }> {
   const species = world.species.find((s) => s.traits.id === observation.speciesId);
   if (!species || !species.alive) {
@@ -154,6 +155,7 @@ async function getDecisionForSpecies(
   // Use LLM
   const modelId = speciesModelMap[observation.speciesId] || species.policyBrainId || "small";
   let prompt = buildSpeciesPrompt(species, world, observation, mechanics);
+  if (outputOptions.includeNumericRules) prompt += "\n" + buildNumericResourceRules(world, observation, outputOptions);
   const targets = {
     resourceIds: observation.resourceEstimates.map(resource => resource.resourceId),
     otherSpeciesIds: observation.otherSpecies.map(other => other.speciesId),
@@ -174,7 +176,7 @@ export async function getLLMDecision(
   observations: SpeciesObservation[],
   world: WorldState,
   speciesModelMap: Record<string, string>,
-  config: { useBaselineAgents?: boolean; baselinePolicyMap?: Record<string, BaselinePolicy>; useLinguisticRegimes?: boolean; useEpistemicOrders?: boolean; useStructuredDecisions?: boolean; llmTemperature?: number; llmSeed?: number }
+  config: Partial<SimConfig>
 ): Promise<{ decisions: SpeciesDecision[]; errors: SimEvent[] }> {
   const decisions: SpeciesDecision[] = [];
   const errors: SimEvent[] = [];
