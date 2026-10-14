@@ -1,9 +1,9 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { expect, it } from "vitest";
-import { auditV2PretestArtifact, buildV2Request, futureV2StrategicPromotionIssues, parseV2Pretest,
-  V2_MODELS, V2_PRETEST_SCHEMA, v2PretestCases, verifyV2PretestArtifact, type FutureStrategicCase,
-  type FutureStrategicRecord } from "@/lib/research/causalResponseV2";
+import { assertV2StrategicPanelAuthorized, auditV2PretestArtifact, buildV2Request, parseV2Pretest,
+  V2_MODELS, V2_PRETEST_SCHEMA, V2_STRATEGIC_PANEL_AUTHORIZED, v2PretestCases,
+  verifyV2PretestArtifact } from "@/lib/research/causalResponseV2";
 
 const protocol = { pretest: { cellsPerAttemptedModel: 8, passThreshold: 8 }, provider: {
   endpoint: "http://127.0.0.1:11434/api/chat", ollamaVersion: "0.40.1", temperature: 0, numCtx: 8192, pretestNumPredict: 128 } };
@@ -22,6 +22,16 @@ function passingAttempt(modelIndex: number) {
       response, responseSha256: hash(response), parsed: parseV2Pretest(content, cell), status: "passed" };
   });
   return { specification, metadata: metadata(modelIndex), records, passed: true, passedCount: 8 };
+}
+
+function timeoutAttempt(modelIndex: number) {
+  const cells = v2PretestCases(), specification = V2_MODELS[modelIndex];
+  const records = cells.map((cell, index) => {
+    const request = buildV2Request(specification.model, cell.prompt, V2_PRETEST_SCHEMA, cell.sampleSeed, 128, protocol.provider);
+    return { index, id: cell.id, request, requestSha256: hash(JSON.stringify(request)), status: "invalid",
+      error: "The operation was aborted due to timeout", elapsedMs: 120001 };
+  });
+  return { specification, metadata: metadata(modelIndex), records, passed: false, passedCount: 0 };
 }
 
 it("freezes eight comprehension-only cells with exact expected arithmetic", () => {
@@ -45,14 +55,9 @@ it("recomputes a complete selection and rejects provenance or index tampering", 
 
 it("audits interruption without claiming missing responses were verified or reparsed", () => {
   const cells = v2PretestCases();
-  const timeoutRecords = cells.map((cell, index) => {
-    const request = buildV2Request(V2_MODELS[0].model, cell.prompt, V2_PRETEST_SCHEMA, cell.sampleSeed, 128, protocol.provider);
-    return { index, id: cell.id, request, requestSha256: hash(JSON.stringify(request)), status: "invalid",
-      error: "The operation was aborted due to timeout", elapsedMs: 120001 };
-  });
   const startedRequest = buildV2Request(V2_MODELS[1].model, cells[0].prompt, V2_PRETEST_SCHEMA, cells[0].sampleSeed, 128, protocol.provider);
   const artifact = { modelOrder: V2_MODELS, cells, attempts: [
-    { specification: V2_MODELS[0], metadata: metadata(0), records: timeoutRecords, passed: false, passedCount: 0 },
+    timeoutAttempt(0),
     { specification: V2_MODELS[1], metadata: metadata(1), records: [{ index: 0, id: cells[0].id, request: startedRequest,
       requestSha256: hash(JSON.stringify(startedRequest)), status: "started" }], passed: false, passedCount: 0 }], selectedModel: null };
   const audit = auditV2PretestArtifact(artifact, protocol);
@@ -60,21 +65,30 @@ it("audits interruption without claiming missing responses were verified or repa
   expect(audit.requestHashesVerified).toBe(9); expect(audit.responseHashesVerified).toBe(0); expect(audit.responsesReparsed).toBe(0);
 });
 
-it("blocks strategic promotion for repeated world prompts and mutable record metadata", () => {
-  const cases: FutureStrategicCase[] = Array.from({ length: 64 }, (_, index) => ({ id: `cell-${index}`,
-    prompt: `prompt-${index % 24}`, seed: 2000 + Math.floor(index / 8), speciesId: `role-${index % 2}`,
-    announcement: Boolean(index % 2), visibleHistory: Boolean(Math.floor(index / 2) % 2) }));
-  const records: FutureStrategicRecord[] = cases.map(item => {
-    const request = { messages: [{ role: "user", content: item.prompt }] };
-    return { ...item, request, requestSha256: hash(JSON.stringify(request)) };
-  });
-  expect(futureV2StrategicPromotionIssues(cases, records)).toContain("all 64 analysis units must expose distinct frozen world states to the model");
-  const distinct = cases.map((item, index) => ({ ...item, prompt: `distinct-world-state-${index}` }));
-  const canonical = distinct.map(item => { const request = { messages: [{ role: "user", content: item.prompt }] };
-    return { ...item, request, requestSha256: hash(JSON.stringify(request)) }; });
-  expect(futureV2StrategicPromotionIssues(distinct, canonical)).toEqual([]);
-  canonical[0].announcement = !canonical[0].announcement;
-  expect(futureV2StrategicPromotionIssues(distinct, canonical)).toContain("record0 metadata differs from canonical case");
+it("rejects skipped fallback, continuation after a pass, and wrong selection", () => {
+  const cells = v2PretestCases();
+  const skipped: any = { finishedAt: "done", modelOrder: V2_MODELS, cells,
+    attempts: [timeoutAttempt(0)], selectedModel: null };
+  expect(auditV2PretestArtifact(skipped, protocol).complete).toBe(false);
+  expect(auditV2PretestArtifact(skipped, protocol).issues).toContain("failed first model illegally skipped frozen fallback");
+
+  const continued: any = { finishedAt: "done", modelOrder: V2_MODELS, cells,
+    attempts: [passingAttempt(0), timeoutAttempt(1)], selectedModel: V2_MODELS[0] };
+  expect(auditV2PretestArtifact(continued, protocol).complete).toBe(false);
+  expect(auditV2PretestArtifact(continued, protocol).issues).toContain("ladder continued after first model passed");
+
+  const allFailed: any = { finishedAt: "done", modelOrder: V2_MODELS, cells,
+    attempts: [timeoutAttempt(0), timeoutAttempt(1)], selectedModel: null };
+  expect(auditV2PretestArtifact(allFailed, protocol).issues).toEqual([]);
+  expect(auditV2PretestArtifact(allFailed, protocol).complete).toBe(true);
+  const wrongSelection = structuredClone(allFailed); wrongSelection.selectedModel = V2_MODELS[1];
+  expect(auditV2PretestArtifact(wrongSelection, protocol).issues)
+    .toContain("selected model does not equal the frozen first pass or null");
+});
+
+it("keeps every strategic v2 path explicitly unauthorized", () => {
+  expect(V2_STRATEGIC_PANEL_AUTHORIZED).toBe(false);
+  expect(() => assertV2StrategicPanelAuthorized()).toThrow("new frozen protocol");
 });
 
 it("keeps the interrupted v2 ladder replay-only", () => {

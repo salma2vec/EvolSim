@@ -9,6 +9,10 @@ export const V2_PRETEST_SCHEMA = {
   type: "object", additionalProperties: false, required: ["growth", "nextStock", "quotaBinding"],
   properties: { growth: { type: "number" }, nextStock: { type: "number" }, quotaBinding: { type: "boolean" } },
 };
+export const V2_STRATEGIC_PANEL_AUTHORIZED = false as const;
+export function assertV2StrategicPanelAuthorized(): never {
+  throw new Error("V2 strategic collection is disabled; a new frozen protocol and implementation are required");
+}
 
 export function buildV2Request(model: string, prompt: string, schema: unknown, sampleSeed: number,
   numPredict: number, provider: { temperature: number; numCtx: number }) {
@@ -98,12 +102,19 @@ export function auditV2PretestArtifact(artifact: any, protocol: any) {
     if (attempt.passedCount !== passedCount || attempt.passed !== (passedCount === 8)) issues.push(`attempt${modelIndex}stored summary mismatch`);
     attempts.push(counts);
   }
-  const complete = artifact.finishedAt !== undefined && artifact.finishedAt !== null
-    && attempts.length > 0 && attempts.every((attempt, index) => attempt.records === 8 || index < attempts.length - 1);
-  const firstPassing = attempts.find(attempt => attempt.passed === 8)?.model ?? null;
-  if (artifact.selectedModel !== null && artifact.selectedModel?.model !== firstPassing) issues.push("selected model mismatch");
-  if (!complete && artifact.selectedModel !== null) issues.push("interrupted artifact cannot select a model");
-  return { issues, complete, interrupted: !complete, selectedModel: complete ? firstPassing : null, attempts,
+  const finished = typeof artifact.finishedAt === "string" && artifact.finishedAt.length > 0;
+  const firstPassed = attempts[0]?.passed === 8;
+  const firstFailed = attempts[0]?.records === 8 && !firstPassed;
+  const secondComplete = attempts[1]?.records === 8;
+  if (attempts.length === 1 && finished && firstFailed) issues.push("failed first model illegally skipped frozen fallback");
+  if (attempts.length === 2 && firstPassed) issues.push("ladder continued after first model passed");
+  if (attempts.length === 2 && finished && !secondComplete) issues.push("finished ladder has incomplete fallback attempt");
+  const complete = finished && ((attempts.length === 1 && firstPassed)
+    || (attempts.length === 2 && firstFailed && secondComplete));
+  const firstPassingIndex = attempts.findIndex(attempt => attempt.passed === 8);
+  const expectedSelection = complete && firstPassingIndex >= 0 ? V2_MODELS[firstPassingIndex] : null;
+  if (stable(artifact.selectedModel ?? null) !== stable(expectedSelection)) issues.push("selected model does not equal the frozen first pass or null");
+  return { issues, complete, interrupted: !complete, selectedModel: expectedSelection?.model ?? null, attempts,
     requestHashesVerified, responseHashesVerified, responsesReparsed };
 }
 
@@ -112,23 +123,4 @@ export function verifyV2PretestArtifact(artifact: any, protocol: any) {
   const issues = [...audit.issues];
   if (!audit.complete) issues.push("pretest ladder incomplete");
   return { ...audit, issues };
-}
-
-export interface FutureStrategicCase { id: string; prompt: string; seed: number; speciesId: string; announcement: boolean; visibleHistory: boolean }
-export interface FutureStrategicRecord extends FutureStrategicCase { request: any; requestSha256: string; response?: string; responseSha256?: string }
-export function futureV2StrategicPromotionIssues(cases: FutureStrategicCase[], records: FutureStrategicRecord[]): string[] {
-  const issues: string[] = [];
-  if (cases.length !== 64 || new Set(cases.map(item => item.prompt)).size !== 64) issues.push("all 64 analysis units must expose distinct frozen world states to the model");
-  if (records.length !== cases.length) issues.push("raw record panel incomplete");
-  for (const [index, item] of cases.entries()) {
-    const record = records[index];
-    if (!record || record.id !== item.id || record.seed !== item.seed || record.speciesId !== item.speciesId
-      || record.announcement !== item.announcement || record.visibleHistory !== item.visibleHistory) {
-      issues.push(`record${index} metadata differs from canonical case`); continue;
-    }
-    const userPrompt = record.request?.messages?.find((message: any) => message.role === "user")?.content;
-    if (userPrompt !== item.prompt || record.requestSha256 !== hash(stable(record.request))) issues.push(`record${index} raw request differs from canonical case`);
-    if (record.response !== undefined && record.responseSha256 !== hash(record.response)) issues.push(`record${index} raw response hash mismatch`);
-  }
-  return issues;
 }
