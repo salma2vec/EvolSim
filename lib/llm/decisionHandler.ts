@@ -7,6 +7,7 @@
 import { SpeciesObservation, SpeciesDecision, SimEvent } from "../sim/types";
 import { WorldState } from "../sim/types";
 import { buildSpeciesPrompt } from "./promptBuilder";
+import { buildDecisionSchema } from "./decisionSchema";
 import { parseLLMResponse } from "./parseActions";
 import { sanitizeDecision } from "../sim/guards";
 import { logger } from "../utils/logger";
@@ -122,7 +123,8 @@ async function getDecisionForSpecies(
   speciesModelMap: Record<string, string>,
   baselinePolicyMap?: Record<string, BaselinePolicy>,
   useBaselineAgents?: boolean,
-  mechanics = {useLinguisticRegimes:true, useEpistemicOrders:true}
+  mechanics = {useLinguisticRegimes:true, useEpistemicOrders:true},
+  outputOptions: { useStructuredDecisions?: boolean; llmTemperature?: number; llmSeed?: number } = {}
 ): Promise<{ decision: SpeciesDecision; error?: string; usedFallback: boolean }> {
   const species = world.species.find((s) => s.traits.id === observation.speciesId);
   if (!species || !species.alive) {
@@ -151,13 +153,15 @@ async function getDecisionForSpecies(
   
   // Use LLM
   const modelId = speciesModelMap[observation.speciesId] || species.policyBrainId || "small";
-  const prompt = buildSpeciesPrompt(species, world, observation, mechanics);
-  
-  const output = await callLLM(modelId, prompt);
-  let decision = parseLLMResponse(output, observation.speciesId, true, {
+  let prompt = buildSpeciesPrompt(species, world, observation, mechanics);
+  const targets = {
     resourceIds: observation.resourceEstimates.map(resource => resource.resourceId),
     otherSpeciesIds: observation.otherSpecies.map(other => other.speciesId),
-  });
+  };
+  const schema = outputOptions.useStructuredDecisions ? buildDecisionSchema(targets) : undefined;
+  if (schema) prompt += "\nThe exact contract below replaces the placeholder example above. Use these exact IDs. Empty communication and null treatyProposal are allowed.\n" + JSON.stringify(schema);
+  const output = await callLLM(modelId, prompt, { schema, temperature: outputOptions.llmTemperature, seed: outputOptions.llmSeed });
+  let decision = parseLLMResponse(output, observation.speciesId, true, targets);
   if (species.traits.requiresInterpreter) decision = applyInterpreterNoise(decision);
   return { decision, usedFallback: false };
 
@@ -170,7 +174,7 @@ export async function getLLMDecision(
   observations: SpeciesObservation[],
   world: WorldState,
   speciesModelMap: Record<string, string>,
-  config: { useBaselineAgents?: boolean; baselinePolicyMap?: Record<string, BaselinePolicy>; useLinguisticRegimes?: boolean; useEpistemicOrders?: boolean }
+  config: { useBaselineAgents?: boolean; baselinePolicyMap?: Record<string, BaselinePolicy>; useLinguisticRegimes?: boolean; useEpistemicOrders?: boolean; useStructuredDecisions?: boolean; llmTemperature?: number; llmSeed?: number }
 ): Promise<{ decisions: SpeciesDecision[]; errors: SimEvent[] }> {
   const decisions: SpeciesDecision[] = [];
   const errors: SimEvent[] = [];
@@ -182,7 +186,8 @@ export async function getLLMDecision(
       speciesModelMap,
       config.baselinePolicyMap,
       config.useBaselineAgents,
-      {useLinguisticRegimes:!!config.useLinguisticRegimes, useEpistemicOrders:!!config.useEpistemicOrders}
+      {useLinguisticRegimes:!!config.useLinguisticRegimes, useEpistemicOrders:!!config.useEpistemicOrders},
+      config
     );
     
     decisions.push(result.decision);

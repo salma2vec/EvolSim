@@ -2,7 +2,7 @@
 import OpenAI from "openai";
 
 export async function callLLM(modelId: string, prompt: string,
-  options?: { temperature?: number; maxTokens?: number }): Promise<string> {
+  options?: { temperature?: number; maxTokens?: number; seed?: number; schema?: Record<string, unknown> }): Promise<string> {
   if (process.env.EVOLSIM_ENABLE_LLM !== "true") throw new Error("Live LLM calls disabled");
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) throw new Error("OPENAI_API_KEY is required");
@@ -21,6 +21,9 @@ export async function callLLM(modelId: string, prompt: string,
       { role: "user", content: prompt },
     ],
     ...(options?.temperature !== undefined ? { temperature: options.temperature } : {}),
+    ...(options?.seed !== undefined ? { seed: options.seed } : {}),
+    ...(options?.schema ? { response_format: { type: "json_schema" as const,
+      json_schema: { name: "species_decision", strict: true, schema: options.schema } } } : {}),
     [tokenField]: maxTokens,
   });
   const content = response.choices[0]?.message?.content;

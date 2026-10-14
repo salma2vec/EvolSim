@@ -13,10 +13,11 @@ import { APIError } from "./api";
 const randomContext = new AsyncLocalStorage<SeededRNG>();
 setRandomContextProvider(() => randomContext.getStore());
 let activeRuns = 0;
-export const PROTOCOL_VERSION = "2.1.1";
+export const PROTOCOL_VERSION = "2.2.0";
 
 export async function runSimulation(presetId: string, numSteps: number, seed = 42,
-  speciesModelMap: Record<string, string> = {}, configOverrides: Partial<SimConfig> = {}) {
+  speciesModelMap: Record<string, string> = {}, configOverrides: Partial<SimConfig> = {},
+  onState?: (state: WorldState) => void) {
   const check = validateSimulationRequest({ presetId, numSteps, seed, speciesModelMap, config: configOverrides });
   if (!check.valid) throw new APIError(check.errors.join("; "));
   if (activeRuns >= 2) throw new APIError("Simulation capacity reached; retry later", 429);
@@ -30,6 +31,7 @@ export async function runSimulation(presetId: string, numSteps: number, seed = 4
       const history: WorldState[] = [world];
       let current = world;
       assertWorldState(current);
+      onState?.(structuredClone(current));
       for (let i = 0; i < numSteps && i < config.maxTimeSteps; i++) {
         if (current.species.every(s => !s.alive)) break;
         current = await stepWorld(current, config, async observations => {
@@ -39,6 +41,7 @@ export async function runSimulation(presetId: string, numSteps: number, seed = 4
         }, history);
         assertWorldState(current);
         history.push(current);
+        onState?.(structuredClone(current));
       }
       return { history, config, metrics: { collapseStats: computeCollapseStats(history),
         cooperationIndex: computeCooperationIndex(history), speciesOutcomes: computeSpeciesOutcomes(history) },

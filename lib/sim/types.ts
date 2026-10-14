@@ -282,6 +282,9 @@ export interface SimConfig {
   useTreaties?: boolean;          // If false, agents cannot form agreements
   baselinePolicyMap?: Record<string, "cooperative" | "defector" | "conservative" | "opportunistic">;
   useBaselineAgents?: boolean;    // If true, use fixed-policy heuristics instead of LLMs
+  useStructuredDecisions?: boolean; // Opt-in observation-grounded provider schema; semantic parsing stays strict
+  llmTemperature?: number;
+  llmSeed?: number; // Provider sampling seed; not a guarantee of deterministic inference
 }
 
 /**
