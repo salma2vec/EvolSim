@@ -81,6 +81,8 @@ Run this replay from the frozen `d751259` checkout or an isolated worktree at th
 
 Protocol 2.3.0 adds optional [numeric resource rules and keyed exogenous noise](docs/EXPERIMENT_CONTROLS.md) for future controlled experiments. Both default off; neither changes incentives or establishes a causal result. The [prospective response study](docs/CAUSAL_RESPONSE_PROTOCOL.md) specifies remaining gates before inference.
 
+The causal-response hypotheses and software gates are frozen in `docs/CAUSAL_RESPONSE_MANIFEST.json`. Run `npm run causal:audit -- /tmp/evolsim-causal-audit.json`, then replay it with `npm run causal:replay -- /tmp/evolsim-causal-audit.json`. This is an offline instrument audit with no model calls; even a passing artifact is not an institutional-effect or cooperation result.
+
 ## What is implemented
 
 - Logistic resource growth, irreversible collapse, proportional allocation under scarcity, and population/stress dynamics.

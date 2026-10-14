@@ -1,0 +1,44 @@
+{
+  "studyId": "evolsim-causal-response-v1",
+  "status": "frozen-before-offline-outcome-generation",
+  "scientificDirection": "causal institutional intervention",
+  "question": "With rules, legal actions, payoffs, worlds, roles, sampling seeds, and partner policies held fixed, do a nonbinding harvest-quota announcement and visibility of partner request history change a fixed model's absolute harvest request?",
+  "hypotheses": {
+    "primary": "The paired announcement-minus-neutral request difference is nonzero; the sign is not prespecified.",
+    "moderation": "The paired announcement effect differs between visible and masked partner history; the sign is not prespecified.",
+    "offlinePlacebo": "A payoff-maximizing finite-horizon reference has exactly zero announcement effect because the announcement changes neither information nor incentives."
+  },
+  "panel": {
+    "worldSeeds": [1009, 1013, 1019, 1021, 1031, 1033, 1039, 1049],
+    "rolesPerWorld": 2,
+    "armsPerRole": 4,
+    "plannedCells": 64,
+    "stockBins": [40, 80],
+    "partnerRequests": [0.9375, 4.6875],
+    "quota": 1.875,
+    "legalRequestRange": [0, 100]
+  },
+  "offlineGates": {
+    "completeUniquePanel": true,
+    "onlyTreatmentFieldsDifferWithinQuartet": true,
+    "equalAnnouncementUtf8Bytes": true,
+    "maskedHistoryContainsNoAssignedHistory": true,
+    "referenceAnnouncementEffect": 0,
+    "coarseGrid": { "stockStep": 1, "actionStep": 1 },
+    "refinedGrid": { "stockStep": 0.5, "actionStep": 0.5 },
+    "maxAllowedActionDifference": 0,
+    "maxAllowedValueDifference": 0.25,
+    "adversarialMutationsRequired": 3,
+    "keyedExogenousDrawsIdenticalAcrossArms": true,
+    "exactReplayRequired": true
+  },
+  "futureInferenceGates": {
+    "minimumValidCallRate": 0.95,
+    "maximumIncompleteQuartets": 1,
+    "retries": 0,
+    "replacementSeeds": 0,
+    "modelDigestAndSettingsFrozenBeforeCalls": true,
+    "independentInstrumentReviewRequired": true
+  },
+  "authorization": "This manifest authorizes offline instrument validation only. It does not authorize model inference or support a cooperation claim."
+}

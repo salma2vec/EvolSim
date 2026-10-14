@@ -1,12 +1,14 @@
 # Prospective causal response protocol v1
 
-Status: design only. No calls or results from this study are reported. Its decision reference, treatment renderer, comprehension instrument and complete runner still need implementation and independent review. The [optional controls](EXPERIMENT_CONTROLS.md) are necessary preparation, not completion of these gates.
+Status: the hypotheses and gates are frozen in `CAUSAL_RESPONSE_MANIFEST.json`. The treatment renderer, comprehension instrument, finite-horizon reference and offline audit runner are implemented. No model calls or model-response results from this study are reported. Independent instrument review and every future-inference gate remain required. The [optional controls](EXPERIMENT_CONTROLS.md) are necessary preparation, not completion of these gates.
 
 ## Question and scope
 
 With numerical rules common across arms and legal actions/payoffs fixed, does a nonbinding harvest-quota announcement change a model's requests, and does visibility of a partner's previous requests moderate that response? A null or increased-extraction result is admissible. The goal is measurement of responses, not tuning prompts or incentives until cooperation appears.
 
 The original episode pilot does not answer this: its requests exceed the available stock, but its prompt omits numerical regeneration/collapse rules. Existing treaty records lack independent assent and resource fines. An announcement is therefore explicitly **nonbinding coordination**, not a negotiated or enforced institution. Visibility masks partner request history only; resource IDs, legal requests, resource visibility, acting schedule and allocations stay fixed. Do not use `useEpistemicOrders` as a pure visibility intervention.
+
+This direction follows a falsifiable intervention design rather than treating any low request as cooperation. Akata et al.'s controlled repeated-game experiments show that opponent information and prompt structure can change model coordination while also finding self-interested behavior in dilemma games ([Nature Human Behaviour, 2025](https://www.nature.com/articles/s41562-025-02172-y)). The present protocol tests a narrower causal contrast in a dynamic commons and separates rule comprehension from strategy; it does not import that paper's findings into this simulator.
 
 ## Frozen panel and estimands
 

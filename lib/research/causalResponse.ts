@@ -6,6 +6,10 @@ import { buildNumericResourceRules } from "../llm/numericRules";
 export const STUDY_SEEDS = [1009, 1013, 1019, 1021, 1031, 1033, 1039, 1049];
 export const PARTNER_REQUESTS = [0.9375, 4.6875] as const;
 export const QUOTA = 1.875;
+export const STUDY_MESSAGES = {
+  advisory: `Nonbinding advisory: each species is asked to request at most${QUOTA}units. This is not a legal limit and carries no resource fine.`,
+  neutral: "Neutral notice: each species is asked to use the stated absolute resource units. This notice adds no legal limit or resource fine.",
+} as const;
 const NORMAL_QUADRATURE = [[-Math.sqrt(3), 1 / 6], [0, 2 / 3], [Math.sqrt(3), 1 / 6]];
 
 export interface ResourceGame {
@@ -102,6 +106,47 @@ export interface StudyCase {
   game: ResourceGame; prompt: string; comprehension: { growth: number; noHarvestNoNoiseStock: number; quotaBinding: boolean };
 }
 
+function stable(value: unknown): string {
+  return JSON.stringify(value);
+}
+
+/**
+ * Audit one four-arm block before any response generation.
+ *
+ * fixed world + role + sample seed
+ *              |
+ *       announcement x history visibility
+ *              |
+ * only `announcement` and `partnerPreviousRequests` may differ
+ */
+export function studyCaseQuartetIssues(quartet: StudyCase[]): string[] {
+  const issues: string[] = [];
+  if (quartet.length !== 4) return [`expected4cells, received${quartet.length}`];
+  const combinations = new Set(quartet.map(item => `${Number(item.announcement)}:${Number(item.visibleHistory)}`));
+  if (combinations.size !== 4) issues.push("four treatment combinations are not unique");
+
+  const fixed = quartet.map(({ id: _id, announcement: _announcement, visibleHistory: _visibleHistory,
+    prompt: _prompt, ...rest }) => rest);
+  if (!fixed.every(item => stable(item) === stable(fixed[0]))) issues.push("non-treatment case metadata differs");
+
+  const payloads = quartet.map(item => JSON.parse(item.prompt) as Record<string, unknown>);
+  const stripped = payloads.map(({ announcement: _announcement, partnerPreviousRequests: _history, ...rest }) => rest);
+  if (!stripped.every(item => stable(item) === stable(stripped[0]))) issues.push("non-treatment prompt payload differs");
+
+  const width = Math.max(Buffer.byteLength(STUDY_MESSAGES.advisory), Buffer.byteLength(STUDY_MESSAGES.neutral));
+  for (const [index, item] of quartet.entries()) {
+    const expectedMessage = (item.announcement ? STUDY_MESSAGES.advisory : STUDY_MESSAGES.neutral).padEnd(width);
+    if (payloads[index].announcement !== expectedMessage) issues.push(`${item.id}: announcement text differs from frozen arm`);
+    const expectedHistory = item.visibleHistory ? [item.partnerRequest, item.partnerRequest] : "MASKED";
+    if (stable(payloads[index].partnerPreviousRequests) !== stable(expectedHistory)) {
+      issues.push(`${item.id}: partner history does not match assigned visibility`);
+    }
+  }
+  const announcementWidths = new Set(payloads.map(payload => Buffer.byteLength(String(payload.announcement))));
+  if (announcementWidths.size !== 1) issues.push("announcement arms differ in UTF-8 byte length");
+  return issues;
+}
+
 export const STUDY_SCHEMA = {
   type: "object", additionalProperties: false, required: ["harvest", "comprehension"],
   properties: {
@@ -137,14 +182,12 @@ export function studyCases(): StudyCase[] {
         context: "Synthetic controlled snapshot; the two-entry partner request record is constructed by its stated policy, not a claimed natural trajectory.",
         numericResourceRules: numeric,
         comprehensionInstruction: "In the same response compute deterministic growth at the current stock, next stock if neither player harvests and both noise draws are0, and whether any advisory quota imposes a mechanical cap or fine. Then choose your harvest. Return exactly the JSON schema." };
-      const advisory = `Nonbinding advisory: each species is asked to request at most${QUOTA}units. This is not a legal limit and carries no resource fine.`;
-      const neutral = "Neutral notice: each species is asked to use the stated absolute resource units. This notice adds no legal limit or resource fine.";
-      const width = Math.max(advisory.length, neutral.length);
+      const width = Math.max(Buffer.byteLength(STUDY_MESSAGES.advisory), Buffer.byteLength(STUDY_MESSAGES.neutral));
       const armOrder = [[false, false], [false, true], [true, true], [true, false]];
       const rotation = (seedIndex + roleIndex) % 4;
       for (let j = 0; j < 4; j++) {
         const [announcement, visibleHistory] = armOrder[(j + rotation) % 4];
-        const payload = { ...base, announcement: (announcement ? advisory : neutral).padEnd(width),
+        const payload = { ...base, announcement: (announcement ? STUDY_MESSAGES.advisory : STUDY_MESSAGES.neutral).padEnd(width),
           partnerPreviousRequests: visibleHistory ? [partnerRequest, partnerRequest] : "MASKED" };
         const growth = game.regeneration * stock * (1 - stock / game.capacity);
         cases.push({ id: `${seed}:${species.traits.id}:${Number(announcement)}:${Number(visibleHistory)}`,

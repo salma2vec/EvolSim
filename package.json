@@ -13,7 +13,9 @@
     "benchmark": "tsx scripts/benchmark.ts",
     "typecheck": "tsc --noEmit",
     "validate:local": "tsx scripts/validate-local.ts",
-    "replay:local": "tsx scripts/replay-local.ts"
+    "replay:local": "tsx scripts/replay-local.ts",
+    "causal:audit": "tsx scripts/audit-causal-response.ts",
+    "causal:replay": "tsx scripts/audit-causal-response.ts --replay"
   },
   "dependencies": {
     "lucide-react": "^0.344.0",

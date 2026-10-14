@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
 import { HarvestPlanner, PARTNER_REQUESTS, parseStudyResponse, referenceDecision,
-  resourceTransition, studyCases, type ResourceGame } from "@/lib/research/causalResponse";
+  resourceTransition, studyCaseQuartetIssues, studyCases, type ResourceGame } from "@/lib/research/causalResponse";
 import { createWorldFromPreset } from "@/lib/sim/presets";
 import { updateResources } from "@/lib/sim/dynamics";
 import { getExogenousRNG } from "@/lib/sim/random";
@@ -44,6 +44,7 @@ it("builds64paired cells whose masks affect only partner history and announcemen
   expect(new Set(cells.map(c => c.id)).size).toBe(64);
   for (let start = 0; start < cells.length; start += 4) {
     const quartet = cells.slice(start, start + 4);
+    expect(studyCaseQuartetIssues(quartet)).toEqual([]);
     const payloads = quartet.map(c => JSON.parse(c.prompt));
     const stripped = payloads.map(({ announcement, partnerPreviousRequests, ...rest }) => rest);
     expect(stripped.every(p => JSON.stringify(p) === JSON.stringify(stripped[0]))).toBe(true);
@@ -55,6 +56,22 @@ it("builds64paired cells whose masks affect only partner history and announcemen
       expect(payloads[i].partnerRequest).toBeUndefined();
     }
   }
+});
+
+it("detects adversarial changes to fixed context, hidden history, and institution semantics", () => {
+  const original = studyCases().slice(0, 4);
+  const mutate = (index: number, change: (payload: Record<string, unknown>) => void) => {
+    const quartet = structuredClone(original);
+    const payload = JSON.parse(quartet[index].prompt);
+    change(payload);
+    quartet[index].prompt = JSON.stringify(payload);
+    return studyCaseQuartetIssues(quartet);
+  };
+  expect(mutate(0, payload => { payload.exactCurrentStock = 41; })).not.toEqual([]);
+  const masked = original.findIndex(item => !item.visibleHistory);
+  expect(mutate(masked, payload => { payload.partnerPreviousRequests = [original[masked].partnerRequest]; })).not.toEqual([]);
+  const announced = original.findIndex(item => item.announcement);
+  expect(mutate(announced, payload => { payload.announcement = "Binding quota with a fine"; })).not.toEqual([]);
 });
 
 it("passes the nonbinding-announcement placebo and reports reference grid sensitivity", () => {
