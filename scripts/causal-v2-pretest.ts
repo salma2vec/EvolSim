@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
-import { buildV2Request, parseV2Pretest, V2_MODELS, V2_PRETEST_SCHEMA, v2PretestCases,
+import { assertV2PretestOutputPath, buildV2Request, parseV2Pretest, V2_MODELS, V2_PRETEST_SCHEMA, v2PretestCases,
   verifyV2PretestArtifact } from "../lib/research/causalResponseV2";
 
 const origin = "http://127.0.0.1:11434";
@@ -72,6 +72,7 @@ async function call(body: unknown) {
 }
 
 async function run(output: string) {
+  assertV2PretestOutputPath(output, protocol);
   clean();
   const cells = v2PretestCases();
   const artifact: any = { artifactVersion: "causal-v2-pretest-v1", startedAt: new Date().toISOString(),
@@ -126,7 +127,10 @@ function replay(path: string) {
     responsesReparsed: records.length, selectedModel: verified.selectedModel }, null, 2));
 }
 
-const [mode, path] = process.argv.slice(2);
-if (mode === "run" && path) await run(path);
-else if (mode === "replay" && path) replay(path);
-else throw new Error("Usage: causal:v2:pretest run <exclusive-output> | causal:v2:pretest replay <artifact>");
+async function main() {
+  const [mode, path] = process.argv.slice(2);
+  if (mode === "run" && path) await run(path);
+  else if (mode === "replay" && path) replay(path);
+  else throw new Error("Usage: causal:v2:pretest run <exclusive-output> | causal:v2:pretest replay <artifact>");
+}
+main().catch(error => { console.error(error); process.exitCode = 1; });

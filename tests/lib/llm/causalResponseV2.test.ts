@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { expect, it } from "vitest";
-import { analyzeV2Panel, buildV2Request, parseV2Pretest, V2_MODELS, V2_PRETEST_SCHEMA, V2_STUDY_SEEDS,
+import { analyzeV2Panel, assertV2PretestOutputPath, buildV2Request, parseV2Pretest, V2_MODELS, V2_PRETEST_SCHEMA, V2_STUDY_SEEDS,
   v2CollectionIssues, v2PanelCases, v2PanelHashes, v2PretestCases, v2QuartetIssues,
   v2RecordHashIssues, v2TokenCountIssues, verifyV2PretestArtifact } from "@/lib/research/causalResponseV2";
 import { STUDY_SEEDS } from "@/lib/research/causalResponse";
@@ -18,7 +18,8 @@ it("freezes eight comprehension-only pretest cells with exact expected arithmeti
 });
 
 it("recomputes pretest selection from raw responses and rejects tampering", () => {
-  const protocol = { pretest: { passThreshold: 8 }, provider: { temperature: 0, numCtx: 8192, pretestNumPredict: 128 } };
+  const protocol = { pretest: { cellsPerAttemptedModel: 8, passThreshold: 8, canonicalOutputPath: "results/causal-v2-pretest.json" },
+    provider: { endpoint: "http://127.0.0.1:11434/api/chat", ollamaVersion: "0.40.1", temperature: 0, numCtx: 8192, pretestNumPredict: 128 } };
   const cells = v2PretestCases();
   const records = cells.map((cell, index) => {
     const request = buildV2Request(V2_MODELS[0].model, cell.prompt, V2_PRETEST_SCHEMA, cell.sampleSeed,
@@ -29,13 +30,22 @@ it("recomputes pretest selection from raw responses and rejects tampering", () =
       httpStatus: 200, response, responseSha256: createHash("sha256").update(response).digest("hex"),
       parsed: parseV2Pretest(content, cell), status: "passed" };
   });
-  const artifact = { modelOrder: V2_MODELS, cells, attempts: [{ specification: V2_MODELS[0], records,
+  const metadata = { endpoint: "http://127.0.0.1:11434", localOnly: true, version: { version: "0.40.1" },
+    installed: { name: V2_MODELS[0].model, digest: V2_MODELS[0].digest,
+      details: { parameter_size: V2_MODELS[0].parameterSize, quantization_level: V2_MODELS[0].quantization } } };
+  const artifact = { modelOrder: V2_MODELS, cells, attempts: [{ specification: V2_MODELS[0], metadata, records,
     passed: true, passedCount: 8 }], selectedModel: V2_MODELS[0] };
   expect(verifyV2PretestArtifact(artifact, protocol).issues).toEqual([]);
   const tampered = structuredClone(artifact);
   tampered.attempts[0].records[0].response = JSON.stringify({ done: true, done_reason: "stop",
     message: { content: JSON.stringify({ growth: 0, nextStock: 0, quotaBinding: false }) } });
   expect(verifyV2PretestArtifact(tampered, protocol).issues).not.toEqual([]);
+  const badMetadata: any = structuredClone(artifact); badMetadata.attempts[0].metadata.installed.digest = "tampered";
+  expect(verifyV2PretestArtifact(badMetadata, protocol).issues).not.toEqual([]);
+  const badIndex = structuredClone(artifact); badIndex.attempts[0].records[0].index = 7;
+  expect(verifyV2PretestArtifact(badIndex, protocol).issues).not.toEqual([]);
+  expect(() => assertV2PretestOutputPath("results/another.json", protocol)).toThrow();
+  expect(() => assertV2PretestOutputPath(protocol.pretest.canonicalOutputPath, protocol)).not.toThrow();
 });
 
 it("isolates only message, history, and neutral padding within every v2 quartet", () => {

@@ -17,6 +17,7 @@
     }
   ],
   "pretest": {
+    "canonicalOutputPath": "results/causal-v2-pretest.json",
     "cellsPerAttemptedModel": 8,
     "passThreshold": 8,
     "order": "Stop at the first model with 8/8 valid and correct cells; attempt the second model only if the first fails.",

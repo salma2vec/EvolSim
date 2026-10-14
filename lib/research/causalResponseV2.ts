@@ -59,6 +59,10 @@ export function parseV2Pretest(raw: string, item: V2PretestCase) {
     quotaBinding: value.quotaBinding as boolean, passed };
 }
 
+export function assertV2PretestOutputPath(path: string, protocol: any) {
+  if (path !== protocol.pretest.canonicalOutputPath) throw new Error(`Pretest output must be ${protocol.pretest.canonicalOutputPath}`);
+}
+
 export interface V2PanelCase { id: string; seed: number; speciesId: string; partnerId: string; sampleSeed: number;
   announcement: boolean; visibleHistory: boolean; stock: number; partnerRequest: number; game: ResourceGame;
   armKey: V2ArmKey; prompt: string }
@@ -169,6 +173,9 @@ export function v2RecordHashIssues(records: Array<{ request: unknown; requestSha
 export function verifyV2PretestArtifact(artifact: any, protocol: any) {
   const issues: string[] = [];
   const cells = v2PretestCases();
+  if (protocol.pretest.cellsPerAttemptedModel !== cells.length || protocol.pretest.passThreshold !== cells.length) {
+    issues.push("pretest size or threshold differs from frozen eight cells");
+  }
   if (stable(artifact.modelOrder) !== stable(V2_MODELS)) issues.push("model ladder mismatch");
   if (stable(artifact.cells) !== stable(cells)) issues.push("pretest cells mismatch");
   if (!Array.isArray(artifact.attempts) || artifact.attempts.length < 1 || artifact.attempts.length > V2_MODELS.length) issues.push("attempt count invalid");
@@ -177,13 +184,22 @@ export function verifyV2PretestArtifact(artifact: any, protocol: any) {
     const specification = V2_MODELS[modelIndex];
     if (stable(attempt.specification) !== stable(specification)) issues.push(`attempt${modelIndex}ladder order mismatch`);
     if (!specification) { issues.push(`attempt${modelIndex}unknown model`); continue; }
+    const metadata = attempt.metadata;
+    const expectedOrigin = new URL(protocol.provider.endpoint).origin;
+    if (metadata?.endpoint !== expectedOrigin || metadata?.localOnly !== true
+      || metadata?.version?.version !== protocol.provider.ollamaVersion
+      || metadata?.installed?.name !== specification.model || metadata?.installed?.digest !== specification.digest
+      || metadata?.installed?.details?.parameter_size !== specification.parameterSize
+      || metadata?.installed?.details?.quantization_level !== specification.quantization) {
+      issues.push(`attempt${modelIndex}provider metadata mismatch`);
+    }
     if (!Array.isArray(attempt.records) || attempt.records.length !== cells.length) { issues.push(`attempt${modelIndex}record count invalid`); continue; }
     issues.push(...v2RecordHashIssues(attempt.records).map(issue => `attempt${modelIndex}:${issue}`));
     let passedCount = 0;
     for (const [index, record] of attempt.records.entries()) {
       const expected = buildV2Request(specification.model, cells[index].prompt, V2_PRETEST_SCHEMA,
         cells[index].sampleSeed, protocol.provider.pretestNumPredict, protocol.provider);
-      if (record.id !== cells[index].id || stable(record.request) !== stable(expected)) issues.push(`attempt${modelIndex}record${index}request mismatch`);
+      if (record.index !== index || record.id !== cells[index].id || stable(record.request) !== stable(expected)) issues.push(`attempt${modelIndex}record${index}request/index mismatch`);
       try {
         const provider = JSON.parse(record.response);
         if (record.httpStatus !== 200 || !provider.done || provider.done_reason !== "stop" || typeof provider.message?.content !== "string") throw new Error();
