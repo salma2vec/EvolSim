@@ -6,6 +6,18 @@ export class APIError extends Error {
 }
 
 export function authorize(request: Request, live = false): void {
+  // Baseline APIs are intentionally usable without a token on a local install.
+  // A foreign webpage must not turn that into cross-site compute access. These
+  // browser-controlled headers are separate from bearer authentication; clients
+  // without browser origin headers continue to use the documented API contract.
+  const origin = request.headers.get("origin");
+  // A proxy can change Next's internal URL. Trust an explicit server setting,
+  // never attacker-supplied Forwarded or X-Forwarded-* headers.
+  const publicOrigin = new URL(process.env.EVOLSIM_PUBLIC_ORIGIN || process.env.PORTLESS_URL || request.url).origin;
+  if (request.headers.get("sec-fetch-site") === "cross-site" ||
+      (origin !== null && origin !== publicOrigin)) {
+    throw new APIError("Cross-origin browser requests are not permitted", 403);
+  }
   const token = process.env.EVOLSIM_API_TOKEN;
   if (live && (process.env.EVOLSIM_ENABLE_LLM !== "true" || !token || token.length < 32)) {
     throw new APIError("Live LLM calls require explicit server enablement and an API token of at least 32 characters", 403);
