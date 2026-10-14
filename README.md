@@ -29,7 +29,7 @@ npm run benchmark -- results/baseline.json
 
 The runner compares cooperative, defector, conservative, and opportunistic policies on the same five seeds (11, 23, 42, 71, 101), with 100 requested steps in `two_species_simple_lake`. Harvest noise is zero; seeded environmental shocks remain enabled. The output contains the complete trajectories, applied configuration, protocol version, source digest, trajectory hashes, per-run collapse times, and a descriptive summary.
 
-The checked-in [baseline summary](results/baseline-summary.json) records the following local run (protocol 2.0.0):
+The checked-in [baseline summary](results/baseline-summary.json) records the following local run (protocol 2.1.0):
 
 | Policy | Resource collapses by 100 steps | Mean final stock |
 | --- | --- | --- |
@@ -39,6 +39,27 @@ The checked-in [baseline summary](results/baseline-summary.json) records the fol
 | Opportunistic | 0/5 | 55.209 |
 
 The paired-seed design controls initial conditions. Five seeds are a demonstration, not sufficient evidence for a general social-science or model-capability conclusion. A non-collapsing trajectory is right-censored at the evaluation horizon; it must not be recorded as a collapse at step 100. Baselines do not communicate or propose treaties, so this experiment does not validate the institutional mechanisms.
+
+## Check a locally installed model
+
+With Ollama already running, choose an installed model that fits your machine's available memory. Replace `YOUR_INSTALLED_MODEL` below with its exact tag:
+
+```bash
+npm run validate:local -- YOUR_INSTALLED_MODEL /tmp/evolsim-local.json --check
+npm run validate:local -- YOUR_INSTALLED_MODEL /tmp/evolsim-local.json
+```
+
+The first command checks local model metadata without inference. The second attempts two one-step, two-species runs (simulation seeds 11 and 42), with at most four model calls. It pins the endpoint to `127.0.0.1:11434`, rejects cloud-backed models, downloads nothing, and records model digest, Ollama version, raw request/response bodies, usage returned by the server, timings, failures, and successful trajectories. It uses the existing adapter with Ollama's [documented compatibility interface](https://docs.ollama.com/api/openai-compatibility) and `max_tokens` field; the 30-second timeout and 1,000-token request budget remain in effect. Failed runs are preserved and produce a nonzero exit status.
+
+Temperature and model-sampling seed are omitted, matching the default adapter. **The simulator seeds do not make these model responses reproducible.** This is a small compatibility check, not a cooperation benchmark or a model ranking. The complete artifact can be large and contains experiment prompts; choose its output location deliberately.
+
+The [recorded local check](results/local-validation-summary.json) used Qwen2.5-Coder 0.5B (Q4_K_M): four HTTP completions, but **zero of four decisions passed semantic validation** on offline replay. One initially completed step used invented resource/species IDs; this exposed a parser defect, which is now fixed. The apparent completion is invalidated. Live decisions now reject unknown or hidden IDs, invalid targets, numeric ranges, action fields and malformed communication before the simulator applies actions. Valid zero governance and communication survive normalization. Protocol 2.1.0 records this changed action contract; the fixed-policy control trajectories remain unchanged.
+
+To recheck a saved local transcript against the current parser without new inference:
+
+```bash
+npm run replay:local -- /tmp/evolsim-local.json /tmp/evolsim-local-replay.json
+```
 
 ## What is implemented
 

@@ -1,6 +1,6 @@
 # Evaluation protocol
 
-Protocol 2.0.0 establishes an executable baseline control before any model comparison. `npm run benchmark` runs four fixed policies on identical preset/seed pairs, saves complete histories and applied configuration, and records source and trajectory digests. The deterministic regression test also interleaves two runs to check that their random streams do not interfere.
+Protocol 2.1.0 includes the strict live-action validation boundary introduced after the local compatibility check. `npm run benchmark` runs four fixed policies on identical preset/seed pairs, saves complete histories and applied configuration, and records source and trajectory digests. The deterministic regression test also interleaves two runs to check that their random streams do not interfere. The 20 baseline trajectories match protocol 2.0.0; live responses now fail on unknown or hidden IDs and invalid action fields before state transitions. The shared sanitizer preserves valid zero governance and communication.
 
 ## Controls and metrics
 

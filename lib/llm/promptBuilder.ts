@@ -180,6 +180,8 @@ Return a STRICT JSON object with the following schema:
 
 IMPORTANT: 
 - Harvest requests are absolute resource units in [0,100]; scarcity may reduce the realized allocation
+- Use only the exact resource IDs and other-species IDs listed in your observation; never copy placeholder IDs from the schema
+- All governance values must be in [0,1]. Communication messages and treaty text must contain 1-500 characters
 - "treatyProposal" is optional. If proposing, ensure 'text' follows your Linguistic Constraints strictly.
 - Return ONLY valid JSON, no additional text or markdown formatting`;
 

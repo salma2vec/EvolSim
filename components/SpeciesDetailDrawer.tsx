@@ -1,5 +1,5 @@
 /**
- * Species detail drawer: Trait breakdown, lore text, stats, policyBrainId selector
+ * Species detail drawer: trait breakdown, lore, statistics and configured policy
  */
 
 "use client";
@@ -160,19 +160,8 @@ export default function SpeciesDetailDrawer({ speciesId, onClose }: Props) {
           </div>
           
           <div>
-            <h3 className="text-lg font-semibold text-white mb-2">Policy Brain</h3>
-            <select
-              value={species.policyBrainId}
-              onChange={(e) => {
-                // Update would go here in full implementation
-              }}
-              className="bg-background text-white px-3 py-2 rounded-sm border border-muted"
-            >
-              <option value="small">Small (GPT-3.5)</option>
-              <option value="medium">Medium (GPT-4)</option>
-              <option value="frontier">Frontier (GPT-4 Turbo)</option>
-              <option value="frontier_reasoning">Frontier Reasoning</option>
-            </select>
+            <h3 className="text-lg font-semibold text-white mb-2">Configured policy</h3>
+            <p className="font-mono text-sm break-all">{species.policyBrainId}</p>
           </div>
         </div>
       </div>

@@ -11,7 +11,9 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "benchmark": "tsx scripts/benchmark.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "validate:local": "tsx scripts/validate-local.ts",
+    "replay:local": "tsx scripts/replay-local.ts"
   },
   "dependencies": {
     "lucide-react": "^0.344.0",

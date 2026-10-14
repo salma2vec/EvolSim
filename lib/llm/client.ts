@@ -11,6 +11,8 @@ export async function callLLM(modelId: string, prompt: string,
   if (!prompt || prompt.length > 50000) throw new Error("Invalid prompt length");
   const maxTokens = options?.maxTokens ?? 1000;
   if (!Number.isInteger(maxTokens) || maxTokens < 1 || maxTokens > 2000) throw new Error("Invalid token limit");
+  const tokenField = process.env.EVOLSIM_TOKEN_LIMIT_FIELD ?? "max_completion_tokens";
+  if (tokenField !== "max_tokens" && tokenField !== "max_completion_tokens") throw new Error("Invalid token limit field");
   const openai = new OpenAI({ apiKey, timeout: 30000, maxRetries: 0 });
   const response = await openai.chat.completions.create({
     model: modelId,
@@ -19,7 +21,7 @@ export async function callLLM(modelId: string, prompt: string,
       { role: "user", content: prompt },
     ],
     ...(options?.temperature !== undefined ? { temperature: options.temperature } : {}),
-    max_completion_tokens: maxTokens,
+    [tokenField]: maxTokens,
   });
   const content = response.choices[0]?.message?.content;
   if (!content || response.choices[0].finish_reason !== "stop") throw new Error("Provider returned incomplete output");

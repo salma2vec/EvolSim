@@ -1,0 +1,243 @@
+{
+  "protocol": "local-adapter-diagnostic-summary-v1",
+  "executedAt": "2026-10-14T12:21:46.840Z",
+  "scope": "One small local model; two environmental seeds; one attempted step per seed. Transport evidence and parser regression evidence only. No valid live strategy trajectory or cooperation result.",
+  "host": {
+    "chip": "Apple M1",
+    "memoryBytes": 8589934592,
+    "node": "v25.9.0"
+  },
+  "model": {
+    "name": "qwen2.5-coder:0.5b",
+    "model": "qwen2.5-coder:0.5b",
+    "modified_at": "2026-10-14T17:42:32.515107931+05:30",
+    "size": 397821516,
+    "digest": "4ff64a7f502a08b7616edb8ca0a79eb1853fc363d842b7df4b46915d11a3fb09",
+    "details": {
+      "parent_model": "",
+      "format": "gguf",
+      "family": "qwen2",
+      "families": [
+        "qwen2"
+      ],
+      "parameter_size": "494.03M",
+      "quantization_level": "Q4_K_M",
+      "context_length": 32768,
+      "embedding_length": 896,
+      "runner": "ggml"
+    },
+    "capabilities": [
+      "completion",
+      "tools",
+      "insert"
+    ]
+  },
+  "ollama": {
+    "version": "0.40.1"
+  },
+  "runtime": {
+    "name": "qwen2.5-coder:0.5b",
+    "model": "qwen2.5-coder:0.5b",
+    "size": 479954205,
+    "digest": "4ff64a7f502a08b7616edb8ca0a79eb1853fc363d842b7df4b46915d11a3fb09",
+    "details": {
+      "parent_model": "",
+      "format": "gguf",
+      "family": "qwen2",
+      "families": [
+        "qwen2"
+      ],
+      "parameter_size": "494.03M",
+      "quantization_level": "Q4_K_M"
+    },
+    "expires_at": "2026-10-14T17:56:56.645175+05:30",
+    "size_vram": 479954205,
+    "context_length": 4096,
+    "runner": "llamacpp"
+  },
+  "sampling": {
+    "temperature": null,
+    "modelSeed": null,
+    "note": "Existing adapter defaults; temperature and provider seed omitted. Only the simulation is seeded.",
+    "modelParameters": null,
+    "templateSha256": "1e65450c30670713aa47fe23e8b9662bdf4065e81cc8e3cbfaa98924fcc0d320"
+  },
+  "limits": {
+    "maxCalls": 4,
+    "requestedMaxTokens": 1000,
+    "tokenLimitField": "max_tokens",
+    "timeoutMs": 30000,
+    "maxRetries": 0
+  },
+  "originalExecution": {
+    "sourceSha256": "b7b62aee4dede39d9a5d7e07270cb8b41217a7832cd1afea277164d66e2ead3c",
+    "artifactSha256": "3218f351ab7d6c90842264f98e5b50fbb534aa712fa49f9d51cc94526c02324a",
+    "simulationProtocol": "2.0.0",
+    "httpCompletions": 4,
+    "finishReasonStop": 4,
+    "validJsonAfterCodeFenceRemoval": 3,
+    "apparentCompletedRuns": 1,
+    "invalidatedCompletions": 1,
+    "validStrategyTrajectories": 0,
+    "promptTokens": 3079,
+    "completionTokens": 784,
+    "totalCallMs": 17577.725707999998,
+    "runs": [
+      {
+        "seed": 11,
+        "status": "completed",
+        "validity": "No valid strategy trajectory",
+        "trajectorySha256": "290e5db14d994356106a2ac59b9454e18f050be3afbc8e2c451428e8ca6af1d3"
+      },
+      {
+        "seed": 42,
+        "status": "failed",
+        "error": "Invalid structured model decision",
+        "validity": "No valid strategy trajectory"
+      }
+    ]
+  },
+  "offlineReplay": {
+    "protocol": "offline-local-parser-replay-v1",
+    "createdAt": "2026-10-14T12:28:44.836Z",
+    "originalArtifactSha256": "3218f351ab7d6c90842264f98e5b50fbb534aa712fa49f9d51cc94526c02324a",
+    "originalSourceSha256": "b7b62aee4dede39d9a5d7e07270cb8b41217a7832cd1afea277164d66e2ead3c",
+    "replaySourceSha256": "15c2030171b2c4c1a6c011eee64232a89b4de5e835933d539c89f509d5829525",
+    "newInferenceCalls": 0,
+    "scope": "Each recorded response is checked independently against current strict parsing and observation IDs. No simulation or new model inference is performed.",
+    "runs": [
+      {
+        "seed": 11,
+        "originalRunStatus": "completed",
+        "decisions": [
+          {
+            "callIndex": 0,
+            "speciesId": "species_0",
+            "accepted": false,
+            "error": "Invalid structured model decision: harvest references unknown or hidden resource resource_id_1"
+          },
+          {
+            "callIndex": 1,
+            "speciesId": "species_1",
+            "accepted": false,
+            "error": "Invalid structured model decision: harvest references unknown or hidden resource resource_id_1"
+          }
+        ],
+        "allRequiredDecisionsValid": false
+      },
+      {
+        "seed": 42,
+        "originalRunStatus": "failed",
+        "decisions": [
+          {
+            "callIndex": 2,
+            "speciesId": "species_0",
+            "accepted": false,
+            "error": "Invalid structured model decision: harvest references unknown or hidden resource resource_id_1"
+          },
+          {
+            "callIndex": 3,
+            "speciesId": "species_1",
+            "accepted": false,
+            "error": "Invalid structured model decision: root"
+          }
+        ],
+        "allRequiredDecisionsValid": false
+      }
+    ],
+    "parserProtocol": "2.1.0",
+    "acceptedDecisions": 0,
+    "rejectedDecisions": 4,
+    "validCompleteDecisionBatches": 0,
+    "notes": "All four historical responses are checked independently. Calls 0-2 contain invented resource IDs and are rejected; call 3 contains JSON comments/trailing comma and cannot parse. This is not new inference. Prompt instructions were clarified after the diagnostic; the model was not rerun."
+  },
+  "calls": [
+    {
+      "index": 0,
+      "httpStatus": 200,
+      "elapsedMs": 5694.587,
+      "requestSha256": "6a4ccec8cf40b4bdb9d6b184cdfc8bc6478b8f1eea7aabd7df0efd79acbf49c0",
+      "responseSha256": "f3d49405452a5a559d07a0fcffd93bc6d788c7b9a6b92425aa89cb440009b980",
+      "finishReason": "stop",
+      "usage": {
+        "prompt_tokens": 766,
+        "prompt_tokens_details": {
+          "cached_tokens": 4
+        },
+        "completion_tokens": 183,
+        "total_tokens": 949
+      },
+      "responseContent": "```json\n{\n  \"harvest\": {\n    \"resource_id_1\": 50,\n    \"resource_id_2\": 50\n  },\n  \"relations\": {\n    \"other_species_id_1\": \"sanction\",\n    \"other_species_id_2\": \"ally\"\n  },\n  \"governance\": {\n    \"punishment_strength\": 0.5,\n    \"monitoring_investment\": 0.3\n  },\n  \"communication\": [\n    {\n      \"targetSpeciesId\": 100,\n      \"intent\": \"REPORT\",\n      \"message\": \"Species 0 harvested successfully: 50 resource units.\"\n    }\n  ],\n  \"treatyProposal\": {\n    \"targetSpeciesId\": 50,\n    \"text\": \"Species 50 joined species 0 to secure their resource.\"\n  }\n}\n```",
+      "offlineAccepted": false,
+      "offlineError": "Invalid structured model decision: harvest references unknown or hidden resource resource_id_1"
+    },
+    {
+      "index": 1,
+      "httpStatus": 200,
+      "elapsedMs": 4095.4868749999996,
+      "requestSha256": "e7bb0a8c7a81ea109bf9436856b7e3301ff979e5e0e70b2d6f7453b385d8322f",
+      "responseSha256": "35f228e6d3c917354b95c6945bd9a433621797a86649423f616dd0c39a83b4e8",
+      "finishReason": "stop",
+      "usage": {
+        "prompt_tokens": 773,
+        "prompt_tokens_details": {
+          "cached_tokens": 38
+        },
+        "completion_tokens": 201,
+        "total_tokens": 974
+      },
+      "responseContent": "```json\n{\n  \"harvest\": {\n    \"resource_id_1\": 50,\n    \"resource_id_2\": 140\n  },\n  \"relations\": {\n    \"Species 0\": \"ally\",\n    \"Species 1\": \"neutral\"\n  },\n  \"governance\": {\n    \"punishment_strength\": 0.90,\n    \"monitoring_investment\": 0.60\n  },\n  \"communication\": [\n    {\n      \"targetSpeciesId\": \"Species 1\",\n      \"intent\": \"DESCRIBE\",\n      \"message\": \"Species 1 is exploring new territory, which could boost resource allocation.\"\n    },\n    {\n      \"targetSpeciesId\": \"Species 0\",\n      \"intent\": \"COMMIT\",\n      \"message\": \"Species 0 is preparing for an upcoming species strike, aiming to protect their population.\"\n    }\n  ],\n  \"treatyProposal\": null\n}\n```",
+      "offlineAccepted": false,
+      "offlineError": "Invalid structured model decision: harvest references unknown or hidden resource resource_id_1"
+    },
+    {
+      "index": 2,
+      "httpStatus": 200,
+      "elapsedMs": 3884.190625000001,
+      "requestSha256": "12a2c5d605f0b4ebbf772f1564034a44987780e643fa04fa614c47d6fa4d265c",
+      "responseSha256": "6024e1aaff2f178aa2146e035e7708203b24f0aea588b90c02d64ec9d9686ef1",
+      "finishReason": "stop",
+      "usage": {
+        "prompt_tokens": 767,
+        "prompt_tokens_details": {
+          "cached_tokens": 38
+        },
+        "completion_tokens": 180,
+        "total_tokens": 947
+      },
+      "responseContent": "```json\n{\n  \"harvest\": {\n    \"resource_id_1\": 91,\n    \"resource_id_2\": 91\n  },\n  \"relations\": {\n    \"species_1\": \"neutral\",\n    \"species_2\": \"neutral\"\n  },\n  \"governance\": {\n    \"punishment_strength\": 0.62,\n    \"monitoring_investment\": 0.30\n  },\n  \"communication\": [\n    {\n      \"targetSpeciesId\": \"Species 0\",\n      \"intent\": \"DESCRIBE\",\n      \"message\": \"Species 0 offers to produce a resource\"\n    }\n  ],\n  \"treatyProposal\": {\n    \"targetSpeciesId\": \"Species 1\",\n    \"text\": \"Species 1 proposes to trade fish resources with Species 0\"\n  }\n}\n```",
+      "offlineAccepted": false,
+      "offlineError": "Invalid structured model decision: harvest references unknown or hidden resource resource_id_1"
+    },
+    {
+      "index": 3,
+      "httpStatus": 200,
+      "elapsedMs": 3903.461207999999,
+      "requestSha256": "38e01f992b594fdf809cc84e667ac6b23de713c682be7b8ecbf4b0cf7e033135",
+      "responseSha256": "aeed17e7f6349921480eadc60cf2ff42982944f276454fe37c6930bb95d1b2dd",
+      "finishReason": "stop",
+      "usage": {
+        "prompt_tokens": 773,
+        "prompt_tokens_details": {
+          "cached_tokens": 38
+        },
+        "completion_tokens": 220,
+        "total_tokens": 993
+      },
+      "responseContent": "```json\n{\n  \"harvest\": {\n    \"resource_id_1\": 75,\n    \"resource_id_2\": 80,\n    // Additional resource details may need to be added here\n  },\n  \"relations\": {\n    \"other_species_id_0\": \"neutral\",\n    \"other_species_id_1\": \"ally\",\n    \"other_species_id_2\": \"sanction\"\n  },\n  \"governance\": {\n    \"punishment_strength\": 0.10,\n    \"monitoring_investment\": 0.30\n  },\n  \"communication\": [\n    {\n      \"targetSpeciesId\": \"Species 1\",\n      \"intent\": \"PROMISE\",\n      \"message\": \"Species 1 proposes to give the Fish Oceans an update on our fishing conditions.\"\n    }\n  ],\n  \"treatyProposal\": {\n    \"targetSpeciesId\": \"Species 1\",\n    \"text\": \"Species 1 requests permission to trade the Fish Oceans for a new feeding method.\"\n  }\n}\n```",
+      "offlineAccepted": false,
+      "offlineError": "Invalid structured model decision: root"
+    }
+  ],
+  "baselineControl": {
+    "sourceSha256": "aa3866c4a4a3d753dbd4d122a905677ada2262e7ab7c4c71b495ed75681f0d4e",
+    "protocol": "2.1.0",
+    "trajectoriesIdenticalToProtocol2_0_0": 20
+  },
+  "limitations": [
+    "Four responses from a 494M coder model do not estimate strategic quality or compare models.",
+    "Provider temperature and sampling seed were not set. Environmental seeds do not seed model sampling.",
+    "No post-fix live inference was performed. Raw request/response and historical world-state artifacts were retained privately; response contents and their hashes are included here.",
+    "No external provider, paid API, cloud GPU or synthetic fallback was used."
+  ]
+}

@@ -126,9 +126,10 @@ export function sanitizeDecision(decision: SpeciesDecision): SpeciesDecision {
     harvest: {},
     relations: decision.relations || {},
     governance: {
-      punishmentStrength: Math.max(0, Math.min(1, decision.governance.punishmentStrength || 0.3)),
-      monitoringInvestment: Math.max(0, Math.min(1, decision.governance.monitoringInvestment || 0.2)),
+      punishmentStrength: Math.max(0, Math.min(1, decision.governance.punishmentStrength ?? 0.3)),
+      monitoringInvestment: Math.max(0, Math.min(1, decision.governance.monitoringInvestment ?? 0.2)),
     },
+    communication: decision.communication?.map(message => ({ ...message })),
   };
   
   // Sanitize harvest amounts

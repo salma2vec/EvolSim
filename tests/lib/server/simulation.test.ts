@@ -6,6 +6,8 @@ import { validateBatch } from "@/lib/utils/batch";
 import { resolveHarvests } from "@/lib/sim/dynamics";
 import { callLLM } from "@/lib/llm/client";
 import { parseLLMResponse } from "@/lib/llm/parseActions";
+import { getLLMDecision } from "@/lib/llm/decisionHandler";
+import { stepWorld } from "@/lib/sim/gameLoop";
 vi.mock("@/lib/llm/client", () => ({ callLLM: vi.fn(() => { throw new Error("provider unavailable"); }) }));
 
 afterEach(() => { delete process.env.EVOLSIM_API_TOKEN; delete process.env.EVOLSIM_ENABLE_LLM; vi.clearAllMocks(); });
@@ -62,4 +64,33 @@ it("live provider failure aborts without substitute trajectories", async () => {
 
 it.each(["nonsense", "[]", '{"harvest": [1,2]}', '{"harvest":{"x":"5"}}'])("invalid model decision fails closed: %s", text => {
   expect(() => parseLLMResponse(text,"species",true)).toThrow();
+});
+
+it("aborts a partially collected live batch before mutating the world", async () => {
+  const { world, config } = createWorldFromPreset("two_species_simple_lake", {}, 11);
+  const before = structuredClone(world);
+  const good = { harvest: { fish_oceans: 5 }, relations: {},
+    governance: { punishment_strength: 0, monitoring_investment: 0 } };
+  vi.mocked(callLLM).mockResolvedValueOnce(JSON.stringify(good))
+    .mockResolvedValueOnce(JSON.stringify({ ...good, harvest: { invented_resource: 50 } }));
+  await expect(stepWorld(world, config, async observations => {
+    const result = await getLLMDecision(observations, world, {}, { useBaselineAgents: false });
+    return result.decisions;
+  })).rejects.toThrow("unknown or hidden resource");
+  expect(callLLM).toHaveBeenCalledTimes(2);
+  expect(world).toEqual(before);
+});
+
+it("retains valid live speech and zero governance through a complete step", async () => {
+  const { world, config } = createWorldFromPreset("two_species_simple_lake", {}, 11);
+  for (const other of ["species_1", "species_0"]) {
+    vi.mocked(callLLM).mockResolvedValueOnce(JSON.stringify({ harvest: { fish_oceans: 5 }, relations: {},
+      governance: { punishment_strength: 0, monitoring_investment: 0 },
+      communication: [{ targetSpeciesId: other, intent: "REPORT", message: "Observed fish." }] }));
+  }
+  const next = await stepWorld(world, config, async observations =>
+    (await getLLMDecision(observations, world, {}, { useBaselineAgents: false })).decisions);
+  expect(next.events.filter(event => event.type === "LEX_BURN")).toHaveLength(2);
+  expect(next.species[0].governance).toEqual({ punishmentStrength: 0, monitoringInvestment: 0 });
+  expect(next.species[0].lexBudget).toBe(95);
 });

@@ -154,8 +154,10 @@ async function getDecisionForSpecies(
   const prompt = buildSpeciesPrompt(species, world, observation, mechanics);
   
   const output = await callLLM(modelId, prompt);
-  const parsed = parseLLMResponse(output, observation.speciesId, true);
-  let decision = sanitizeDecision(parsed);
+  let decision = parseLLMResponse(output, observation.speciesId, true, {
+    resourceIds: observation.resourceEstimates.map(resource => resource.resourceId),
+    otherSpeciesIds: observation.otherSpecies.map(other => other.speciesId),
+  });
   if (species.traits.requiresInterpreter) decision = applyInterpreterNoise(decision);
   return { decision, usedFallback: false };
 
@@ -199,4 +201,3 @@ export async function getLLMDecision(
   
   return { decisions, errors };
 }
-

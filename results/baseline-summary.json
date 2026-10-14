@@ -1,7 +1,7 @@
 {
-  "protocol": "2.0.0",
+  "protocol": "2.1.0",
   "mode": "baseline",
-  "sourceSha256": "7447fa4efb7ad01c77809d006141fb8e3449ec4739f3350bd3ba68a6883b4a02",
+  "sourceSha256": "aa3866c4a4a3d753dbd4d122a905677ada2262e7ab7c4c71b495ed75681f0d4e",
   "node": "v25.9.0",
   "seeds": [
     11,
@@ -39,7 +39,7 @@
   "runs": [
     {
       "policy": "cooperative",
-      "protocolVersion": "2.0.0",
+      "protocolVersion": "2.1.0",
       "seed": 11,
       "presetId": "two_species_simple_lake",
       "requestedSteps": 100,
@@ -63,7 +63,7 @@
     },
     {
       "policy": "cooperative",
-      "protocolVersion": "2.0.0",
+      "protocolVersion": "2.1.0",
       "seed": 23,
       "presetId": "two_species_simple_lake",
       "requestedSteps": 100,
@@ -87,7 +87,7 @@
     },
     {
       "policy": "cooperative",
-      "protocolVersion": "2.0.0",
+      "protocolVersion": "2.1.0",
       "seed": 42,
       "presetId": "two_species_simple_lake",
       "requestedSteps": 100,
@@ -111,7 +111,7 @@
     },
     {
       "policy": "cooperative",
-      "protocolVersion": "2.0.0",
+      "protocolVersion": "2.1.0",
       "seed": 71,
       "presetId": "two_species_simple_lake",
       "requestedSteps": 100,
@@ -135,7 +135,7 @@
     },
     {
       "policy": "cooperative",
-      "protocolVersion": "2.0.0",
+      "protocolVersion": "2.1.0",
       "seed": 101,
       "presetId": "two_species_simple_lake",
       "requestedSteps": 100,
@@ -159,7 +159,7 @@
     },
     {
       "policy": "defector",
-      "protocolVersion": "2.0.0",
+      "protocolVersion": "2.1.0",
       "seed": 11,
       "presetId": "two_species_simple_lake",
       "requestedSteps": 100,
@@ -183,7 +183,7 @@
     },
     {
       "policy": "defector",
-      "protocolVersion": "2.0.0",
+      "protocolVersion": "2.1.0",
       "seed": 23,
       "presetId": "two_species_simple_lake",
       "requestedSteps": 100,
@@ -207,7 +207,7 @@
     },
     {
       "policy": "defector",
-      "protocolVersion": "2.0.0",
+      "protocolVersion": "2.1.0",
       "seed": 42,
       "presetId": "two_species_simple_lake",
       "requestedSteps": 100,
@@ -231,7 +231,7 @@
     },
     {
       "policy": "defector",
-      "protocolVersion": "2.0.0",
+      "protocolVersion": "2.1.0",
       "seed": 71,
       "presetId": "two_species_simple_lake",
       "requestedSteps": 100,
@@ -255,7 +255,7 @@
     },
     {
       "policy": "defector",
-      "protocolVersion": "2.0.0",
+      "protocolVersion": "2.1.0",
       "seed": 101,
       "presetId": "two_species_simple_lake",
       "requestedSteps": 100,
@@ -279,7 +279,7 @@
     },
     {
       "policy": "conservative",
-      "protocolVersion": "2.0.0",
+      "protocolVersion": "2.1.0",
       "seed": 11,
       "presetId": "two_species_simple_lake",
       "requestedSteps": 100,
@@ -303,7 +303,7 @@
     },
     {
       "policy": "conservative",
-      "protocolVersion": "2.0.0",
+      "protocolVersion": "2.1.0",
       "seed": 23,
       "presetId": "two_species_simple_lake",
       "requestedSteps": 100,
@@ -327,7 +327,7 @@
     },
     {
       "policy": "conservative",
-      "protocolVersion": "2.0.0",
+      "protocolVersion": "2.1.0",
       "seed": 42,
       "presetId": "two_species_simple_lake",
       "requestedSteps": 100,
@@ -351,7 +351,7 @@
     },
     {
       "policy": "conservative",
-      "protocolVersion": "2.0.0",
+      "protocolVersion": "2.1.0",
       "seed": 71,
       "presetId": "two_species_simple_lake",
       "requestedSteps": 100,
@@ -375,7 +375,7 @@
     },
     {
       "policy": "conservative",
-      "protocolVersion": "2.0.0",
+      "protocolVersion": "2.1.0",
       "seed": 101,
       "presetId": "two_species_simple_lake",
       "requestedSteps": 100,
@@ -399,7 +399,7 @@
     },
     {
       "policy": "opportunistic",
-      "protocolVersion": "2.0.0",
+      "protocolVersion": "2.1.0",
       "seed": 11,
       "presetId": "two_species_simple_lake",
       "requestedSteps": 100,
@@ -423,7 +423,7 @@
     },
     {
       "policy": "opportunistic",
-      "protocolVersion": "2.0.0",
+      "protocolVersion": "2.1.0",
       "seed": 23,
       "presetId": "two_species_simple_lake",
       "requestedSteps": 100,
@@ -447,7 +447,7 @@
     },
     {
       "policy": "opportunistic",
-      "protocolVersion": "2.0.0",
+      "protocolVersion": "2.1.0",
       "seed": 42,
       "presetId": "two_species_simple_lake",
       "requestedSteps": 100,
@@ -471,7 +471,7 @@
     },
     {
       "policy": "opportunistic",
-      "protocolVersion": "2.0.0",
+      "protocolVersion": "2.1.0",
       "seed": 71,
       "presetId": "two_species_simple_lake",
       "requestedSteps": 100,
@@ -495,7 +495,7 @@
     },
     {
       "policy": "opportunistic",
-      "protocolVersion": "2.0.0",
+      "protocolVersion": "2.1.0",
       "seed": 101,
       "presetId": "two_species_simple_lake",
       "requestedSteps": 100,
