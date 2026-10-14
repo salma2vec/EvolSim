@@ -1,6 +1,6 @@
 # Prospective causal response protocol v1
 
-Status: the hypotheses and gates are frozen in `CAUSAL_RESPONSE_MANIFEST.json`. The treatment renderer, comprehension instrument, finite-horizon reference and offline audit runner are implemented. No model calls or model-response results from this study are reported. Independent instrument review and every future-inference gate remain required. The [optional controls](EXPERIMENT_CONTROLS.md) are necessary preparation, not completion of these gates.
+Status: the hypotheses and gates were frozen in `CAUSAL_RESPONSE_MANIFEST.json`. The treatment renderer, comprehension instrument, finite-horizon reference and offline audit runner are implemented. One separately frozen 64-cell local-model panel was collected; every response failed the comprehension gate, so the causal effect is inconclusive and unestimated. Independent instrument review remains unmet. The [optional controls](EXPERIMENT_CONTROLS.md) are necessary preparation, not completion of these gates.
 
 ## Question and scope
 

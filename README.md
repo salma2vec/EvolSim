@@ -83,6 +83,8 @@ Protocol 2.3.0 adds optional [numeric resource rules and keyed exogenous noise](
 
 The causal-response hypotheses and software gates are frozen in `docs/CAUSAL_RESPONSE_MANIFEST.json`. Run `npm run causal:audit -- /tmp/evolsim-causal-audit.json`, then replay it with `npm run causal:replay -- /tmp/evolsim-causal-audit.json`. This is an offline instrument audit with no model calls; even a passing artifact is not an institutional-effect or cooperation result.
 
+The [single frozen local-model panel](docs/CAUSAL_RESPONSE_RESULT.md) is a preserved negative result: 64/64 responses were schema-valid but failed the prespecified numerical comprehension gate, leaving 0/16 complete quartets. Native treatment prompts also differed by eight tokens. The causal interpretation gate failed, so no treatment estimate or cooperation claim is reported. Replay its parsing and provenance offline with `npm run causal:replay-panel -- results/causal-response-qwen25coder15b.json`.
+
 ## What is implemented
 
 - Logistic resource growth, irreversible collapse, proportional allocation under scarcity, and population/stress dynamics.

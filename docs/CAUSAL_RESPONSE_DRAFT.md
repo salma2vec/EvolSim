@@ -1,6 +1,6 @@
 # Offline causal-response draft
 
-This branch contains an offline implementation of the instrument-validation portion of the [prospective protocol](CAUSAL_RESPONSE_PROTOCOL.md). No model calls or model-response outcomes were generated. The hypotheses and hard gates are frozen in `CAUSAL_RESPONSE_MANIFEST.json` before the offline audit artifact is generated. The independently reviewed optional simulation controls began at commit `e94be11` on `codex/research-recovery`.
+This branch contains the instrument-validation implementation and one failure-inclusive local-model panel for the [prospective protocol](CAUSAL_RESPONSE_PROTOCOL.md). The hypotheses and hard gates were frozen in `CAUSAL_RESPONSE_MANIFEST.json` before the offline audit, and the model/settings manifest was committed before collection. All model responses failed the comprehension gate; the causal effect is inconclusive and unestimated. The independently reviewed optional simulation controls began at commit `e94be11` on `codex/research-recovery`.
 
 The draft adds a finite-grid, four-step harvest reference, 64 synthetic paired prompt cells, and a response/comprehension parser in `lib/research/causalResponse.ts`. Five targeted tests cover production-transition agreement, an independent deterministic two-step exhaustive fixture, paired-cell isolation, one grid-refinement/placebo example, and separation of comprehension failures from illegal actions. These checks establish limited implementation behavior, not research success or full reference convergence.
 
@@ -11,3 +11,5 @@ Before any future inference, this work still needs independent instrument review
 The offline runner writes failures before returning nonzero and supports exact replay against a saved artifact. Its evidence covers the 64-cell panel, quartet isolation, announcement placebo, complete-panel grid refinement, keyed exogenous draws, and three adversarial mutations. Passing those gates validates implementation behavior only; it cannot estimate the future treatment effect.
 
 `CAUSAL_RESPONSE_RUN.json` separately freezes one local Qwen panel after the offline audit passed. It fixes the model digest, all request settings, panel hashes, order, timeout, zero-retry policy, failure categories and interpretation gates. Root performed a pre-outcome protocol review; this is not external or independent scientific review, so the protocol's promotion gate remains unmet regardless of the panel result.
+
+That panel is now complete and preserved as a negative result in `CAUSAL_RESPONSE_RESULT.md`: all 64 responses were structurally valid but failed numerical comprehension, no quartet was analysis-eligible, and native prompt counts were imbalanced. No causal estimand was computed.

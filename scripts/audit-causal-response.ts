@@ -113,12 +113,20 @@ const replayIndex = process.argv.indexOf("--replay");
 if (replayIndex >= 0) {
   const path = process.argv[replayIndex + 1];
   if (!path) throw new Error("Usage: npm run causal:replay -- <artifact>");
-  assert.deepEqual(artifact, JSON.parse(readFileSync(path, "utf8")));
-  console.log(JSON.stringify({ replay: path, exact: true, sourceSha256: artifact.sourceSha256 }, null, 2));
+  const expected = JSON.parse(readFileSync(path, "utf8"));
+  // Verify the historical source digest, then compare the scientific output. This lets a
+  // later output-safety-only change replay an immutable artifact without rewriting it.
+  const historicalSource = createHash("sha256");
+  for (const file of sourceFiles) historicalSource.update(file)
+    .update(execFileSync("git", ["show", `${expected.sourceCommit}:${file}`]));
+  assert.equal(historicalSource.digest("hex"), expected.sourceSha256);
+  assert.deepEqual({ ...artifact, sourceCommit: expected.sourceCommit, sourceSha256: expected.sourceSha256,
+    environment: expected.environment }, expected);
+  console.log(JSON.stringify({ replay: path, exact: true, sourceSha256: expected.sourceSha256 }, null, 2));
 } else {
   const out = process.argv[2] || "results/causal-instrument-audit.json";
   mkdirSync(dirname(out), { recursive: true });
-  writeFileSync(out, JSON.stringify(artifact, null, 2) + "\n");
+  writeFileSync(out, JSON.stringify(artifact, null, 2) + "\n", { flag: "wx" });
   console.log(JSON.stringify({ artifact: out, result: artifact.result, checks, failures }, null, 2));
 }
 if (failures.length > 0) process.exitCode = 1;
