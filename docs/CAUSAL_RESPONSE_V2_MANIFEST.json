@@ -1,0 +1,93 @@
+{
+  "studyId": "evolsim-causal-response-v2",
+  "status": "pretest-frozen-before-any-v2-response-outcome; strategic calibration and panel unauthorized",
+  "separation": "V1 artifacts and outcomes are immutable, are not pooled, and do not select or replace V2 cells.",
+  "modelLadder": [
+    {
+      "model": "deepseek-r1:8b",
+      "digest": "6995872bfe4c521a67b32da386cd21d5c6e819b6e0d62f79f64ec83be99f5763",
+      "parameterSize": "8.2B",
+      "quantization": "Q4_K_M"
+    },
+    {
+      "model": "llama3:latest",
+      "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+      "parameterSize": "8.0B",
+      "quantization": "Q4_0"
+    }
+  ],
+  "pretest": {
+    "cellsPerAttemptedModel": 8,
+    "passThreshold": 8,
+    "order": "Stop at the first model with 8/8 valid and correct cells; attempt the second model only if the first fails.",
+    "content": "Numerical resource-rule comprehension only; no announcement, partner history, harvest choice, or treatment language.",
+    "tolerance": 0.01,
+    "retries": 0,
+    "replacementCells": 0
+  },
+  "tokenPreflight": {
+    "selectedModelOnly": true,
+    "outcomeUse": "Calibration calls generate one token from strategic prompts. Retain raw content, exclude every calibration call from the causal panel, and use only provider prompt_eval_count for padding selection; generated content must never be inspected for model, padding, gate, or outcome selection.",
+    "paddingCandidates": "For each factorial arm, choose the smallest n in [0,32] for neutralFormatPadding=' pad' repeated n times.",
+    "target": "The unpadded maximum count in a representative quartet.",
+    "verification": "All four arms must have exactly equal native prompt counts within every one of the 16 quartets.",
+    "retries": 0,
+    "causalLimit": "Arm-specific padding is model-visible and confounded with the announcement/history package even when token counts match."
+  },
+  "panel": {
+    "worldSeeds": [
+      1103,
+      1109,
+      1117,
+      1123,
+      1129,
+      1151,
+      1153,
+      1163
+    ],
+    "seedPolicy": "Fresh and disjoint from v1 seeds 1009, 1013, 1019, 1021, 1031, 1033, 1039, 1049.",
+    "cells": 64,
+    "quartets": 16,
+    "worlds": 8,
+    "retries": 0,
+    "replacementCells": 0,
+    "minimumValidCells": 61,
+    "maximumIncompleteQuartets": 1,
+    "minimumCompleteWorlds": 8,
+    "analysisSet": "Only quartets with all four schema-valid harvest responses; world effects average their complete role quartets.",
+    "independentTreatmentIsolationAuditRequired": true,
+    "externalIndependentScientificReviewSatisfied": false
+  },
+  "hypotheses": {
+    "announcement": "The world-mean paired difference between the entire frozen announcement prompt package and the entire frozen neutral prompt package, averaged over visibility packages, is nonzero.",
+    "interaction": "The world-mean difference-in-differences among the four entire frozen prompt packages is nonzero.",
+    "direction": "Both hypotheses are two-sided; signs are not prespecified.",
+    "interpretation": "The proposed design cannot identify an announcement-semantic effect separately from arm-specific formatting padding."
+  },
+  "analysis": {
+    "unit": "world seed",
+    "tests": "Exact enumeration of all two-sided sign flips over complete-world effects, conditional on the frozen panel.",
+    "assumption": "The randomization interpretation relies on symmetry/exchangeability of world effects; with eight fixed worlds the tests are exploratory.",
+    "multiplicity": "Holm correction across the announcement and interaction co-primary tests at family-wise alpha 0.05.",
+    "visibility": "Report as a secondary descriptive paired estimand.",
+    "labels": "Harvest requests are never labelled cooperation or defection."
+  },
+  "provider": {
+    "endpoint": "http://127.0.0.1:11434/api/chat",
+    "ollamaVersion": "0.40.1",
+    "localOnly": true,
+    "downloads": 0,
+    "externalApis": 0,
+    "temperature": 0,
+    "numCtx": 8192,
+    "pretestNumPredict": 128,
+    "preflightNumPredict": 1,
+    "panelNumPredict": 64,
+    "timeoutMs": 120000
+  },
+  "authorization": {
+    "current": "Only the comprehension-only pretest ladder and offline replay are authorized by this freeze.",
+    "blocked": "Token calibration, strategic-prompt calls, collection-manifest creation, and the 64-cell panel require a later clean pre-outcome freeze.",
+    "externalIndependentScientificReviewSatisfied": false
+  }
+}
