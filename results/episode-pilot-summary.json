@@ -1,0 +1,87 @@
+{
+  "protocol": "local-episode-pilot-v1",
+  "sourceCommit": "935525cf64f36ddad54a64a71d001f1bb445a47a",
+  "sourceSha256": "934ac6fcf3571685bc5e572d454153cb7d619fe7c8c1dce2d8da1c3adbda4329",
+  "model": {
+    "name": "qwen2.5-coder:0.5b",
+    "model": "qwen2.5-coder:0.5b",
+    "modified_at": "2026-10-14T17:42:32.515107931+05:30",
+    "size": 397821516,
+    "digest": "4ff64a7f502a08b7616edb8ca0a79eb1853fc363d842b7df4b46915d11a3fb09",
+    "details": {
+      "parent_model": "",
+      "format": "gguf",
+      "family": "qwen2",
+      "families": [
+        "qwen2"
+      ],
+      "parameter_size": "494.03M",
+      "quantization_level": "Q4_K_M",
+      "context_length": 32768,
+      "embedding_length": 896,
+      "runner": "ggml"
+    },
+    "capabilities": [
+      "completion",
+      "tools",
+      "insert"
+    ]
+  },
+  "ollama": {
+    "version": "0.40.1"
+  },
+  "modelParameters": null,
+  "sampling": "temperature0, provider seed equal to world seed; context uses installed Ollama server defaults. Seed is a reproducibility request, not a guarantee.",
+  "digestContinuity": true,
+  "rawArtifact": "episode-pilot.json",
+  "rawSha256": "262c778c7bc82e06d274f62cdfc3a5f7eabc91bdbec71529fe22a87552b3e7b9",
+  "calls": 18,
+  "requestedEpisodes": 4,
+  "groundedCompletedEpisodes": 2,
+  "originalCompletedEpisodes": 0,
+  "functionalGatePassed": true,
+  "offlineReplay": {
+    "newInferenceCalls": 0,
+    "exactRequestsMatched": 18,
+    "allSerializedTrajectoriesAndErrorsMatch": true
+  },
+  "limits": "Two worlds, one small model, four requested ticks. Both grounded runs collapse the resource at tick 1. Functional execution only, not cooperation or model ranking. Context completeness unverified. Do not pool with the separate native-interface pilot.",
+  "runs": [
+    {
+      "seed": 607,
+      "arm": "original",
+      "status": "failed",
+      "completedSteps": 0,
+      "callCount": 1,
+      "error": "Provider returned incomplete output"
+    },
+    {
+      "seed": 607,
+      "arm": "grounded_schema",
+      "status": "completed",
+      "completedSteps": 4,
+      "callCount": 8,
+      "firstResourceCollapseStep": 1,
+      "finalStock": 0,
+      "trajectorySha256": "4c41421fceedfbba2a1f481b0f4e5b7d73b4ab850bbb2d6f172ce58c66c9083b"
+    },
+    {
+      "seed": 709,
+      "arm": "grounded_schema",
+      "status": "completed",
+      "completedSteps": 4,
+      "callCount": 8,
+      "firstResourceCollapseStep": 1,
+      "finalStock": 0,
+      "trajectorySha256": "63f4329b030f560d6fd47bc676419bdc03c73e8b8992d96decda51134fbab20e"
+    },
+    {
+      "seed": 709,
+      "arm": "original",
+      "status": "failed",
+      "completedSteps": 0,
+      "callCount": 1,
+      "error": "Invalid structured model decision: harvest references unknown or hidden resource resource_id_1"
+    }
+  ]
+}

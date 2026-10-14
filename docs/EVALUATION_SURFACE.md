@@ -2,6 +2,8 @@
 
 Protocol 2.1.0 includes the strict live-action validation boundary introduced after the local compatibility check. `npm run benchmark` runs four fixed policies on identical preset/seed pairs, saves complete histories and applied configuration, and records source and trajectory digests. The deterministic regression test also interleaves two runs to check that their random streams do not interfere. The 20 baseline trajectories match protocol 2.0.0; live responses now fail on unknown or hidden IDs and invalid action fields before state transitions. The shared sanitizer preserves valid zero governance and communication.
 
+Protocol 2.2.0 adds an opt-in grounded output schema and explicit sampling controls without weakening that parser. Separate [interface](INTERFACE_PILOT.md) and [episode](EPISODE_PILOT.md) pilots measure valid-action and completed-step outcomes. The latter's two completed grounded episodes both collapse at step 1, so passing its functional gate does not pass a sustainability gate. Do not pool the pilots or infer a strategy ranking from them.
+
 ## Controls and metrics
 
 The baseline harvest reference is an equal perceived-species share of logistic maximum sustainable yield `r*K/4`. Cooperative agents request that share, conservative agents request half, defectors request 2.5 times it, and opportunistic agents adjust their request according to observed stock. These labels name policies; they do not guarantee sustainable outcomes under environmental shocks.

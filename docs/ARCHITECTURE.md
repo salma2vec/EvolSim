@@ -6,6 +6,8 @@ The browser is an instrument panel for bounded baseline trajectories. `WorldCont
 
 `lib/sim` contains state types, generation, random numbers, visibility/language mechanics, allocation, resource/population dynamics, guards and derived metrics. Explicit baseline policies consume observations. `lib/llm` builds the experimental prompt, makes opt-in provider calls and parses bounded decisions. Failures abort live runs; they never become successful mock trajectories.
 
+Protocol 2.2.0 adds optional observation-grounded structured output through `config.useStructuredDecisions`, with validated temperature and sampling-seed controls. `decisionSchema.ts` builds the visible-ID contract, while the existing strict parser independently enforces semantics. A local `runSimulation` observer receives cloned states after validation, allowing the episode recorder to preserve completed steps when a later decision fails without exposing mutable state to the observer.
+
 API boundaries enforce a streamed body-size limit, bounded steps/runs, optional server authentication for baseline runs and mandatory authentication for live calls. Provider model IDs must be explicitly configured. Concurrency limits are per process; deployment-wide rate limiting and durable cost budgets belong in a separate gateway.
 
 `npm run benchmark` writes a source digest, applied configs, raw histories, hashes and descriptive summaries. `tests/lib/server/simulation.test.ts` covers seeded repeatability, concurrent isolation, all presets, zero-supply allocation, provider non-use in baselines, authentication, malformed inputs and failure propagation.

@@ -2,7 +2,7 @@
 
 A reproducible multi-agent commons simulator for investigating resource competition, restricted observations, and language-mediated institutions. Agents choose harvest requests, relations, governance parameters, and optional treaty proposals in a toy ecology.
 
-The working release runs four transparent baseline policies without API keys and includes a browser instrument panel, seeded batch runner, raw trajectories, and regression tests. **It does not establish any ranking or scaling law for LLMs.** The live OpenAI adapter is opt-in; no live model evaluation is included in the reported baseline experiment.
+The working release runs four transparent baseline policies without API keys and includes a browser instrument panel, seeded batch runner, raw trajectories, and regression tests. An optional grounded decision format now lets a small local model complete two short episodes, although both crossed the irreversible resource-collapse threshold on their first step. **It does not establish sustainable LLM cooperation, model rankings or scaling laws.** Live calls remain opt-in and separate from the baseline experiment.
 
 ## Run locally
 
@@ -60,6 +60,24 @@ To recheck a saved local transcript against the current parser without new infer
 ```bash
 npm run replay:local -- /tmp/evolsim-local.json /tmp/evolsim-local-replay.json
 ```
+
+## Grounded decisions: execution improved, sustainability did not
+
+The [paired interface pilot](docs/INTERFACE_PILOT.md) used eight fixed observations from four fresh world seeds. Original prompts produced **0/8 semantically valid decisions**; adding the visible-ID schema to the prompt and constrained decoding produced **7/8**. The remaining grounded response was out of range and rejected. These dependent descriptive counts test the complete grounding package, not its individual parts. [Summary and raw transcripts](results/interface-pilot-summary.json).
+
+The [separate episode pilot](docs/EPISODE_PILOT.md) then exercised the actual simulation path on two new seeds, four requested steps each. Both grounded episodes completed all four steps; both original-format episodes stopped before their first step. All 18 calls, failure-inclusive partial histories and successful trajectories were retained and replayed offline with exact request/state agreement. **Both completed episodes collapsed the resource at step 1 and ended with zero stock.** Execution is recovered on this small panel; sustainable behavior is not. [Summary and raw trajectories](results/episode-pilot-summary.json).
+
+The first-step requests exceeded the entire available stock. An [offline mechanical counterfactual](results/harvest-counterfactual.json) that changes only those harvest amounts to the existing baseline's equal MSY share avoids first-step collapse on both seeds. That is a simulator diagnostic, not a new model result. The current prompt gives stock estimates and absolute action units but does not state the numeric regeneration and collapse rules, so the observed failure does not distinguish strategic over-extraction from misunderstanding the task.
+
+Use `config.useStructuredDecisions=true` to request the optional grounded schema in live mode. `llmTemperature` and `llmSeed` expose validated sampling controls; the default remains the original format. The strict semantic parser stays authoritative. Unsupported provider schema features fail normally, and provider seeds do not guarantee reproducibility. The two pilots use different endpoints/context settings and must not be pooled. Full-prompt context completeness remains unverified.
+
+Replay the saved episode experiment with no model calls:
+
+```bash
+npx tsx scripts/replay-episodes.ts results/episode-pilot.json /tmp/evolsim-episode-replay.json
+```
+
+The replay requires matching simulation/protocol sources, checks request/response hashes, and compares all serialized states and errors. It rejects any unrecorded request.
 
 ## What is implemented
 

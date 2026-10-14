@@ -1,0 +1,26 @@
+{
+  "protocol": "recorded-action-mechanical-counterfactual-v1",
+  "newInferenceCalls": 0,
+  "sourceCommit": "935525cf64f36ddad54a64a71d001f1bb445a47a",
+  "intervention": "Replace only each recorded first-step harvest with r*K/4 divided by 2; retain governance, communication, treaty fields and original environmental seed. This is a simulator counterfactual, not a new model decision or strategy outcome.",
+  "rows": [
+    {
+      "seed": 607,
+      "initialStock": 80,
+      "firstStepOriginalStock": 10.083462404763214,
+      "firstStepOriginalCollapsed": true,
+      "counterfactualHarvestPerSpecies": 1.875,
+      "counterfactualStock": 80.71086659526716,
+      "counterfactualCollapsed": false
+    },
+    {
+      "seed": 709,
+      "initialStock": 80,
+      "firstStepOriginalStock": 3.222555451163016,
+      "firstStepOriginalCollapsed": true,
+      "counterfactualHarvestPerSpecies": 1.875,
+      "counterfactualStock": 78.49901891770395,
+      "counterfactualCollapsed": false
+    }
+  ]
+}
