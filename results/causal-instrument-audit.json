@@ -1,0 +1,1629 @@
+{
+  "artifactVersion": "causal-instrument-audit-v1",
+  "studyId": "evolsim-causal-response-v1",
+  "mode": "offline-no-inference",
+  "result": "pass",
+  "sourceCommit": "46aade7dc490353b5265bbcb92208e69ef45c5b2",
+  "sourceSha256": "f42bcf0c54557f666a3fb4feac0d9b2d590af4a280a6368990f1c35058a52310",
+  "manifestSha256": "6d8a1d1640b82813a2fff273e537dcaf82327993d96c5e0189083f17ebd9d5a0",
+  "environment": {
+    "node": "v25.9.0",
+    "platform": "darwin",
+    "arch": "arm64"
+  },
+  "checks": {
+    "completeUniquePanel": true,
+    "quartetIsolation": true,
+    "adversarialControls": true,
+    "announcementPlacebo": true,
+    "gridActionConvergence": true,
+    "gridValueConvergence": true,
+    "exogenousArmIsolation": true
+  },
+  "diagnostics": {
+    "cells": 64,
+    "quartets": 16,
+    "uniqueReferenceProblems": 24,
+    "maxActionDifference": 0,
+    "maxValueDifference": 0,
+    "placeboDifferences": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "designIssues": [],
+    "exogenousMismatches": [],
+    "adversarial": [
+      {
+        "name": "fixed-stock mutation",
+        "detected": true,
+        "issues": [
+          "non-treatment prompt payload differs"
+        ]
+      },
+      {
+        "name": "masked-history leak",
+        "detected": true,
+        "issues": [
+          "1009:species_0:0:0: partner history does not match assigned visibility"
+        ]
+      },
+      {
+        "name": "binding-language mutation",
+        "detected": true,
+        "issues": [
+          "1009:species_0:1:1: announcement text differs from frozen arm"
+        ]
+      }
+    ]
+  },
+  "failures": [],
+  "rows": [
+    {
+      "id": "1009:species_0:0:0",
+      "seed": 1009,
+      "speciesId": "species_0",
+      "announcement": false,
+      "visibleHistory": false,
+      "stock": 40,
+      "partnerRequest": 0.9375,
+      "promptSha256": "59cac27124a35773bfc5dda977e3a4b1ce60dfdc0362f570ed3393f7e040d41c",
+      "promptBytes": 2748,
+      "coarse": {
+        "action": 100,
+        "value": 39.99650980670051
+      },
+      "refined": {
+        "action": 100,
+        "value": 39.99650980670051
+      },
+      "exogenous": {
+        "observation": -1.541775271791086,
+        "harvest": 0.10217973091117316,
+        "shock": -1.818332065790125
+      }
+    },
+    {
+      "id": "1009:species_0:0:1",
+      "seed": 1009,
+      "speciesId": "species_0",
+      "announcement": false,
+      "visibleHistory": true,
+      "stock": 40,
+      "partnerRequest": 0.9375,
+      "promptSha256": "a8a835de1c26ddd640941d12348e8949414af018b2c59380200f67d55b7672a4",
+      "promptBytes": 2755,
+      "coarse": {
+        "action": 100,
+        "value": 40.725929438433646
+      },
+      "refined": {
+        "action": 100,
+        "value": 40.725929438433646
+      },
+      "exogenous": {
+        "observation": -1.541775271791086,
+        "harvest": 0.10217973091117316,
+        "shock": -1.818332065790125
+      }
+    },
+    {
+      "id": "1009:species_0:1:1",
+      "seed": 1009,
+      "speciesId": "species_0",
+      "announcement": true,
+      "visibleHistory": true,
+      "stock": 40,
+      "partnerRequest": 0.9375,
+      "promptSha256": "7d12e3de761dd839cdee921506379c913009b2cfe0579be6a1744bb297249a0c",
+      "promptBytes": 2755,
+      "coarse": {
+        "action": 100,
+        "value": 40.725929438433646
+      },
+      "refined": {
+        "action": 100,
+        "value": 40.725929438433646
+      },
+      "exogenous": {
+        "observation": -1.541775271791086,
+        "harvest": 0.10217973091117316,
+        "shock": -1.818332065790125
+      }
+    },
+    {
+      "id": "1009:species_0:1:0",
+      "seed": 1009,
+      "speciesId": "species_0",
+      "announcement": true,
+      "visibleHistory": false,
+      "stock": 40,
+      "partnerRequest": 0.9375,
+      "promptSha256": "1e811d8a3cb4dff37ff00a38061c03ca2454a565b30848d87be30720d9770252",
+      "promptBytes": 2748,
+      "coarse": {
+        "action": 100,
+        "value": 39.99650980670051
+      },
+      "refined": {
+        "action": 100,
+        "value": 39.99650980670051
+      },
+      "exogenous": {
+        "observation": -1.541775271791086,
+        "harvest": 0.10217973091117316,
+        "shock": -1.818332065790125
+      }
+    },
+    {
+      "id": "1009:species_1:0:1",
+      "seed": 1009,
+      "speciesId": "species_1",
+      "announcement": false,
+      "visibleHistory": true,
+      "stock": 40,
+      "partnerRequest": 0.9375,
+      "promptSha256": "129676cd4a6347a993f6d946ff39919d8f537c642eb70901ff071ffbb6d73629",
+      "promptBytes": 2755,
+      "coarse": {
+        "action": 100,
+        "value": 42.9208223710285
+      },
+      "refined": {
+        "action": 100,
+        "value": 42.9208223710285
+      },
+      "exogenous": {
+        "observation": 0.2823580896604144,
+        "harvest": 0.10217973091117316,
+        "shock": -1.818332065790125
+      }
+    },
+    {
+      "id": "1009:species_1:1:1",
+      "seed": 1009,
+      "speciesId": "species_1",
+      "announcement": true,
+      "visibleHistory": true,
+      "stock": 40,
+      "partnerRequest": 0.9375,
+      "promptSha256": "a0977c26abbfd7afb9c6278d0d9d799b66394f2022dcda752e4f239651d247e0",
+      "promptBytes": 2755,
+      "coarse": {
+        "action": 100,
+        "value": 42.9208223710285
+      },
+      "refined": {
+        "action": 100,
+        "value": 42.9208223710285
+      },
+      "exogenous": {
+        "observation": 0.2823580896604144,
+        "harvest": 0.10217973091117316,
+        "shock": -1.818332065790125
+      }
+    },
+    {
+      "id": "1009:species_1:1:0",
+      "seed": 1009,
+      "speciesId": "species_1",
+      "announcement": true,
+      "visibleHistory": false,
+      "stock": 40,
+      "partnerRequest": 0.9375,
+      "promptSha256": "93565ccf252ac3d12db9cad2c4d550b2bd98cd621b7b607fcf67ad0fe2c7315f",
+      "promptBytes": 2748,
+      "coarse": {
+        "action": 100,
+        "value": 42.152091224084714
+      },
+      "refined": {
+        "action": 100,
+        "value": 42.152091224084714
+      },
+      "exogenous": {
+        "observation": 0.2823580896604144,
+        "harvest": 0.10217973091117316,
+        "shock": -1.818332065790125
+      }
+    },
+    {
+      "id": "1009:species_1:0:0",
+      "seed": 1009,
+      "speciesId": "species_1",
+      "announcement": false,
+      "visibleHistory": false,
+      "stock": 40,
+      "partnerRequest": 0.9375,
+      "promptSha256": "41130b4073753a85382dda46a92daad5779064479ff38ef3c390e17521773192",
+      "promptBytes": 2748,
+      "coarse": {
+        "action": 100,
+        "value": 42.152091224084714
+      },
+      "refined": {
+        "action": 100,
+        "value": 42.152091224084714
+      },
+      "exogenous": {
+        "observation": 0.2823580896604144,
+        "harvest": 0.10217973091117316,
+        "shock": -1.818332065790125
+      }
+    },
+    {
+      "id": "1013:species_0:0:1",
+      "seed": 1013,
+      "speciesId": "species_0",
+      "announcement": false,
+      "visibleHistory": true,
+      "stock": 80,
+      "partnerRequest": 0.9375,
+      "promptSha256": "da060e0251e002c597703d2d44cef6dfa642b819e36e11355aa2982a19847510",
+      "promptBytes": 2755,
+      "coarse": {
+        "action": 100,
+        "value": 80.22972652914102
+      },
+      "refined": {
+        "action": 100,
+        "value": 80.22972652914102
+      },
+      "exogenous": {
+        "observation": 0.6226035314425507,
+        "harvest": 1.0213866788443082,
+        "shock": 0.5902308845720351
+      }
+    },
+    {
+      "id": "1013:species_0:1:1",
+      "seed": 1013,
+      "speciesId": "species_0",
+      "announcement": true,
+      "visibleHistory": true,
+      "stock": 80,
+      "partnerRequest": 0.9375,
+      "promptSha256": "c9e8319cdece4bd6fb6437f74e92a2e82f3656133ae38def9bc556ed09e849ce",
+      "promptBytes": 2755,
+      "coarse": {
+        "action": 100,
+        "value": 80.22972652914102
+      },
+      "refined": {
+        "action": 100,
+        "value": 80.22972652914102
+      },
+      "exogenous": {
+        "observation": 0.6226035314425507,
+        "harvest": 1.0213866788443082,
+        "shock": 0.5902308845720351
+      }
+    },
+    {
+      "id": "1013:species_0:1:0",
+      "seed": 1013,
+      "speciesId": "species_0",
+      "announcement": true,
+      "visibleHistory": false,
+      "stock": 80,
+      "partnerRequest": 0.9375,
+      "promptSha256": "86b1270dbb1df9cc36b6653f487c1ea669576fc551ac52f64c5d677747ec2245",
+      "promptBytes": 2748,
+      "coarse": {
+        "action": 100,
+        "value": 78.79277620324595
+      },
+      "refined": {
+        "action": 100,
+        "value": 78.79277620324595
+      },
+      "exogenous": {
+        "observation": 0.6226035314425507,
+        "harvest": 1.0213866788443082,
+        "shock": 0.5902308845720351
+      }
+    },
+    {
+      "id": "1013:species_0:0:0",
+      "seed": 1013,
+      "speciesId": "species_0",
+      "announcement": false,
+      "visibleHistory": false,
+      "stock": 80,
+      "partnerRequest": 0.9375,
+      "promptSha256": "f4195458ad3f297ef2f26aa1c7adc481f4e21b84bff3dc3feb8e64f2a6638743",
+      "promptBytes": 2748,
+      "coarse": {
+        "action": 100,
+        "value": 78.79277620324595
+      },
+      "refined": {
+        "action": 100,
+        "value": 78.79277620324595
+      },
+      "exogenous": {
+        "observation": 0.6226035314425507,
+        "harvest": 1.0213866788443082,
+        "shock": 0.5902308845720351
+      }
+    },
+    {
+      "id": "1013:species_1:1:1",
+      "seed": 1013,
+      "speciesId": "species_1",
+      "announcement": true,
+      "visibleHistory": true,
+      "stock": 80,
+      "partnerRequest": 0.9375,
+      "promptSha256": "fc0c65b9325339c52409e8476acaf818c112fe66d2f0a5ebcc2d62039633c2c9",
+      "promptBytes": 2755,
+      "coarse": {
+        "action": 100,
+        "value": 82.17524769887812
+      },
+      "refined": {
+        "action": 100,
+        "value": 82.17524769887812
+      },
+      "exogenous": {
+        "observation": 1.3417670289463355,
+        "harvest": 1.0213866788443082,
+        "shock": 0.5902308845720351
+      }
+    },
+    {
+      "id": "1013:species_1:1:0",
+      "seed": 1013,
+      "speciesId": "species_1",
+      "announcement": true,
+      "visibleHistory": false,
+      "stock": 80,
+      "partnerRequest": 0.9375,
+      "promptSha256": "e3a9df4fd242802e47bf53d9397764809f16b9f6cc15561f810e00f25f521304",
+      "promptBytes": 2748,
+      "coarse": {
+        "action": 100,
+        "value": 80.7034522177042
+      },
+      "refined": {
+        "action": 100,
+        "value": 80.7034522177042
+      },
+      "exogenous": {
+        "observation": 1.3417670289463355,
+        "harvest": 1.0213866788443082,
+        "shock": 0.5902308845720351
+      }
+    },
+    {
+      "id": "1013:species_1:0:0",
+      "seed": 1013,
+      "speciesId": "species_1",
+      "announcement": false,
+      "visibleHistory": false,
+      "stock": 80,
+      "partnerRequest": 0.9375,
+      "promptSha256": "24ee191d72c7dca5b7f4df1d546e41db0384636c42b3d991af69a0b615c806f7",
+      "promptBytes": 2748,
+      "coarse": {
+        "action": 100,
+        "value": 80.7034522177042
+      },
+      "refined": {
+        "action": 100,
+        "value": 80.7034522177042
+      },
+      "exogenous": {
+        "observation": 1.3417670289463355,
+        "harvest": 1.0213866788443082,
+        "shock": 0.5902308845720351
+      }
+    },
+    {
+      "id": "1013:species_1:0:1",
+      "seed": 1013,
+      "speciesId": "species_1",
+      "announcement": false,
+      "visibleHistory": true,
+      "stock": 80,
+      "partnerRequest": 0.9375,
+      "promptSha256": "e9545ddcf073be7b516089fa82a1e8a576a86cb4f480ef238c0ccc4a2323f982",
+      "promptBytes": 2755,
+      "coarse": {
+        "action": 100,
+        "value": 82.17524769887812
+      },
+      "refined": {
+        "action": 100,
+        "value": 82.17524769887812
+      },
+      "exogenous": {
+        "observation": 1.3417670289463355,
+        "harvest": 1.0213866788443082,
+        "shock": 0.5902308845720351
+      }
+    },
+    {
+      "id": "1019:species_0:1:1",
+      "seed": 1019,
+      "speciesId": "species_0",
+      "announcement": true,
+      "visibleHistory": true,
+      "stock": 40,
+      "partnerRequest": 4.6875,
+      "promptSha256": "4cc9786143dace1429ec65626d0b13f4090a8f1dcc90ac322570aadc005d683c",
+      "promptBytes": 2755,
+      "coarse": {
+        "action": 100,
+        "value": 39.26709017496737
+      },
+      "refined": {
+        "action": 100,
+        "value": 39.26709017496737
+      },
+      "exogenous": {
+        "observation": 0.18026018409938024,
+        "harvest": -0.8445104237339455,
+        "shock": -0.5688763570453138
+      }
+    },
+    {
+      "id": "1019:species_0:1:0",
+      "seed": 1019,
+      "speciesId": "species_0",
+      "announcement": true,
+      "visibleHistory": false,
+      "stock": 40,
+      "partnerRequest": 4.6875,
+      "promptSha256": "1e811d8a3cb4dff37ff00a38061c03ca2454a565b30848d87be30720d9770252",
+      "promptBytes": 2748,
+      "coarse": {
+        "action": 100,
+        "value": 39.99650980670051
+      },
+      "refined": {
+        "action": 100,
+        "value": 39.99650980670051
+      },
+      "exogenous": {
+        "observation": 0.18026018409938024,
+        "harvest": -0.8445104237339455,
+        "shock": -0.5688763570453138
+      }
+    },
+    {
+      "id": "1019:species_0:0:0",
+      "seed": 1019,
+      "speciesId": "species_0",
+      "announcement": false,
+      "visibleHistory": false,
+      "stock": 40,
+      "partnerRequest": 4.6875,
+      "promptSha256": "59cac27124a35773bfc5dda977e3a4b1ce60dfdc0362f570ed3393f7e040d41c",
+      "promptBytes": 2748,
+      "coarse": {
+        "action": 100,
+        "value": 39.99650980670051
+      },
+      "refined": {
+        "action": 100,
+        "value": 39.99650980670051
+      },
+      "exogenous": {
+        "observation": 0.18026018409938024,
+        "harvest": -0.8445104237339455,
+        "shock": -0.5688763570453138
+      }
+    },
+    {
+      "id": "1019:species_0:0:1",
+      "seed": 1019,
+      "speciesId": "species_0",
+      "announcement": false,
+      "visibleHistory": true,
+      "stock": 40,
+      "partnerRequest": 4.6875,
+      "promptSha256": "def61f68f5eda47d11dc3c6c2a6d5f71b5e03ff6877346801c82b4a26531feb4",
+      "promptBytes": 2755,
+      "coarse": {
+        "action": 100,
+        "value": 39.26709017496737
+      },
+      "refined": {
+        "action": 100,
+        "value": 39.26709017496737
+      },
+      "exogenous": {
+        "observation": 0.18026018409938024,
+        "harvest": -0.8445104237339455,
+        "shock": -0.5688763570453138
+      }
+    },
+    {
+      "id": "1019:species_1:1:0",
+      "seed": 1019,
+      "speciesId": "species_1",
+      "announcement": true,
+      "visibleHistory": false,
+      "stock": 40,
+      "partnerRequest": 4.6875,
+      "promptSha256": "93565ccf252ac3d12db9cad2c4d550b2bd98cd621b7b607fcf67ad0fe2c7315f",
+      "promptBytes": 2748,
+      "coarse": {
+        "action": 100,
+        "value": 42.152091224084714
+      },
+      "refined": {
+        "action": 100,
+        "value": 42.152091224084714
+      },
+      "exogenous": {
+        "observation": 0.34651725594899624,
+        "harvest": -0.8445104237339455,
+        "shock": -0.5688763570453138
+      }
+    },
+    {
+      "id": "1019:species_1:0:0",
+      "seed": 1019,
+      "speciesId": "species_1",
+      "announcement": false,
+      "visibleHistory": false,
+      "stock": 40,
+      "partnerRequest": 4.6875,
+      "promptSha256": "41130b4073753a85382dda46a92daad5779064479ff38ef3c390e17521773192",
+      "promptBytes": 2748,
+      "coarse": {
+        "action": 100,
+        "value": 42.152091224084714
+      },
+      "refined": {
+        "action": 100,
+        "value": 42.152091224084714
+      },
+      "exogenous": {
+        "observation": 0.34651725594899624,
+        "harvest": -0.8445104237339455,
+        "shock": -0.5688763570453138
+      }
+    },
+    {
+      "id": "1019:species_1:0:1",
+      "seed": 1019,
+      "speciesId": "species_1",
+      "announcement": false,
+      "visibleHistory": true,
+      "stock": 40,
+      "partnerRequest": 4.6875,
+      "promptSha256": "5d824e850a3d2e2ce2c11dc49bbac38a2ab4e7bdcc76420dffd700e97e69d5b3",
+      "promptBytes": 2755,
+      "coarse": {
+        "action": 100,
+        "value": 41.38336007714092
+      },
+      "refined": {
+        "action": 100,
+        "value": 41.38336007714092
+      },
+      "exogenous": {
+        "observation": 0.34651725594899624,
+        "harvest": -0.8445104237339455,
+        "shock": -0.5688763570453138
+      }
+    },
+    {
+      "id": "1019:species_1:1:1",
+      "seed": 1019,
+      "speciesId": "species_1",
+      "announcement": true,
+      "visibleHistory": true,
+      "stock": 40,
+      "partnerRequest": 4.6875,
+      "promptSha256": "04d3a63f1c60b3d244f4fd52976c0b3d817d7a58f57ba33b8d426c7736f82d61",
+      "promptBytes": 2755,
+      "coarse": {
+        "action": 100,
+        "value": 41.38336007714092
+      },
+      "refined": {
+        "action": 100,
+        "value": 41.38336007714092
+      },
+      "exogenous": {
+        "observation": 0.34651725594899624,
+        "harvest": -0.8445104237339455,
+        "shock": -0.5688763570453138
+      }
+    },
+    {
+      "id": "1021:species_0:1:0",
+      "seed": 1021,
+      "speciesId": "species_0",
+      "announcement": true,
+      "visibleHistory": false,
+      "stock": 80,
+      "partnerRequest": 4.6875,
+      "promptSha256": "86b1270dbb1df9cc36b6653f487c1ea669576fc551ac52f64c5d677747ec2245",
+      "promptBytes": 2748,
+      "coarse": {
+        "action": 100,
+        "value": 78.79277620324595
+      },
+      "refined": {
+        "action": 100,
+        "value": 78.79277620324595
+      },
+      "exogenous": {
+        "observation": -0.08170720698603166,
+        "harvest": 0.27470645486967105,
+        "shock": -0.8143338017362104
+      }
+    },
+    {
+      "id": "1021:species_0:0:0",
+      "seed": 1021,
+      "speciesId": "species_0",
+      "announcement": false,
+      "visibleHistory": false,
+      "stock": 80,
+      "partnerRequest": 4.6875,
+      "promptSha256": "f4195458ad3f297ef2f26aa1c7adc481f4e21b84bff3dc3feb8e64f2a6638743",
+      "promptBytes": 2748,
+      "coarse": {
+        "action": 100,
+        "value": 78.79277620324595
+      },
+      "refined": {
+        "action": 100,
+        "value": 78.79277620324595
+      },
+      "exogenous": {
+        "observation": -0.08170720698603166,
+        "harvest": 0.27470645486967105,
+        "shock": -0.8143338017362104
+      }
+    },
+    {
+      "id": "1021:species_0:0:1",
+      "seed": 1021,
+      "speciesId": "species_0",
+      "announcement": false,
+      "visibleHistory": true,
+      "stock": 80,
+      "partnerRequest": 4.6875,
+      "promptSha256": "7cd37934a188da0d4de3f720ae2c62b842b60ae7a0a0c1042382072f78703fce",
+      "promptBytes": 2755,
+      "coarse": {
+        "action": 100,
+        "value": 77.3558258773509
+      },
+      "refined": {
+        "action": 100,
+        "value": 77.3558258773509
+      },
+      "exogenous": {
+        "observation": -0.08170720698603166,
+        "harvest": 0.27470645486967105,
+        "shock": -0.8143338017362104
+      }
+    },
+    {
+      "id": "1021:species_0:1:1",
+      "seed": 1021,
+      "speciesId": "species_0",
+      "announcement": true,
+      "visibleHistory": true,
+      "stock": 80,
+      "partnerRequest": 4.6875,
+      "promptSha256": "0541f235f7da8ecf6eef0b4b218604d7717784f3a555ebc2e9cfa5aa6fc36f82",
+      "promptBytes": 2755,
+      "coarse": {
+        "action": 100,
+        "value": 77.3558258773509
+      },
+      "refined": {
+        "action": 100,
+        "value": 77.3558258773509
+      },
+      "exogenous": {
+        "observation": -0.08170720698603166,
+        "harvest": 0.27470645486967105,
+        "shock": -0.8143338017362104
+      }
+    },
+    {
+      "id": "1021:species_1:0:0",
+      "seed": 1021,
+      "speciesId": "species_1",
+      "announcement": false,
+      "visibleHistory": false,
+      "stock": 80,
+      "partnerRequest": 4.6875,
+      "promptSha256": "24ee191d72c7dca5b7f4df1d546e41db0384636c42b3d991af69a0b615c806f7",
+      "promptBytes": 2748,
+      "coarse": {
+        "action": 100,
+        "value": 80.7034522177042
+      },
+      "refined": {
+        "action": 100,
+        "value": 80.7034522177042
+      },
+      "exogenous": {
+        "observation": -0.7310964307284319,
+        "harvest": 0.27470645486967105,
+        "shock": -0.8143338017362104
+      }
+    },
+    {
+      "id": "1021:species_1:0:1",
+      "seed": 1021,
+      "speciesId": "species_1",
+      "announcement": false,
+      "visibleHistory": true,
+      "stock": 80,
+      "partnerRequest": 4.6875,
+      "promptSha256": "34be03ef6e43f85d243deaab7375e598043503e05b750ef8c00e39b323446236",
+      "promptBytes": 2755,
+      "coarse": {
+        "action": 100,
+        "value": 79.23165673653027
+      },
+      "refined": {
+        "action": 100,
+        "value": 79.23165673653027
+      },
+      "exogenous": {
+        "observation": -0.7310964307284319,
+        "harvest": 0.27470645486967105,
+        "shock": -0.8143338017362104
+      }
+    },
+    {
+      "id": "1021:species_1:1:1",
+      "seed": 1021,
+      "speciesId": "species_1",
+      "announcement": true,
+      "visibleHistory": true,
+      "stock": 80,
+      "partnerRequest": 4.6875,
+      "promptSha256": "cdcf077c697d76f01eac9a813d44e22b190554928f14cab1de83c83fbf134bdb",
+      "promptBytes": 2755,
+      "coarse": {
+        "action": 100,
+        "value": 79.23165673653027
+      },
+      "refined": {
+        "action": 100,
+        "value": 79.23165673653027
+      },
+      "exogenous": {
+        "observation": -0.7310964307284319,
+        "harvest": 0.27470645486967105,
+        "shock": -0.8143338017362104
+      }
+    },
+    {
+      "id": "1021:species_1:1:0",
+      "seed": 1021,
+      "speciesId": "species_1",
+      "announcement": true,
+      "visibleHistory": false,
+      "stock": 80,
+      "partnerRequest": 4.6875,
+      "promptSha256": "e3a9df4fd242802e47bf53d9397764809f16b9f6cc15561f810e00f25f521304",
+      "promptBytes": 2748,
+      "coarse": {
+        "action": 100,
+        "value": 80.7034522177042
+      },
+      "refined": {
+        "action": 100,
+        "value": 80.7034522177042
+      },
+      "exogenous": {
+        "observation": -0.7310964307284319,
+        "harvest": 0.27470645486967105,
+        "shock": -0.8143338017362104
+      }
+    },
+    {
+      "id": "1031:species_0:0:0",
+      "seed": 1031,
+      "speciesId": "species_0",
+      "announcement": false,
+      "visibleHistory": false,
+      "stock": 40,
+      "partnerRequest": 0.9375,
+      "promptSha256": "59cac27124a35773bfc5dda977e3a4b1ce60dfdc0362f570ed3393f7e040d41c",
+      "promptBytes": 2748,
+      "coarse": {
+        "action": 100,
+        "value": 39.99650980670051
+      },
+      "refined": {
+        "action": 100,
+        "value": 39.99650980670051
+      },
+      "exogenous": {
+        "observation": 0.23300028251539218,
+        "harvest": -1.0039774147307172,
+        "shock": 0.13797248461083073
+      }
+    },
+    {
+      "id": "1031:species_0:0:1",
+      "seed": 1031,
+      "speciesId": "species_0",
+      "announcement": false,
+      "visibleHistory": true,
+      "stock": 40,
+      "partnerRequest": 0.9375,
+      "promptSha256": "a8a835de1c26ddd640941d12348e8949414af018b2c59380200f67d55b7672a4",
+      "promptBytes": 2755,
+      "coarse": {
+        "action": 100,
+        "value": 40.725929438433646
+      },
+      "refined": {
+        "action": 100,
+        "value": 40.725929438433646
+      },
+      "exogenous": {
+        "observation": 0.23300028251539218,
+        "harvest": -1.0039774147307172,
+        "shock": 0.13797248461083073
+      }
+    },
+    {
+      "id": "1031:species_0:1:1",
+      "seed": 1031,
+      "speciesId": "species_0",
+      "announcement": true,
+      "visibleHistory": true,
+      "stock": 40,
+      "partnerRequest": 0.9375,
+      "promptSha256": "7d12e3de761dd839cdee921506379c913009b2cfe0579be6a1744bb297249a0c",
+      "promptBytes": 2755,
+      "coarse": {
+        "action": 100,
+        "value": 40.725929438433646
+      },
+      "refined": {
+        "action": 100,
+        "value": 40.725929438433646
+      },
+      "exogenous": {
+        "observation": 0.23300028251539218,
+        "harvest": -1.0039774147307172,
+        "shock": 0.13797248461083073
+      }
+    },
+    {
+      "id": "1031:species_0:1:0",
+      "seed": 1031,
+      "speciesId": "species_0",
+      "announcement": true,
+      "visibleHistory": false,
+      "stock": 40,
+      "partnerRequest": 0.9375,
+      "promptSha256": "1e811d8a3cb4dff37ff00a38061c03ca2454a565b30848d87be30720d9770252",
+      "promptBytes": 2748,
+      "coarse": {
+        "action": 100,
+        "value": 39.99650980670051
+      },
+      "refined": {
+        "action": 100,
+        "value": 39.99650980670051
+      },
+      "exogenous": {
+        "observation": 0.23300028251539218,
+        "harvest": -1.0039774147307172,
+        "shock": 0.13797248461083073
+      }
+    },
+    {
+      "id": "1031:species_1:0:1",
+      "seed": 1031,
+      "speciesId": "species_1",
+      "announcement": false,
+      "visibleHistory": true,
+      "stock": 40,
+      "partnerRequest": 0.9375,
+      "promptSha256": "129676cd4a6347a993f6d946ff39919d8f537c642eb70901ff071ffbb6d73629",
+      "promptBytes": 2755,
+      "coarse": {
+        "action": 100,
+        "value": 42.9208223710285
+      },
+      "refined": {
+        "action": 100,
+        "value": 42.9208223710285
+      },
+      "exogenous": {
+        "observation": 0.12854527930720544,
+        "harvest": -1.0039774147307172,
+        "shock": 0.13797248461083073
+      }
+    },
+    {
+      "id": "1031:species_1:1:1",
+      "seed": 1031,
+      "speciesId": "species_1",
+      "announcement": true,
+      "visibleHistory": true,
+      "stock": 40,
+      "partnerRequest": 0.9375,
+      "promptSha256": "a0977c26abbfd7afb9c6278d0d9d799b66394f2022dcda752e4f239651d247e0",
+      "promptBytes": 2755,
+      "coarse": {
+        "action": 100,
+        "value": 42.9208223710285
+      },
+      "refined": {
+        "action": 100,
+        "value": 42.9208223710285
+      },
+      "exogenous": {
+        "observation": 0.12854527930720544,
+        "harvest": -1.0039774147307172,
+        "shock": 0.13797248461083073
+      }
+    },
+    {
+      "id": "1031:species_1:1:0",
+      "seed": 1031,
+      "speciesId": "species_1",
+      "announcement": true,
+      "visibleHistory": false,
+      "stock": 40,
+      "partnerRequest": 0.9375,
+      "promptSha256": "93565ccf252ac3d12db9cad2c4d550b2bd98cd621b7b607fcf67ad0fe2c7315f",
+      "promptBytes": 2748,
+      "coarse": {
+        "action": 100,
+        "value": 42.152091224084714
+      },
+      "refined": {
+        "action": 100,
+        "value": 42.152091224084714
+      },
+      "exogenous": {
+        "observation": 0.12854527930720544,
+        "harvest": -1.0039774147307172,
+        "shock": 0.13797248461083073
+      }
+    },
+    {
+      "id": "1031:species_1:0:0",
+      "seed": 1031,
+      "speciesId": "species_1",
+      "announcement": false,
+      "visibleHistory": false,
+      "stock": 40,
+      "partnerRequest": 0.9375,
+      "promptSha256": "41130b4073753a85382dda46a92daad5779064479ff38ef3c390e17521773192",
+      "promptBytes": 2748,
+      "coarse": {
+        "action": 100,
+        "value": 42.152091224084714
+      },
+      "refined": {
+        "action": 100,
+        "value": 42.152091224084714
+      },
+      "exogenous": {
+        "observation": 0.12854527930720544,
+        "harvest": -1.0039774147307172,
+        "shock": 0.13797248461083073
+      }
+    },
+    {
+      "id": "1033:species_0:0:1",
+      "seed": 1033,
+      "speciesId": "species_0",
+      "announcement": false,
+      "visibleHistory": true,
+      "stock": 80,
+      "partnerRequest": 0.9375,
+      "promptSha256": "da060e0251e002c597703d2d44cef6dfa642b819e36e11355aa2982a19847510",
+      "promptBytes": 2755,
+      "coarse": {
+        "action": 100,
+        "value": 80.22972652914102
+      },
+      "refined": {
+        "action": 100,
+        "value": 80.22972652914102
+      },
+      "exogenous": {
+        "observation": -0.9981207215692262,
+        "harvest": -0.10251040014099627,
+        "shock": 0.016730886991496323
+      }
+    },
+    {
+      "id": "1033:species_0:1:1",
+      "seed": 1033,
+      "speciesId": "species_0",
+      "announcement": true,
+      "visibleHistory": true,
+      "stock": 80,
+      "partnerRequest": 0.9375,
+      "promptSha256": "c9e8319cdece4bd6fb6437f74e92a2e82f3656133ae38def9bc556ed09e849ce",
+      "promptBytes": 2755,
+      "coarse": {
+        "action": 100,
+        "value": 80.22972652914102
+      },
+      "refined": {
+        "action": 100,
+        "value": 80.22972652914102
+      },
+      "exogenous": {
+        "observation": -0.9981207215692262,
+        "harvest": -0.10251040014099627,
+        "shock": 0.016730886991496323
+      }
+    },
+    {
+      "id": "1033:species_0:1:0",
+      "seed": 1033,
+      "speciesId": "species_0",
+      "announcement": true,
+      "visibleHistory": false,
+      "stock": 80,
+      "partnerRequest": 0.9375,
+      "promptSha256": "86b1270dbb1df9cc36b6653f487c1ea669576fc551ac52f64c5d677747ec2245",
+      "promptBytes": 2748,
+      "coarse": {
+        "action": 100,
+        "value": 78.79277620324595
+      },
+      "refined": {
+        "action": 100,
+        "value": 78.79277620324595
+      },
+      "exogenous": {
+        "observation": -0.9981207215692262,
+        "harvest": -0.10251040014099627,
+        "shock": 0.016730886991496323
+      }
+    },
+    {
+      "id": "1033:species_0:0:0",
+      "seed": 1033,
+      "speciesId": "species_0",
+      "announcement": false,
+      "visibleHistory": false,
+      "stock": 80,
+      "partnerRequest": 0.9375,
+      "promptSha256": "f4195458ad3f297ef2f26aa1c7adc481f4e21b84bff3dc3feb8e64f2a6638743",
+      "promptBytes": 2748,
+      "coarse": {
+        "action": 100,
+        "value": 78.79277620324595
+      },
+      "refined": {
+        "action": 100,
+        "value": 78.79277620324595
+      },
+      "exogenous": {
+        "observation": -0.9981207215692262,
+        "harvest": -0.10251040014099627,
+        "shock": 0.016730886991496323
+      }
+    },
+    {
+      "id": "1033:species_1:1:1",
+      "seed": 1033,
+      "speciesId": "species_1",
+      "announcement": true,
+      "visibleHistory": true,
+      "stock": 80,
+      "partnerRequest": 0.9375,
+      "promptSha256": "fc0c65b9325339c52409e8476acaf818c112fe66d2f0a5ebcc2d62039633c2c9",
+      "promptBytes": 2755,
+      "coarse": {
+        "action": 100,
+        "value": 82.17524769887812
+      },
+      "refined": {
+        "action": 100,
+        "value": 82.17524769887812
+      },
+      "exogenous": {
+        "observation": 0.8900239421538932,
+        "harvest": -0.10251040014099627,
+        "shock": 0.016730886991496323
+      }
+    },
+    {
+      "id": "1033:species_1:1:0",
+      "seed": 1033,
+      "speciesId": "species_1",
+      "announcement": true,
+      "visibleHistory": false,
+      "stock": 80,
+      "partnerRequest": 0.9375,
+      "promptSha256": "e3a9df4fd242802e47bf53d9397764809f16b9f6cc15561f810e00f25f521304",
+      "promptBytes": 2748,
+      "coarse": {
+        "action": 100,
+        "value": 80.7034522177042
+      },
+      "refined": {
+        "action": 100,
+        "value": 80.7034522177042
+      },
+      "exogenous": {
+        "observation": 0.8900239421538932,
+        "harvest": -0.10251040014099627,
+        "shock": 0.016730886991496323
+      }
+    },
+    {
+      "id": "1033:species_1:0:0",
+      "seed": 1033,
+      "speciesId": "species_1",
+      "announcement": false,
+      "visibleHistory": false,
+      "stock": 80,
+      "partnerRequest": 0.9375,
+      "promptSha256": "24ee191d72c7dca5b7f4df1d546e41db0384636c42b3d991af69a0b615c806f7",
+      "promptBytes": 2748,
+      "coarse": {
+        "action": 100,
+        "value": 80.7034522177042
+      },
+      "refined": {
+        "action": 100,
+        "value": 80.7034522177042
+      },
+      "exogenous": {
+        "observation": 0.8900239421538932,
+        "harvest": -0.10251040014099627,
+        "shock": 0.016730886991496323
+      }
+    },
+    {
+      "id": "1033:species_1:0:1",
+      "seed": 1033,
+      "speciesId": "species_1",
+      "announcement": false,
+      "visibleHistory": true,
+      "stock": 80,
+      "partnerRequest": 0.9375,
+      "promptSha256": "e9545ddcf073be7b516089fa82a1e8a576a86cb4f480ef238c0ccc4a2323f982",
+      "promptBytes": 2755,
+      "coarse": {
+        "action": 100,
+        "value": 82.17524769887812
+      },
+      "refined": {
+        "action": 100,
+        "value": 82.17524769887812
+      },
+      "exogenous": {
+        "observation": 0.8900239421538932,
+        "harvest": -0.10251040014099627,
+        "shock": 0.016730886991496323
+      }
+    },
+    {
+      "id": "1039:species_0:1:1",
+      "seed": 1039,
+      "speciesId": "species_0",
+      "announcement": true,
+      "visibleHistory": true,
+      "stock": 40,
+      "partnerRequest": 4.6875,
+      "promptSha256": "4cc9786143dace1429ec65626d0b13f4090a8f1dcc90ac322570aadc005d683c",
+      "promptBytes": 2755,
+      "coarse": {
+        "action": 100,
+        "value": 39.26709017496737
+      },
+      "refined": {
+        "action": 100,
+        "value": 39.26709017496737
+      },
+      "exogenous": {
+        "observation": -0.7794432663378635,
+        "harvest": -1.2232999724068718,
+        "shock": 0.05983624400087496
+      }
+    },
+    {
+      "id": "1039:species_0:1:0",
+      "seed": 1039,
+      "speciesId": "species_0",
+      "announcement": true,
+      "visibleHistory": false,
+      "stock": 40,
+      "partnerRequest": 4.6875,
+      "promptSha256": "1e811d8a3cb4dff37ff00a38061c03ca2454a565b30848d87be30720d9770252",
+      "promptBytes": 2748,
+      "coarse": {
+        "action": 100,
+        "value": 39.99650980670051
+      },
+      "refined": {
+        "action": 100,
+        "value": 39.99650980670051
+      },
+      "exogenous": {
+        "observation": -0.7794432663378635,
+        "harvest": -1.2232999724068718,
+        "shock": 0.05983624400087496
+      }
+    },
+    {
+      "id": "1039:species_0:0:0",
+      "seed": 1039,
+      "speciesId": "species_0",
+      "announcement": false,
+      "visibleHistory": false,
+      "stock": 40,
+      "partnerRequest": 4.6875,
+      "promptSha256": "59cac27124a35773bfc5dda977e3a4b1ce60dfdc0362f570ed3393f7e040d41c",
+      "promptBytes": 2748,
+      "coarse": {
+        "action": 100,
+        "value": 39.99650980670051
+      },
+      "refined": {
+        "action": 100,
+        "value": 39.99650980670051
+      },
+      "exogenous": {
+        "observation": -0.7794432663378635,
+        "harvest": -1.2232999724068718,
+        "shock": 0.05983624400087496
+      }
+    },
+    {
+      "id": "1039:species_0:0:1",
+      "seed": 1039,
+      "speciesId": "species_0",
+      "announcement": false,
+      "visibleHistory": true,
+      "stock": 40,
+      "partnerRequest": 4.6875,
+      "promptSha256": "def61f68f5eda47d11dc3c6c2a6d5f71b5e03ff6877346801c82b4a26531feb4",
+      "promptBytes": 2755,
+      "coarse": {
+        "action": 100,
+        "value": 39.26709017496737
+      },
+      "refined": {
+        "action": 100,
+        "value": 39.26709017496737
+      },
+      "exogenous": {
+        "observation": -0.7794432663378635,
+        "harvest": -1.2232999724068718,
+        "shock": 0.05983624400087496
+      }
+    },
+    {
+      "id": "1039:species_1:1:0",
+      "seed": 1039,
+      "speciesId": "species_1",
+      "announcement": true,
+      "visibleHistory": false,
+      "stock": 40,
+      "partnerRequest": 4.6875,
+      "promptSha256": "93565ccf252ac3d12db9cad2c4d550b2bd98cd621b7b607fcf67ad0fe2c7315f",
+      "promptBytes": 2748,
+      "coarse": {
+        "action": 100,
+        "value": 42.152091224084714
+      },
+      "refined": {
+        "action": 100,
+        "value": 42.152091224084714
+      },
+      "exogenous": {
+        "observation": -1.4636518961158038,
+        "harvest": -1.2232999724068718,
+        "shock": 0.05983624400087496
+      }
+    },
+    {
+      "id": "1039:species_1:0:0",
+      "seed": 1039,
+      "speciesId": "species_1",
+      "announcement": false,
+      "visibleHistory": false,
+      "stock": 40,
+      "partnerRequest": 4.6875,
+      "promptSha256": "41130b4073753a85382dda46a92daad5779064479ff38ef3c390e17521773192",
+      "promptBytes": 2748,
+      "coarse": {
+        "action": 100,
+        "value": 42.152091224084714
+      },
+      "refined": {
+        "action": 100,
+        "value": 42.152091224084714
+      },
+      "exogenous": {
+        "observation": -1.4636518961158038,
+        "harvest": -1.2232999724068718,
+        "shock": 0.05983624400087496
+      }
+    },
+    {
+      "id": "1039:species_1:0:1",
+      "seed": 1039,
+      "speciesId": "species_1",
+      "announcement": false,
+      "visibleHistory": true,
+      "stock": 40,
+      "partnerRequest": 4.6875,
+      "promptSha256": "5d824e850a3d2e2ce2c11dc49bbac38a2ab4e7bdcc76420dffd700e97e69d5b3",
+      "promptBytes": 2755,
+      "coarse": {
+        "action": 100,
+        "value": 41.38336007714092
+      },
+      "refined": {
+        "action": 100,
+        "value": 41.38336007714092
+      },
+      "exogenous": {
+        "observation": -1.4636518961158038,
+        "harvest": -1.2232999724068718,
+        "shock": 0.05983624400087496
+      }
+    },
+    {
+      "id": "1039:species_1:1:1",
+      "seed": 1039,
+      "speciesId": "species_1",
+      "announcement": true,
+      "visibleHistory": true,
+      "stock": 40,
+      "partnerRequest": 4.6875,
+      "promptSha256": "04d3a63f1c60b3d244f4fd52976c0b3d817d7a58f57ba33b8d426c7736f82d61",
+      "promptBytes": 2755,
+      "coarse": {
+        "action": 100,
+        "value": 41.38336007714092
+      },
+      "refined": {
+        "action": 100,
+        "value": 41.38336007714092
+      },
+      "exogenous": {
+        "observation": -1.4636518961158038,
+        "harvest": -1.2232999724068718,
+        "shock": 0.05983624400087496
+      }
+    },
+    {
+      "id": "1049:species_0:1:0",
+      "seed": 1049,
+      "speciesId": "species_0",
+      "announcement": true,
+      "visibleHistory": false,
+      "stock": 80,
+      "partnerRequest": 4.6875,
+      "promptSha256": "86b1270dbb1df9cc36b6653f487c1ea669576fc551ac52f64c5d677747ec2245",
+      "promptBytes": 2748,
+      "coarse": {
+        "action": 100,
+        "value": 78.79277620324595
+      },
+      "refined": {
+        "action": 100,
+        "value": 78.79277620324595
+      },
+      "exogenous": {
+        "observation": 1.2468212117396955,
+        "harvest": 0.19554460061109086,
+        "shock": 0.005134974868719753
+      }
+    },
+    {
+      "id": "1049:species_0:0:0",
+      "seed": 1049,
+      "speciesId": "species_0",
+      "announcement": false,
+      "visibleHistory": false,
+      "stock": 80,
+      "partnerRequest": 4.6875,
+      "promptSha256": "f4195458ad3f297ef2f26aa1c7adc481f4e21b84bff3dc3feb8e64f2a6638743",
+      "promptBytes": 2748,
+      "coarse": {
+        "action": 100,
+        "value": 78.79277620324595
+      },
+      "refined": {
+        "action": 100,
+        "value": 78.79277620324595
+      },
+      "exogenous": {
+        "observation": 1.2468212117396955,
+        "harvest": 0.19554460061109086,
+        "shock": 0.005134974868719753
+      }
+    },
+    {
+      "id": "1049:species_0:0:1",
+      "seed": 1049,
+      "speciesId": "species_0",
+      "announcement": false,
+      "visibleHistory": true,
+      "stock": 80,
+      "partnerRequest": 4.6875,
+      "promptSha256": "7cd37934a188da0d4de3f720ae2c62b842b60ae7a0a0c1042382072f78703fce",
+      "promptBytes": 2755,
+      "coarse": {
+        "action": 100,
+        "value": 77.3558258773509
+      },
+      "refined": {
+        "action": 100,
+        "value": 77.3558258773509
+      },
+      "exogenous": {
+        "observation": 1.2468212117396955,
+        "harvest": 0.19554460061109086,
+        "shock": 0.005134974868719753
+      }
+    },
+    {
+      "id": "1049:species_0:1:1",
+      "seed": 1049,
+      "speciesId": "species_0",
+      "announcement": true,
+      "visibleHistory": true,
+      "stock": 80,
+      "partnerRequest": 4.6875,
+      "promptSha256": "0541f235f7da8ecf6eef0b4b218604d7717784f3a555ebc2e9cfa5aa6fc36f82",
+      "promptBytes": 2755,
+      "coarse": {
+        "action": 100,
+        "value": 77.3558258773509
+      },
+      "refined": {
+        "action": 100,
+        "value": 77.3558258773509
+      },
+      "exogenous": {
+        "observation": 1.2468212117396955,
+        "harvest": 0.19554460061109086,
+        "shock": 0.005134974868719753
+      }
+    },
+    {
+      "id": "1049:species_1:0:0",
+      "seed": 1049,
+      "speciesId": "species_1",
+      "announcement": false,
+      "visibleHistory": false,
+      "stock": 80,
+      "partnerRequest": 4.6875,
+      "promptSha256": "24ee191d72c7dca5b7f4df1d546e41db0384636c42b3d991af69a0b615c806f7",
+      "promptBytes": 2748,
+      "coarse": {
+        "action": 100,
+        "value": 80.7034522177042
+      },
+      "refined": {
+        "action": 100,
+        "value": 80.7034522177042
+      },
+      "exogenous": {
+        "observation": -1.1990788546941031,
+        "harvest": 0.19554460061109086,
+        "shock": 0.005134974868719753
+      }
+    },
+    {
+      "id": "1049:species_1:0:1",
+      "seed": 1049,
+      "speciesId": "species_1",
+      "announcement": false,
+      "visibleHistory": true,
+      "stock": 80,
+      "partnerRequest": 4.6875,
+      "promptSha256": "34be03ef6e43f85d243deaab7375e598043503e05b750ef8c00e39b323446236",
+      "promptBytes": 2755,
+      "coarse": {
+        "action": 100,
+        "value": 79.23165673653027
+      },
+      "refined": {
+        "action": 100,
+        "value": 79.23165673653027
+      },
+      "exogenous": {
+        "observation": -1.1990788546941031,
+        "harvest": 0.19554460061109086,
+        "shock": 0.005134974868719753
+      }
+    },
+    {
+      "id": "1049:species_1:1:1",
+      "seed": 1049,
+      "speciesId": "species_1",
+      "announcement": true,
+      "visibleHistory": true,
+      "stock": 80,
+      "partnerRequest": 4.6875,
+      "promptSha256": "cdcf077c697d76f01eac9a813d44e22b190554928f14cab1de83c83fbf134bdb",
+      "promptBytes": 2755,
+      "coarse": {
+        "action": 100,
+        "value": 79.23165673653027
+      },
+      "refined": {
+        "action": 100,
+        "value": 79.23165673653027
+      },
+      "exogenous": {
+        "observation": -1.1990788546941031,
+        "harvest": 0.19554460061109086,
+        "shock": 0.005134974868719753
+      }
+    },
+    {
+      "id": "1049:species_1:1:0",
+      "seed": 1049,
+      "speciesId": "species_1",
+      "announcement": true,
+      "visibleHistory": false,
+      "stock": 80,
+      "partnerRequest": 4.6875,
+      "promptSha256": "e3a9df4fd242802e47bf53d9397764809f16b9f6cc15561f810e00f25f521304",
+      "promptBytes": 2748,
+      "coarse": {
+        "action": 100,
+        "value": 80.7034522177042
+      },
+      "refined": {
+        "action": 100,
+        "value": 80.7034522177042
+      },
+      "exogenous": {
+        "observation": -1.1990788546941031,
+        "harvest": 0.19554460061109086,
+        "shock": 0.005134974868719753
+      }
+    }
+  ],
+  "interpretation": "This artifact validates a frozen offline instrument and transparent reference only. It contains no model responses and is not evidence of cooperation or an institutional treatment effect."
+}

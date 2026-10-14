@@ -1,0 +1,52 @@
+{
+  "runId": "evolsim-causal-response-qwen25coder15b-v1",
+  "status": "frozen-before-model-calls",
+  "studyId": "evolsim-causal-response-v1",
+  "offlineAudit": {
+    "artifact": "results/causal-instrument-audit.json",
+    "sha256": "3302e6a00b3bab8802d915d1875a26ef3b5fc303dde17fa9b511904c1a23195b",
+    "result": "pass"
+  },
+  "panel": {
+    "calls": 64,
+    "caseIdsSha256": "f15e3b330fbc4d4d87137926eb7804735e07dc91ed3b3dff84705b2b7a7b1501",
+    "promptsSha256": "8d8dbef70dbbba4c1d2e7f1ab964619f002371785316a62499a1c120c4847660",
+    "order": "studyCases() order; balanced four-arm rotation; no reordering after outcomes"
+  },
+  "provider": {
+    "endpoint": "http://127.0.0.1:11434/api/chat",
+    "ollamaVersion": "0.40.1",
+    "model": "qwen2.5-coder:1.5b",
+    "digest": "d7372fd828518a4d38b1eb196c673c31a85f2ed302b3d1e406c4c2d1b64a0668",
+    "parameterSize": "1.5B",
+    "quantization": "Q4_K_M",
+    "localOnly": true,
+    "downloadsAllowed": false
+  },
+  "request": {
+    "system": "Return exactly one JSON object matching the supplied schema. Do not add prose or markdown.",
+    "temperature": 0,
+    "seed": "the frozen per-cell sampleSeed",
+    "numCtx": 8192,
+    "numPredict": 256,
+    "keepAlive": "5m",
+    "timeoutMs": 30000,
+    "retries": 0,
+    "format": "STUDY_SCHEMA"
+  },
+  "accounting": {
+    "allCellsRemainInDenominator": true,
+    "failureCategories": ["transport", "provider", "truncation", "syntax", "semantic", "comprehension"],
+    "analysisEligible": "HTTP 200, provider stop, schema-valid action, and comprehension passed",
+    "minimumEligibleRate": 0.95,
+    "maximumIncompleteQuartets": 1,
+    "replacementCalls": 0,
+    "outcomeAdaptiveChanges": 0
+  },
+  "review": {
+    "rootProtocolReview": "pre-outcome review judged the offline instrument gate strong and authorized one unchanged panel",
+    "externalIndependentScientificReview": false,
+    "promotionGateSatisfied": false
+  },
+  "interpretation": "The run may generate diagnostic model responses. Strategic interpretation remains blocked if validity or quartet gates fail, and scientific promotion remains blocked without genuinely independent review."
+}

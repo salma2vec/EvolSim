@@ -15,7 +15,8 @@
     "validate:local": "tsx scripts/validate-local.ts",
     "replay:local": "tsx scripts/replay-local.ts",
     "causal:audit": "tsx scripts/audit-causal-response.ts",
-    "causal:replay": "tsx scripts/audit-causal-response.ts --replay"
+    "causal:replay": "tsx scripts/audit-causal-response.ts --replay",
+    "causal:run": "tsx scripts/run-causal-response.ts"
   },
   "dependencies": {
     "lucide-react": "^0.344.0",
