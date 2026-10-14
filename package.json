@@ -18,7 +18,7 @@
     "causal:replay": "tsx scripts/audit-causal-response.ts --replay",
     "causal:run": "tsx scripts/run-causal-response.ts",
     "causal:replay-panel": "tsx scripts/replay-causal-response.ts",
-    "causal:v2:pretest": "tsx scripts/causal-v2-pretest.ts"
+    "causal:v2:replay": "tsx scripts/causal-v2-pretest.ts replay results/causal-v2-pretest.json"
   },
   "dependencies": {
     "lucide-react": "^0.344.0",

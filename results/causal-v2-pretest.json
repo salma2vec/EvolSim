@@ -1,0 +1,738 @@
+{
+  "artifactVersion": "causal-v2-pretest-v1",
+  "startedAt": "2026-10-14T19:09:25.330Z",
+  "sourceCommit": "0a77df8a172ae21d17c62ad9eff7842e9cead278",
+  "manifestPath": "docs/CAUSAL_RESPONSE_V2_MANIFEST.json",
+  "manifestSha256": "d53abcc14ad6191ee8f111445f2f4f5f113d6e9770b8d7924bda3ce2047afaf0",
+  "modelOrder": [
+    {
+      "model": "deepseek-r1:8b",
+      "digest": "6995872bfe4c521a67b32da386cd21d5c6e819b6e0d62f79f64ec83be99f5763",
+      "parameterSize": "8.2B",
+      "quantization": "Q4_K_M"
+    },
+    {
+      "model": "llama3:latest",
+      "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+      "parameterSize": "8.0B",
+      "quantization": "Q4_0"
+    }
+  ],
+  "cells": [
+    {
+      "id": "pretest-1-stock-20",
+      "sampleSeed": 6001,
+      "stock": 20,
+      "growth": 2.4000000000000004,
+      "nextStock": 22.4,
+      "prompt": "{\"task\":\"Numerical resource-rule comprehension only. Do not choose a harvest or strategy.\",\"rules\":{\"capacityK\":100,\"regenerationRate\":0.15,\"growthFormula\":\"growth = regenerationRate * currentStock * (1 - currentStock / capacityK)\",\"currentStock\":20,\"update\":\"With no harvest and both noise draws equal to zero, nextStock = currentStock + growth.\"},\"institution\":\"No quota, cap, fine, reward, recommendation, or advisory exists in this pretest.\",\"response\":\"Return growth, nextStock, and whether a quota mechanically binds.\"}"
+    },
+    {
+      "id": "pretest-2-stock-40",
+      "sampleSeed": 6002,
+      "stock": 40,
+      "growth": 3.5999999999999996,
+      "nextStock": 43.6,
+      "prompt": "{\"task\":\"Numerical resource-rule comprehension only. Do not choose a harvest or strategy.\",\"rules\":{\"capacityK\":100,\"regenerationRate\":0.15,\"growthFormula\":\"growth = regenerationRate * currentStock * (1 - currentStock / capacityK)\",\"currentStock\":40,\"update\":\"With no harvest and both noise draws equal to zero, nextStock = currentStock + growth.\"},\"institution\":\"No quota, cap, fine, reward, recommendation, or advisory exists in this pretest.\",\"response\":\"Return growth, nextStock, and whether a quota mechanically binds.\"}"
+    },
+    {
+      "id": "pretest-3-stock-60",
+      "sampleSeed": 6003,
+      "stock": 60,
+      "growth": 3.6,
+      "nextStock": 63.6,
+      "prompt": "{\"task\":\"Numerical resource-rule comprehension only. Do not choose a harvest or strategy.\",\"rules\":{\"capacityK\":100,\"regenerationRate\":0.15,\"growthFormula\":\"growth = regenerationRate * currentStock * (1 - currentStock / capacityK)\",\"currentStock\":60,\"update\":\"With no harvest and both noise draws equal to zero, nextStock = currentStock + growth.\"},\"institution\":\"No quota, cap, fine, reward, recommendation, or advisory exists in this pretest.\",\"response\":\"Return growth, nextStock, and whether a quota mechanically binds.\"}"
+    },
+    {
+      "id": "pretest-4-stock-80",
+      "sampleSeed": 6004,
+      "stock": 80,
+      "growth": 2.3999999999999995,
+      "nextStock": 82.4,
+      "prompt": "{\"task\":\"Numerical resource-rule comprehension only. Do not choose a harvest or strategy.\",\"rules\":{\"capacityK\":100,\"regenerationRate\":0.15,\"growthFormula\":\"growth = regenerationRate * currentStock * (1 - currentStock / capacityK)\",\"currentStock\":80,\"update\":\"With no harvest and both noise draws equal to zero, nextStock = currentStock + growth.\"},\"institution\":\"No quota, cap, fine, reward, recommendation, or advisory exists in this pretest.\",\"response\":\"Return growth, nextStock, and whether a quota mechanically binds.\"}"
+    },
+    {
+      "id": "pretest-5-stock-80",
+      "sampleSeed": 6005,
+      "stock": 80,
+      "growth": 2.3999999999999995,
+      "nextStock": 82.4,
+      "prompt": "{\"task\":\"Numerical resource-rule comprehension only. Do not choose a harvest or strategy.\",\"rules\":{\"capacityK\":100,\"regenerationRate\":0.15,\"growthFormula\":\"growth = regenerationRate * currentStock * (1 - currentStock / capacityK)\",\"currentStock\":80,\"update\":\"With no harvest and both noise draws equal to zero, nextStock = currentStock + growth.\"},\"institution\":\"No quota, cap, fine, reward, recommendation, or advisory exists in this pretest.\",\"response\":\"Return growth, nextStock, and whether a quota mechanically binds.\"}"
+    },
+    {
+      "id": "pretest-6-stock-60",
+      "sampleSeed": 6006,
+      "stock": 60,
+      "growth": 3.6,
+      "nextStock": 63.6,
+      "prompt": "{\"task\":\"Numerical resource-rule comprehension only. Do not choose a harvest or strategy.\",\"rules\":{\"capacityK\":100,\"regenerationRate\":0.15,\"growthFormula\":\"growth = regenerationRate * currentStock * (1 - currentStock / capacityK)\",\"currentStock\":60,\"update\":\"With no harvest and both noise draws equal to zero, nextStock = currentStock + growth.\"},\"institution\":\"No quota, cap, fine, reward, recommendation, or advisory exists in this pretest.\",\"response\":\"Return growth, nextStock, and whether a quota mechanically binds.\"}"
+    },
+    {
+      "id": "pretest-7-stock-40",
+      "sampleSeed": 6007,
+      "stock": 40,
+      "growth": 3.5999999999999996,
+      "nextStock": 43.6,
+      "prompt": "{\"task\":\"Numerical resource-rule comprehension only. Do not choose a harvest or strategy.\",\"rules\":{\"capacityK\":100,\"regenerationRate\":0.15,\"growthFormula\":\"growth = regenerationRate * currentStock * (1 - currentStock / capacityK)\",\"currentStock\":40,\"update\":\"With no harvest and both noise draws equal to zero, nextStock = currentStock + growth.\"},\"institution\":\"No quota, cap, fine, reward, recommendation, or advisory exists in this pretest.\",\"response\":\"Return growth, nextStock, and whether a quota mechanically binds.\"}"
+    },
+    {
+      "id": "pretest-8-stock-20",
+      "sampleSeed": 6008,
+      "stock": 20,
+      "growth": 2.4000000000000004,
+      "nextStock": 22.4,
+      "prompt": "{\"task\":\"Numerical resource-rule comprehension only. Do not choose a harvest or strategy.\",\"rules\":{\"capacityK\":100,\"regenerationRate\":0.15,\"growthFormula\":\"growth = regenerationRate * currentStock * (1 - currentStock / capacityK)\",\"currentStock\":20,\"update\":\"With no harvest and both noise draws equal to zero, nextStock = currentStock + growth.\"},\"institution\":\"No quota, cap, fine, reward, recommendation, or advisory exists in this pretest.\",\"response\":\"Return growth, nextStock, and whether a quota mechanically binds.\"}"
+    }
+  ],
+  "attempts": [
+    {
+      "specification": {
+        "model": "deepseek-r1:8b",
+        "digest": "6995872bfe4c521a67b32da386cd21d5c6e819b6e0d62f79f64ec83be99f5763",
+        "parameterSize": "8.2B",
+        "quantization": "Q4_K_M"
+      },
+      "metadata": {
+        "endpoint": "http://127.0.0.1:11434",
+        "localOnly": true,
+        "version": {
+          "version": "0.40.1"
+        },
+        "installed": {
+          "name": "deepseek-r1:8b",
+          "model": "deepseek-r1:8b",
+          "modified_at": "2026-03-15T03:38:54.465713177+05:30",
+          "size": 5225376047,
+          "digest": "6995872bfe4c521a67b32da386cd21d5c6e819b6e0d62f79f64ec83be99f5763",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "qwen3",
+            "families": [
+              "qwen3"
+            ],
+            "parameter_size": "8.2B",
+            "quantization_level": "Q4_K_M",
+            "context_length": 131072,
+            "embedding_length": 4096,
+            "runner": "ggml"
+          },
+          "capabilities": [
+            "tools",
+            "thinking",
+            "completion"
+          ]
+        },
+        "templateSha256": "53671bac29bcb3e1f95f51b8c77d85a6011b66dc38bd23dce64eef04384a976b",
+        "parametersSha256": "b3669fdd1d59cec39ead1d59150e66c4791f54b7ad95d034521d2011670ad2e1"
+      },
+      "records": [
+        {
+          "index": 0,
+          "id": "pretest-1-stock-20",
+          "request": {
+            "model": "deepseek-r1:8b",
+            "stream": false,
+            "think": false,
+            "messages": [
+              {
+                "role": "system",
+                "content": "Return exactly one JSON object matching the supplied schema. Do not add prose or markdown."
+              },
+              {
+                "role": "user",
+                "content": "{\"task\":\"Numerical resource-rule comprehension only. Do not choose a harvest or strategy.\",\"rules\":{\"capacityK\":100,\"regenerationRate\":0.15,\"growthFormula\":\"growth = regenerationRate * currentStock * (1 - currentStock / capacityK)\",\"currentStock\":20,\"update\":\"With no harvest and both noise draws equal to zero, nextStock = currentStock + growth.\"},\"institution\":\"No quota, cap, fine, reward, recommendation, or advisory exists in this pretest.\",\"response\":\"Return growth, nextStock, and whether a quota mechanically binds.\"}"
+              }
+            ],
+            "format": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "growth",
+                "nextStock",
+                "quotaBinding"
+              ],
+              "properties": {
+                "growth": {
+                  "type": "number"
+                },
+                "nextStock": {
+                  "type": "number"
+                },
+                "quotaBinding": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "keep_alive": "5m",
+            "options": {
+              "temperature": 0,
+              "seed": 6001,
+              "num_ctx": 8192,
+              "num_predict": 128
+            }
+          },
+          "requestSha256": "d367ecfd1ad528a7cabc2094a115d4177016b810a4298dc11ed777a6a54d106b",
+          "status": "invalid",
+          "error": "The operation was aborted due to timeout",
+          "elapsedMs": 122323.555125,
+          "parseError": "\"undefined\" is not valid JSON"
+        },
+        {
+          "index": 1,
+          "id": "pretest-2-stock-40",
+          "request": {
+            "model": "deepseek-r1:8b",
+            "stream": false,
+            "think": false,
+            "messages": [
+              {
+                "role": "system",
+                "content": "Return exactly one JSON object matching the supplied schema. Do not add prose or markdown."
+              },
+              {
+                "role": "user",
+                "content": "{\"task\":\"Numerical resource-rule comprehension only. Do not choose a harvest or strategy.\",\"rules\":{\"capacityK\":100,\"regenerationRate\":0.15,\"growthFormula\":\"growth = regenerationRate * currentStock * (1 - currentStock / capacityK)\",\"currentStock\":40,\"update\":\"With no harvest and both noise draws equal to zero, nextStock = currentStock + growth.\"},\"institution\":\"No quota, cap, fine, reward, recommendation, or advisory exists in this pretest.\",\"response\":\"Return growth, nextStock, and whether a quota mechanically binds.\"}"
+              }
+            ],
+            "format": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "growth",
+                "nextStock",
+                "quotaBinding"
+              ],
+              "properties": {
+                "growth": {
+                  "type": "number"
+                },
+                "nextStock": {
+                  "type": "number"
+                },
+                "quotaBinding": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "keep_alive": "5m",
+            "options": {
+              "temperature": 0,
+              "seed": 6002,
+              "num_ctx": 8192,
+              "num_predict": 128
+            }
+          },
+          "requestSha256": "c96032717e258fa417ce647992ad422edc685d0aeb1f4e5d37e17f43924edc1a",
+          "status": "invalid",
+          "error": "The operation was aborted due to timeout",
+          "elapsedMs": 121479.617958,
+          "parseError": "\"undefined\" is not valid JSON"
+        },
+        {
+          "index": 2,
+          "id": "pretest-3-stock-60",
+          "request": {
+            "model": "deepseek-r1:8b",
+            "stream": false,
+            "think": false,
+            "messages": [
+              {
+                "role": "system",
+                "content": "Return exactly one JSON object matching the supplied schema. Do not add prose or markdown."
+              },
+              {
+                "role": "user",
+                "content": "{\"task\":\"Numerical resource-rule comprehension only. Do not choose a harvest or strategy.\",\"rules\":{\"capacityK\":100,\"regenerationRate\":0.15,\"growthFormula\":\"growth = regenerationRate * currentStock * (1 - currentStock / capacityK)\",\"currentStock\":60,\"update\":\"With no harvest and both noise draws equal to zero, nextStock = currentStock + growth.\"},\"institution\":\"No quota, cap, fine, reward, recommendation, or advisory exists in this pretest.\",\"response\":\"Return growth, nextStock, and whether a quota mechanically binds.\"}"
+              }
+            ],
+            "format": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "growth",
+                "nextStock",
+                "quotaBinding"
+              ],
+              "properties": {
+                "growth": {
+                  "type": "number"
+                },
+                "nextStock": {
+                  "type": "number"
+                },
+                "quotaBinding": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "keep_alive": "5m",
+            "options": {
+              "temperature": 0,
+              "seed": 6003,
+              "num_ctx": 8192,
+              "num_predict": 128
+            }
+          },
+          "requestSha256": "f2048a19dd23d66545e4f7913fb5d4d7a3ad59157003fddba66c2fa4f4e89921",
+          "status": "invalid",
+          "error": "The operation was aborted due to timeout",
+          "elapsedMs": 120649.25104199999,
+          "parseError": "\"undefined\" is not valid JSON"
+        },
+        {
+          "index": 3,
+          "id": "pretest-4-stock-80",
+          "request": {
+            "model": "deepseek-r1:8b",
+            "stream": false,
+            "think": false,
+            "messages": [
+              {
+                "role": "system",
+                "content": "Return exactly one JSON object matching the supplied schema. Do not add prose or markdown."
+              },
+              {
+                "role": "user",
+                "content": "{\"task\":\"Numerical resource-rule comprehension only. Do not choose a harvest or strategy.\",\"rules\":{\"capacityK\":100,\"regenerationRate\":0.15,\"growthFormula\":\"growth = regenerationRate * currentStock * (1 - currentStock / capacityK)\",\"currentStock\":80,\"update\":\"With no harvest and both noise draws equal to zero, nextStock = currentStock + growth.\"},\"institution\":\"No quota, cap, fine, reward, recommendation, or advisory exists in this pretest.\",\"response\":\"Return growth, nextStock, and whether a quota mechanically binds.\"}"
+              }
+            ],
+            "format": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "growth",
+                "nextStock",
+                "quotaBinding"
+              ],
+              "properties": {
+                "growth": {
+                  "type": "number"
+                },
+                "nextStock": {
+                  "type": "number"
+                },
+                "quotaBinding": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "keep_alive": "5m",
+            "options": {
+              "temperature": 0,
+              "seed": 6004,
+              "num_ctx": 8192,
+              "num_predict": 128
+            }
+          },
+          "requestSha256": "ff084e617dd94926dbb92101f4bdc683c3ac5da85b5268ba994d136bd1878558",
+          "status": "invalid",
+          "error": "The operation was aborted due to timeout",
+          "elapsedMs": 120463.38287499995,
+          "parseError": "\"undefined\" is not valid JSON"
+        },
+        {
+          "index": 4,
+          "id": "pretest-5-stock-80",
+          "request": {
+            "model": "deepseek-r1:8b",
+            "stream": false,
+            "think": false,
+            "messages": [
+              {
+                "role": "system",
+                "content": "Return exactly one JSON object matching the supplied schema. Do not add prose or markdown."
+              },
+              {
+                "role": "user",
+                "content": "{\"task\":\"Numerical resource-rule comprehension only. Do not choose a harvest or strategy.\",\"rules\":{\"capacityK\":100,\"regenerationRate\":0.15,\"growthFormula\":\"growth = regenerationRate * currentStock * (1 - currentStock / capacityK)\",\"currentStock\":80,\"update\":\"With no harvest and both noise draws equal to zero, nextStock = currentStock + growth.\"},\"institution\":\"No quota, cap, fine, reward, recommendation, or advisory exists in this pretest.\",\"response\":\"Return growth, nextStock, and whether a quota mechanically binds.\"}"
+              }
+            ],
+            "format": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "growth",
+                "nextStock",
+                "quotaBinding"
+              ],
+              "properties": {
+                "growth": {
+                  "type": "number"
+                },
+                "nextStock": {
+                  "type": "number"
+                },
+                "quotaBinding": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "keep_alive": "5m",
+            "options": {
+              "temperature": 0,
+              "seed": 6005,
+              "num_ctx": 8192,
+              "num_predict": 128
+            }
+          },
+          "requestSha256": "f82be9d6b6ef7235f6adc4c4d06708a72c172aec1688e388942dbe35f15e705a",
+          "status": "invalid",
+          "error": "The operation was aborted due to timeout",
+          "elapsedMs": 120342.36979099992,
+          "parseError": "\"undefined\" is not valid JSON"
+        },
+        {
+          "index": 5,
+          "id": "pretest-6-stock-60",
+          "request": {
+            "model": "deepseek-r1:8b",
+            "stream": false,
+            "think": false,
+            "messages": [
+              {
+                "role": "system",
+                "content": "Return exactly one JSON object matching the supplied schema. Do not add prose or markdown."
+              },
+              {
+                "role": "user",
+                "content": "{\"task\":\"Numerical resource-rule comprehension only. Do not choose a harvest or strategy.\",\"rules\":{\"capacityK\":100,\"regenerationRate\":0.15,\"growthFormula\":\"growth = regenerationRate * currentStock * (1 - currentStock / capacityK)\",\"currentStock\":60,\"update\":\"With no harvest and both noise draws equal to zero, nextStock = currentStock + growth.\"},\"institution\":\"No quota, cap, fine, reward, recommendation, or advisory exists in this pretest.\",\"response\":\"Return growth, nextStock, and whether a quota mechanically binds.\"}"
+              }
+            ],
+            "format": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "growth",
+                "nextStock",
+                "quotaBinding"
+              ],
+              "properties": {
+                "growth": {
+                  "type": "number"
+                },
+                "nextStock": {
+                  "type": "number"
+                },
+                "quotaBinding": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "keep_alive": "5m",
+            "options": {
+              "temperature": 0,
+              "seed": 6006,
+              "num_ctx": 8192,
+              "num_predict": 128
+            }
+          },
+          "requestSha256": "b703d8cb57757851c29fcfec50f230af0c611f4971f8e7058173a05bb1f0640f",
+          "status": "invalid",
+          "error": "The operation was aborted due to timeout",
+          "elapsedMs": 121374.64037499996,
+          "parseError": "\"undefined\" is not valid JSON"
+        },
+        {
+          "index": 6,
+          "id": "pretest-7-stock-40",
+          "request": {
+            "model": "deepseek-r1:8b",
+            "stream": false,
+            "think": false,
+            "messages": [
+              {
+                "role": "system",
+                "content": "Return exactly one JSON object matching the supplied schema. Do not add prose or markdown."
+              },
+              {
+                "role": "user",
+                "content": "{\"task\":\"Numerical resource-rule comprehension only. Do not choose a harvest or strategy.\",\"rules\":{\"capacityK\":100,\"regenerationRate\":0.15,\"growthFormula\":\"growth = regenerationRate * currentStock * (1 - currentStock / capacityK)\",\"currentStock\":40,\"update\":\"With no harvest and both noise draws equal to zero, nextStock = currentStock + growth.\"},\"institution\":\"No quota, cap, fine, reward, recommendation, or advisory exists in this pretest.\",\"response\":\"Return growth, nextStock, and whether a quota mechanically binds.\"}"
+              }
+            ],
+            "format": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "growth",
+                "nextStock",
+                "quotaBinding"
+              ],
+              "properties": {
+                "growth": {
+                  "type": "number"
+                },
+                "nextStock": {
+                  "type": "number"
+                },
+                "quotaBinding": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "keep_alive": "5m",
+            "options": {
+              "temperature": 0,
+              "seed": 6007,
+              "num_ctx": 8192,
+              "num_predict": 128
+            }
+          },
+          "requestSha256": "4156a44ab4005d14b764153627dbe8ee84e0e41e492768d933157303835d6ad2",
+          "status": "invalid",
+          "error": "The operation was aborted due to timeout",
+          "elapsedMs": 120237.67166699993,
+          "parseError": "\"undefined\" is not valid JSON"
+        },
+        {
+          "index": 7,
+          "id": "pretest-8-stock-20",
+          "request": {
+            "model": "deepseek-r1:8b",
+            "stream": false,
+            "think": false,
+            "messages": [
+              {
+                "role": "system",
+                "content": "Return exactly one JSON object matching the supplied schema. Do not add prose or markdown."
+              },
+              {
+                "role": "user",
+                "content": "{\"task\":\"Numerical resource-rule comprehension only. Do not choose a harvest or strategy.\",\"rules\":{\"capacityK\":100,\"regenerationRate\":0.15,\"growthFormula\":\"growth = regenerationRate * currentStock * (1 - currentStock / capacityK)\",\"currentStock\":20,\"update\":\"With no harvest and both noise draws equal to zero, nextStock = currentStock + growth.\"},\"institution\":\"No quota, cap, fine, reward, recommendation, or advisory exists in this pretest.\",\"response\":\"Return growth, nextStock, and whether a quota mechanically binds.\"}"
+              }
+            ],
+            "format": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "growth",
+                "nextStock",
+                "quotaBinding"
+              ],
+              "properties": {
+                "growth": {
+                  "type": "number"
+                },
+                "nextStock": {
+                  "type": "number"
+                },
+                "quotaBinding": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "keep_alive": "5m",
+            "options": {
+              "temperature": 0,
+              "seed": 6008,
+              "num_ctx": 8192,
+              "num_predict": 128
+            }
+          },
+          "requestSha256": "f4db645774b89063742d4df46089b6162e367e3b34f389655492b3066c7c10b3",
+          "status": "invalid",
+          "error": "The operation was aborted due to timeout",
+          "elapsedMs": 121428.675208,
+          "parseError": "\"undefined\" is not valid JSON"
+        }
+      ],
+      "passed": false,
+      "passedCount": 0
+    },
+    {
+      "specification": {
+        "model": "llama3:latest",
+        "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+        "parameterSize": "8.0B",
+        "quantization": "Q4_0"
+      },
+      "metadata": {
+        "endpoint": "http://127.0.0.1:11434",
+        "localOnly": true,
+        "version": {
+          "version": "0.40.1"
+        },
+        "installed": {
+          "name": "llama3:latest",
+          "model": "llama3:latest",
+          "modified_at": "2024-07-18T21:54:45.435177237+05:30",
+          "size": 4661224676,
+          "digest": "365c0bd3c000a25d28ddbf732fe1c6add414de7275464c4e4d1c3b5fcb5d8ad1",
+          "details": {
+            "parent_model": "",
+            "format": "gguf",
+            "family": "llama",
+            "families": [
+              "llama"
+            ],
+            "parameter_size": "8.0B",
+            "quantization_level": "Q4_0",
+            "context_length": 8192,
+            "embedding_length": 4096,
+            "runner": "ggml"
+          },
+          "capabilities": [
+            "completion"
+          ]
+        },
+        "templateSha256": "8ab4849b038cf0abc5b1c9b8ee1443dca6b93a045c2272180d985126eb40bf6f",
+        "parametersSha256": "639982188172dae5a81407f547d8b79dbda47e9c2010157a32b0b0f3259bc63b"
+      },
+      "records": [
+        {
+          "index": 0,
+          "id": "pretest-1-stock-20",
+          "request": {
+            "model": "llama3:latest",
+            "stream": false,
+            "think": false,
+            "messages": [
+              {
+                "role": "system",
+                "content": "Return exactly one JSON object matching the supplied schema. Do not add prose or markdown."
+              },
+              {
+                "role": "user",
+                "content": "{\"task\":\"Numerical resource-rule comprehension only. Do not choose a harvest or strategy.\",\"rules\":{\"capacityK\":100,\"regenerationRate\":0.15,\"growthFormula\":\"growth = regenerationRate * currentStock * (1 - currentStock / capacityK)\",\"currentStock\":20,\"update\":\"With no harvest and both noise draws equal to zero, nextStock = currentStock + growth.\"},\"institution\":\"No quota, cap, fine, reward, recommendation, or advisory exists in this pretest.\",\"response\":\"Return growth, nextStock, and whether a quota mechanically binds.\"}"
+              }
+            ],
+            "format": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "growth",
+                "nextStock",
+                "quotaBinding"
+              ],
+              "properties": {
+                "growth": {
+                  "type": "number"
+                },
+                "nextStock": {
+                  "type": "number"
+                },
+                "quotaBinding": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "keep_alive": "5m",
+            "options": {
+              "temperature": 0,
+              "seed": 6001,
+              "num_ctx": 8192,
+              "num_predict": 128
+            }
+          },
+          "requestSha256": "bb9c197c57c8fe6fec393b7ceeb933c2044d9057f9bc6b32c0301c93b2fbba29",
+          "status": "invalid",
+          "error": "The operation was aborted due to timeout",
+          "elapsedMs": 121243.75025000004,
+          "parseError": "\"undefined\" is not valid JSON"
+        },
+        {
+          "index": 1,
+          "id": "pretest-2-stock-40",
+          "request": {
+            "model": "llama3:latest",
+            "stream": false,
+            "think": false,
+            "messages": [
+              {
+                "role": "system",
+                "content": "Return exactly one JSON object matching the supplied schema. Do not add prose or markdown."
+              },
+              {
+                "role": "user",
+                "content": "{\"task\":\"Numerical resource-rule comprehension only. Do not choose a harvest or strategy.\",\"rules\":{\"capacityK\":100,\"regenerationRate\":0.15,\"growthFormula\":\"growth = regenerationRate * currentStock * (1 - currentStock / capacityK)\",\"currentStock\":40,\"update\":\"With no harvest and both noise draws equal to zero, nextStock = currentStock + growth.\"},\"institution\":\"No quota, cap, fine, reward, recommendation, or advisory exists in this pretest.\",\"response\":\"Return growth, nextStock, and whether a quota mechanically binds.\"}"
+              }
+            ],
+            "format": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "growth",
+                "nextStock",
+                "quotaBinding"
+              ],
+              "properties": {
+                "growth": {
+                  "type": "number"
+                },
+                "nextStock": {
+                  "type": "number"
+                },
+                "quotaBinding": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "keep_alive": "5m",
+            "options": {
+              "temperature": 0,
+              "seed": 6002,
+              "num_ctx": 8192,
+              "num_predict": 128
+            }
+          },
+          "requestSha256": "41f8091ca5cb34ed9cf1fa2b43733ab7f3b844ea6fb4d42b3585363759123d28",
+          "status": "invalid",
+          "error": "The operation was aborted due to timeout",
+          "elapsedMs": 120491.96979200002,
+          "parseError": "\"undefined\" is not valid JSON"
+        },
+        {
+          "index": 2,
+          "id": "pretest-3-stock-60",
+          "request": {
+            "model": "llama3:latest",
+            "stream": false,
+            "think": false,
+            "messages": [
+              {
+                "role": "system",
+                "content": "Return exactly one JSON object matching the supplied schema. Do not add prose or markdown."
+              },
+              {
+                "role": "user",
+                "content": "{\"task\":\"Numerical resource-rule comprehension only. Do not choose a harvest or strategy.\",\"rules\":{\"capacityK\":100,\"regenerationRate\":0.15,\"growthFormula\":\"growth = regenerationRate * currentStock * (1 - currentStock / capacityK)\",\"currentStock\":60,\"update\":\"With no harvest and both noise draws equal to zero, nextStock = currentStock + growth.\"},\"institution\":\"No quota, cap, fine, reward, recommendation, or advisory exists in this pretest.\",\"response\":\"Return growth, nextStock, and whether a quota mechanically binds.\"}"
+              }
+            ],
+            "format": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "growth",
+                "nextStock",
+                "quotaBinding"
+              ],
+              "properties": {
+                "growth": {
+                  "type": "number"
+                },
+                "nextStock": {
+                  "type": "number"
+                },
+                "quotaBinding": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "keep_alive": "5m",
+            "options": {
+              "temperature": 0,
+              "seed": 6003,
+              "num_ctx": 8192,
+              "num_predict": 128
+            }
+          },
+          "requestSha256": "664f6ac3edc7796ff0322eeceb9f7ff7728d0ac50e25f2cda794398c2eee42b5",
+          "status": "started"
+        }
+      ],
+      "passed": false,
+      "passedCount": 0
+    }
+  ],
+  "selectedModel": null
+}

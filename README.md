@@ -85,6 +85,8 @@ The causal-response hypotheses and software gates are frozen in `docs/CAUSAL_RES
 
 The [single frozen local-model panel](docs/CAUSAL_RESPONSE_RESULT.md) is a preserved negative result: 64/64 responses were schema-valid but failed the prespecified numerical comprehension gate, leaving 0/16 complete quartets. Native treatment prompts also differed by eight tokens. The causal interpretation gate failed, so no treatment estimate or cooperation claim is reported. Replay its parsing and provenance offline with `npm run causal:replay-panel -- results/causal-response-qwen25coder15b.json`.
 
+The [v2 comprehension ladder](docs/CAUSAL_RESPONSE_V2_RESULT.md) was interrupted after eight DeepSeek timeouts, two Llama timeouts and one started Llama record. No model was selected and no strategic calls ran. Review rejected the draft panel for prompt pseudoreplication and mutable analytic metadata; it remains disabled. Replay the preserved artifact offline with `npm run causal:v2:replay`.
+
 ## What is implemented
 
 - Logistic resource growth, irreversible collapse, proportional allocation under scarcity, and population/stress dynamics.
